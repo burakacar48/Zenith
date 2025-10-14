@@ -3,187 +3,128 @@
 {% block title %}Slider Düzenle{% endblock %}
 
 {% block content %}
-<header class="content-header">
-    <h2>Slider Düzenle</h2>
-    <a href="{{ url_for('manage_sliders') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Geri Dön</a>
-</header>
+    <div class="header">
+        <h1>Slider Düzenle</h1>
+        <a href="{{ url_for('manage_sliders') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </a>
+    </div>
 
-<div class="widget">
-    <form method="POST" enctype="multipart/form-data">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label for="game_id">Öne Çıkarılacak Oyun (İsteğe Bağlı):</label>
-                <select name="game_id" id="game_id" class="form-control">
-                    <option value="">-- Oyun Seç --</option>
-                    {% for game in games %}
-                    <option value="{{ game.id }}" {% if slider and slider.game_id == game.id %}selected{% endif %}>{{ game.oyun_adi }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="title">Başlık:</label>
-                <input type="text" name="title" id="title" value="{{ slider.title or '' }}" required class="form-control">
-            </div>
-
-            <div class="form-group">
-                <label for="badge_text">Rozet Metni:</label>
-                <div class="badge-selector">
-                    <label>
-                        <input type="radio" name="badge_text" value="🔥 POPÜLER" {% if slider.badge_text == '🔥 POPÜLER' or not slider.badge_text %}checked{% endif %}>
-                        <span class="badge-option">🔥 POPÜLER</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="badge_text" value="✨ YENİ OYUN" {% if slider.badge_text == '✨ YENİ OYUN' %}checked{% endif %}>
-                        <span class="badge-option">✨ YENİ OYUN</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label for="description">Açıklama:</label>
-                <textarea name="description" id="description_textarea" style="display:none;">{{ slider.description or '' }}</textarea>
-                <div id="description-editor" class="pell"></div>
-            </div>
-
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label for="background_image">Arkaplan Resmi (Önerilen: 1920x1080):</label>
-                {% if slider.background_image %}
-                    <div style="margin-bottom: 10px;">
-                        <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 5px;">Mevcut Resim:</p>
-                        <img src="{{ url_for('static', filename='images/slider/' + slider.background_image) }}" alt="Mevcut Arkaplan" style="max-width: 300px; height: auto; border-radius: var(--border-radius-md);">
+    <div class="form-container">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="section-title">Slider İçeriği</div>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="game_search_input">Öne Çıkarılacak Oyun:</label>
+                    <div class="search-select-container">
+                        {% set selected_game_name = (games|selectattr('id', 'equalto', slider.game_id)|first).oyun_adi if slider and slider.game_id else '' %}
+                        <input type="text" id="game_search_input" placeholder="Oyun adını yazarak ara..." autocomplete="off" value="{{ selected_game_name }}">
+                        <input type="hidden" name="game_id" id="game_id_hidden" value="{{ slider.game_id or '' }}">
+                        <div id="game_search_results" class="search-select-results"></div>
                     </div>
-                    <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 5px;">Değiştirmek için yeni bir resim seçin:</p>
-                {% endif %}
-                <input type="hidden" name="current_background_image" value="{{ slider.background_image }}">
-                <div class="custom-file-input-wrapper">
-                    <input type="file" name="background_image" id="background_image_input" class="file-input" accept="image/jpeg, image/png, image/webp">
-                    <label for="background_image_input" class="btn btn-secondary"><i class="fa-solid fa-upload"></i> Dosya Seç...</label>
-                    <span class="file-name" id="background_image_name">Yeni dosya seçilmedi</span>
+                </div>
+                <div class="form-group">
+                    <label for="badge_text">Rozet:</label>
+                    <select name="badge_text" id="badge_text">
+                        <option value="🔥 POPÜLER" {% if slider.badge_text == '🔥 POPÜLER' %}selected{% endif %}>🔥 POPÜLER</option>
+                        <option value="✨ YENİ OYUN" {% if slider.badge_text == '✨ YENİ OYUN' %}selected{% endif %}>✨ YENİ OYUN</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="title">Başlık:</label>
+                    <input type="text" name="title" id="title" value="{{ slider.title or '' }}" required>
+                </div>
+                <div class="form-group full-width">
+                    <label for="description">Açıklama:</label>
+                    <textarea name="description" id="description" rows="3">{{ slider.description or '' }}</textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="background_image_input">Arkaplan Resmi (Önerilen: 1920x1080):</label>
+                    {% if slider.background_image %}
+                        <p class="file-prompt">Mevcut Resim:</p>
+                        <img src="{{ url_for('static', filename='images/slider/' + slider.background_image) }}" alt="Mevcut Arkaplan" class="image-preview" style="max-width: 400px; height: auto;">
+                        <input type="hidden" name="current_background_image" value="{{ slider.background_image }}">
+                        <p class="file-prompt">Değiştirmek için yeni bir resim seçin:</p>
+                    {% endif %}
+                    <div class="custom-file-input-wrapper">
+                        <input type="file" name="background_image" id="background_image_input" class="file-input" accept="image/jpeg, image/png, image/webp">
+                        <label for="background_image_input" class="btn btn-primary" style="padding: 10px 15px; font-size: 14px; font-weight: bold;">Dosya Seç...</label>
+                        <span class="file-name" id="background_image_name">Dosya seçilmedi</span>
+                    </div>
+                </div>
+                 <div class="form-group">
+                    <label for="display_order">Gösterim Sırası:</label>
+                    <input type="number" name="display_order" id="display_order" value="{{ slider.display_order or 0 }}">
+                </div>
+                 <div class="form-group">
+                    <label for="is_active">Aktif Mi?</label>
+                    <input type="checkbox" name="is_active" id="is_active" {% if slider.is_active %}checked{% endif %} style="width: 20px; height: 20px;">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="display_order">Gösterim Sırası:</label>
-                <input type="number" name="display_order" id="display_order" value="{{ slider.display_order or 0 }}" class="form-control">
-            </div>
-
-            <div class="form-group" style="display: flex; align-items: center; gap: 10px; padding-top: 25px;">
-                <input type="checkbox" name="is_active" id="is_active" {% if slider.is_active %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--color-accent-red);">
-                <label for="is_active" style="margin: 0; font-weight: normal;">Aktif Mi?</label>
-            </div>
-        </div>
-
-        <div style="border-top: 1px solid var(--color-border); margin-top: 24px; padding-top: 24px; text-align: right;">
-            <button type="submit" class="btn btn-primary" onclick="syncEditorContent()">
-                <i class="fa-solid fa-save"></i>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+                <i class="fas fa-save"></i>
                 Değişiklikleri Kaydet
             </button>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 
-<!-- Select2 Kütüphaneleri -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pell.min.css') }}">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="{{ url_for('static', filename='js/pell.min.js') }}"></script>
-<style>
-    /* Select2 Tema Ayarları */
-    .select2-container--default .select2-selection--single {
-        background-color: var(--color-background-sidebar);
-        border: 1px solid var(--color-border);
-        height: 45px;
-        border-radius: var(--border-radius-md);
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        color: var(--color-text-primary);
-        line-height: 43px;
-        padding-left: 16px;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 43px;
-    }
-    .select2-dropdown {
-        background-color: var(--color-surface);
-        border: 1px solid var(--color-border);
-    }
-    .select2-container--default .select2-search--dropdown .select2-search__field {
-        background-color: var(--color-background-sidebar);
-        border: 1px solid var(--color-border);
-        color: var(--color-text-primary);
-    }
-    .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background-color: var(--color-accent-red);
-    }
-    .select2-container--default .select2-results__option { /* Normal seçenek */
-        color: var(--color-text-secondary); 
-        background-color: var(--color-surface);
-    }
-    .select2-container--default .select2-results__option[aria-selected=true] { /* Seçili olan seçenek */
-        background-color: #3b404d !important;
-        color: var(--color-text-primary) !important;
-    }
-    .select2-container--default .select2-results__option--highlighted[aria-selected] { /* Üzerine gelinen seçenek */
-        background-color: var(--color-accent-red) !important;
-        color: #fff !important;
-    }
-    /* Pell Editor Tema Ayarları */    .pell { background-color: var(--color-background-sidebar); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); color: var(--color-text-primary); }    .pell-content { height: 150px; padding: 10px; }    .pell-actionbar { background-color: var(--color-surface); border-bottom: 1px solid var(--color-border); }
-    .pell-button-selected { background-color: var(--color-accent-red); }
-    /* Özel Dosya Girişi Stilleri */
-    .badge-selector { display: flex; gap: 10px; margin-top: 5px; }
-    .badge-selector input[type="radio"] { display: none; }
-    .badge-selector .badge-option {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: var(--color-background-sidebar);
-        border: 1px solid var(--color-border);
-        border-radius: var(--border-radius-md);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-weight: 500;
-    }
-    .badge-selector input[type="radio"]:checked + .badge-option { background: var(--color-accent-red-gradient); color: #fff; border-color: transparent; box-shadow: 0 4px 15px -5px var(--color-accent-red); }
-    .custom-file-input-wrapper { display: flex; align-items: center; gap: 15px; }
-    .file-input { display: none; }
-    .file-name {
-        color: var(--color-text-secondary);
-        font-size: 14px;
-        font-style: italic;
-    }
-</style>
-<script>
-    let editor;
-    function syncEditorContent() {
-        const descriptionTextarea = document.getElementById('description_textarea');
-        if (editor && descriptionTextarea) {
-            descriptionTextarea.value = editor.content.innerHTML;
-        }
-    }
+     <script>
+        const games = [
+            {% for game in games %}
+                { id: {{ game.id }}, name: {{ game.oyun_adi|tojson }} },
+            {% endfor %}
+        ];
 
-    $(document).ready(function() {
-        $('#game_id').select2({
-            placeholder: "-- Oyun ara veya seç --",
-            allowClear: true,
+        const gameSearchInput = document.getElementById('game_search_input');
+        const gameIdHidden = document.getElementById('game_id_hidden');
+        const searchResults = document.getElementById('game_search_results');
+
+        gameSearchInput.addEventListener('input', () => {
+            const searchTerm = gameSearchInput.value.toLowerCase();
+            searchResults.innerHTML = '';
+            
+            // Arama kutusu her değiştiğinde, eğer seçili oyunla eşleşmiyorsa seçimi temizle
+            if (games.find(g => g.name.toLowerCase() === searchTerm)?.id != gameIdHidden.value) {
+                gameIdHidden.value = '';
+            }
+
+            if (searchTerm.length === 0) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            const filteredGames = games.filter(game => game.name.toLowerCase().includes(searchTerm));
+            
+            if (filteredGames.length > 0) {
+                filteredGames.forEach(game => {
+                    const item = document.createElement('div');
+                    item.textContent = game.name;
+                    item.dataset.id = game.id;
+                    item.addEventListener('click', () => {
+                        gameSearchInput.value = game.name;
+                        gameIdHidden.value = game.id;
+                        searchResults.style.display = 'none';
+                    });
+                    searchResults.appendChild(item);
+                });
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.style.display = 'none';
+            }
         });
 
-        editor = window.pell.init({
-            element: document.getElementById('description-editor'),
-            defaultParagraphSeparator: 'p',
-            styleWithCSS: false,
-            actions: ['bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link']
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-select-container')) {
+                searchResults.style.display = 'none';
+            }
         });
-
-        const initialContent = document.getElementById('description_textarea').value;
-        if (editor && initialContent) {
-            editor.content.innerHTML = initialContent;
-        }
 
         document.getElementById('background_image_input').addEventListener('change', (event) => {
             const fileNameSpan = document.getElementById('background_image_name');
-            fileNameSpan.textContent = event.target.files.length > 0 ? event.target.files[0].name : 'Yeni dosya seçilmedi';
+            fileNameSpan.textContent = event.target.files.length > 0 ? event.target.files[0].name : 'Dosya seçilmedi';
         });
-    });
-</script>
+    </script>
 {% endblock %}

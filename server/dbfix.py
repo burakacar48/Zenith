@@ -16,7 +16,7 @@ import uuid
 import subprocess
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'bu-cok-gizli-bir-anahtar-kimse-bilmemeli'
+app.config['SECRET_SECRET_KEY'] = 'bu-cok-gizli-bir-anahtar-kimse-bilmemeli'
 app.config['SAVE_FOLDER'] = os.path.join(os.getcwd(), 'user_saves')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.config['UPLOAD_FOLDER_COVERS'] = os.path.join(BASE_DIR, 'static/images/covers')
@@ -398,7 +398,7 @@ def list_games():
     try:
         search_query = request.args.get('q', '') 
         
-        # HATA DÜZELTME: Kategori birleştirmesini alt sorgu ile yaparak her oyunun listelenmesini garanti ediyoruz.
+        # SORGULAMA: Tüm oyunları listelemeyi garanti eden robust yapı
         query = """
             SELECT 
                 g.id, g.oyun_adi, g.aciklama, g.cover_image, g.youtube_id, g.save_yolu, g.calistirma_tipi, 
@@ -421,11 +421,12 @@ def list_games():
         
         games_raw = conn.execute(query, params).fetchall()
         
-        # Nihai kontrol: Row objelerini dict'e çevirip, ID'si olanları alıyoruz.
+        # NIHAI GÜVENLİK KONTROLÜ: Row objesini dict'e çevirip ID'si geçerli olanları alıyoruz.
         games_filtered = []
         for g_row in games_raw:
              g_dict = dict(g_row)
-             if g_dict['id'] is not None:
+             # ID'si NULL veya 0 olmayan kayıtları listeye ekle
+             if g_dict.get('id') is not None and g_dict.get('id') != 0:
                  games_filtered.append(g_dict)
 
         return render_template('manage_games.html', games=games_filtered, search_query=search_query)
@@ -522,7 +523,8 @@ start "" "%EXE_YOLU%" %EXE_ARGS%
             if category_ids:
                 # String ID'leri integer'a çevirip set ile benzersiz yap
                 unique_category_ids = {int(cat_id) for cat_id in category_ids}
-                conn.executemany('INSERT INTO game_categories (game_id, category_id) VALUES (?, ?)', [(new_game_id, cat_id) for cat_id in unique_category_ids])
+                # IntegrityError'ı kalıcı olarak çözmek için INSERT OR IGNORE kullan
+                conn.executemany('INSERT OR IGNORE INTO game_categories (game_id, category_id) VALUES (?, ?)', [(new_game_id, cat_id) for cat_id in unique_category_ids])
             
             if 'gallery_images' in request.files:
                 folder_name = get_gallery_folder_name(oyun_adi)
@@ -639,7 +641,8 @@ start "" "%EXE_YOLU%" %EXE_ARGS%
             # HATA DÜZELTME: category_ids listesindeki tekrar eden ID'leri kaldır ve int'e çevir
             if category_ids:
                 unique_category_ids = {int(cat_id) for cat_id in category_ids} # Set comprehension ile benzersiz ID'leri topla
-                conn.executemany('INSERT INTO game_categories (game_id, category_id) VALUES (?, ?)', [(game_id, cat_id) for cat_id in unique_category_ids])
+                # IntegrityError'ı kalıcı olarak çözmek için INSERT OR IGNORE kullan
+                conn.executemany('INSERT OR IGNORE INTO game_categories (game_id, category_id) VALUES (?, ?)', [(game_id, cat_id) for cat_id in unique_category_ids])
             # HATA DÜZELTME SONU
                     
             conn.commit()

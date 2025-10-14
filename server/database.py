@@ -106,9 +106,6 @@ def init_db():
             cursor.execute('ALTER TABLE slider ADD COLUMN is_active INTEGER DEFAULT 1')
             cursor.execute('ALTER TABLE slider ADD COLUMN display_order INTEGER DEFAULT 0')
         except: pass
-        try:
-            cursor.execute('ALTER TABLE games ADD COLUMN aktif INTEGER NOT NULL DEFAULT 1')
-        except: pass
 
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_ratings (
