@@ -1,0 +1,39 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Slider Yönetimi{% endblock %}
+
+{% block content %}
+<header class="content-header">
+    <h2>Slider Yönetimi</h2>
+    <a href="{{ url_for('add_slider') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Yeni Slider Ekle</a>
+</header>
+<div class="widget">
+    <ul class="slider-list">
+        {% for slider in sliders %}
+        <li class="slider-item" data-id="{{ slider.id }}">
+            <span class="slider-title" style="color: var(--color-text-muted);">#{{ slider.display_order }}</span>
+            <div class="slider-preview">
+                <img src="{{ url_for('static', filename='images/slider/' + slider.background_image) if slider.background_image else 'https://via.placeholder.com/150x70/252831/6c757d?text=Resim+Yok' }}" alt="{{ slider.title }}">
+            </div>
+            <span class="slider-title">{{ slider.title }}</span>
+            <span class="status-toggle {% if slider.is_active %}active{% else %}passive{% endif %}">
+                {% if slider.is_active %}Aktif{% else %}Pasif{% endif %}
+            </span>
+            <div class="actions">
+                <a href="{{ url_for('edit_slider', slider_id=slider.id) }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pencil"></i> Düzenle</a>
+                <form action="{{ url_for('delete_slider', slider_id=slider.id) }}" method="POST" onsubmit="return confirm('Bu slider\'ı silmek istediğinize emin misiniz?');">
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                </form>
+            </div>
+        </li>
+        {% else %}
+        <li class="slider-item" style="grid-template-columns: 1fr; text-align: center; background-color: var(--color-surface); padding: 20px;">
+            Henüz slider eklenmemiş.
+        </li>
+        {% endfor %}
+    </ul>
+    <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 15px; text-align: center;">
+        Not: Slider'ların ana sayfadaki gösterim sırası, "Düzenle" sayfasındaki "Gösterim Sırası" alanına göre belirlenir. Düşük numaralar önce gösterilir.
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Gösterge Paneli - Yönetim Paneli{% endblock %}
+
+{% block content %}
+<header class="content-header">
+    <h2>Gösterge Paneli</h2>
+    <a href="{{ url_for('add_game') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Yeni Oyun Ekle</a>
+</header>
+
+<div class="dashboard-layout">
+    <div class="widget">
+        <div class="widget-header"><h3 class="widget-title">Genel Bakış</h3></div>
+        <div class="overview-grid">
+            <div class="overview-item">
+                <i class="fa-solid fa-gamepad overview-icon"></i>
+                <div class="overview-info"><div class="value">{{ stats.total_games | default('0') }}</div><div class="label">Toplam Oyun</div></div>
+            </div>
+             <div class="overview-item">
+                <i class="fa-solid fa-toggle-on overview-icon"></i>
+                <div class="overview-info"><div class="value">{{ stats.active_games | default('0') }}</div><div class="label">Aktif Oyun</div></div>
+            </div>
+             <div class="overview-item">
+                <i class="fa-solid fa-tags overview-icon"></i>
+                <div class="overview-info"><div class="value">{{ stats.total_categories | default('0') }}</div><div class="label">Kategori</div></div>
+            </div>
+             <div class="overview-item">
+                <i class="fa-solid fa-users overview-icon"></i>
+                <div class="overview-info"><div class="value">{{ stats.total_users }}</div><div class="label">Toplam Üye</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="widget game-list">
+        <div class="widget-header"><h3 class="widget-title">Son Eklenen 5 Oyun</h3></div>
+        <ul>
+            <li class="game-list-header"><span></span><span>Oyun</span><span>Kategoriler</span><span>Durum</span><span></span></li>
+            {% if recent_games %}
+            {% for game in recent_games %}
+            <li class="game-list-item">
+                <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) if game.cover_image else 'https://via.placeholder.com/40x50' }}" class="game-cover" alt="{{ game.oyun_adi }}">
+                <span class="game-title">{{ game.oyun_adi }}</span>
+                <span class="game-category">{{ game.kategoriler | join(', ') if game.kategoriler else 'Kategorisiz' }}</span>
+                <span>
+                    {% if game.aktif == 1 %}
+                        <span class="status-chip active">Aktif</span>
+                    {% else %}
+                        <span class="status-chip passive">Pasif</span>
+                    {% endif %}
+                </span>
+                <span class="actions"><a href="{{ url_for('edit_game', game_id=game.id) }}" class="btn btn-secondary btn-sm">Düzenle</a></span>
+            </li>
+            {% endfor %}
+            {% else %}
+            <li class="game-list-item" style="grid-template-columns: 1fr; text-align: center; background-color: var(--color-surface); padding: 20px;">Henüz oyun eklenmemiş.</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="widget">
+         <div class="widget-header"><h3 class="widget-title">Sistem Durumu</h3></div>
+         <ul class="stats-list">
+             <li class="stats-list-item"><i class="fa-solid fa-microchip stat-icon"></i><span class="stat-label">Sürüm</span><span class="stat-value">v1.2.0</span></li>
+             <li class="stats-list-item" title="Kullanılan: {{ disk_usage.used }} / Toplam: {{ disk_usage.total }}">
+                 <i class="fa-solid fa-hard-drive stat-icon"></i>
+                 <div style="flex-grow: 1;">
+                    <span class="stat-label">Disk Alanı</span>
+                    <div class="progress-bar"><div class="progress-bar-fill" style="width: {{ disk_usage.percent | default(0) }}%;"></div></div>
+                 </div>
+                 <span class="stat-value">{{ disk_usage.percent | default(0) }}%</span>
+             </li>
+         </ul>
+    </div>
+</div>
+{% endblock %}

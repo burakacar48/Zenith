@@ -1,0 +1,156 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Yeni Slider Ekle{% endblock %}
+
+{% block content %}
+<header class="content-header">
+    <h2>Yeni Slider Ekle</h2>
+    <a href="{{ url_for('manage_sliders') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Geri Dön</a>
+</header>
+
+<div class="widget">
+    <form method="POST" enctype="multipart/form-data">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="game_id">Öne Çıkarılacak Oyun (İsteğe Bağlı):</label>
+                <select name="game_id" id="game_id" class="form-control">
+                    <option value="">-- Oyun Seç --</option>
+                    {% for game in games %}
+                    <option value="{{ game.id }}">{{ game.oyun_adi }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="title">Başlık:</label>
+                <input type="text" name="title" id="title" required class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="badge_text">Rozet Metni:</label>
+                <div class="badge-selector">
+                    <label>
+                        <input type="radio" name="badge_text" value="🔥 POPÜLER" checked>
+                        <span class="badge-option">🔥 POPÜLER</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="badge_text" value="✨ YENİ OYUN">
+                        <span class="badge-option">✨ YENİ OYUN</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="description">Açıklama:</label>
+                <textarea name="description" id="description_textarea" style="display:none;"></textarea>
+                <div id="description-editor" class="pell"></div>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="background_image">Arkaplan Resmi (Önerilen: 1920x1080):</label>
+                <div class="custom-file-input-wrapper">
+                    <input type="file" name="background_image" id="background_image_input" class="file-input" accept="image/jpeg, image/png, image/webp" required>
+                    <label for="background_image_input" class="btn btn-secondary"><i class="fa-solid fa-upload"></i> Dosya Seç...</label>
+                    <span class="file-name" id="background_image_name">Dosya seçilmedi</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="display_order">Gösterim Sırası:</label>
+                <input type="number" name="display_order" id="display_order" value="0" class="form-control">
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px; padding-top: 25px;">
+                <input type="checkbox" name="is_active" id="is_active" checked style="width: 20px; height: 20px; accent-color: var(--color-accent-red);">
+                <label for="is_active" style="margin: 0; font-weight: normal;">Aktif Mi?</label>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--color-border); margin-top: 24px; padding-top: 24px; text-align: right;">
+            <button type="submit" class="btn btn-primary" onclick="syncEditorContent()">
+                <i class="fas fa-plus"></i>
+                Slider Ekle
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Gerekli Kütüphaneler -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pell.min.css') }}">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{{ url_for('static', filename='js/pell.min.js') }}"></script>
+
+<style>
+    /* Select2 Tema Ayarları */
+    .select2-container--default .select2-selection--single { background-color: var(--color-background-sidebar); border: 1px solid var(--color-border); height: 45px; border-radius: var(--border-radius-md); }
+    .select2-container--default .select2-selection--single .select2-selection__rendered { color: var(--color-text-primary); line-height: 43px; padding-left: 16px; }
+    .select2-container--default .select2-selection--single .select2-selection__arrow { height: 43px; }
+    .select2-dropdown { background-color: var(--color-surface); border: 1px solid var(--color-border); }
+    .select2-container--default .select2-search--dropdown .select2-search__field { background-color: var(--color-background-sidebar); border: 1px solid var(--color-border); color: var(--color-text-primary); }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] { background-color: var(--color-accent-red); }
+    /* Pell Editor Tema Ayarları */
+    .select2-container--default .select2-results__option {
+        color: var(--color-text-secondary);
+    }
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: #3b404d;
+    }
+    .pell { background-color: var(--color-background-sidebar); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); color: var(--color-text-primary); }
+    .pell-content { height: 150px; padding: 10px; }
+    .pell-actionbar { background-color: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+    .pell-button-selected { background-color: var(--color-accent-red); }
+    /* Rozet Seçici Stilleri */
+    .badge-selector { display: flex; gap: 10px; margin-top: 5px; }
+    .badge-selector input[type="radio"] { display: none; }
+    .badge-selector .badge-option {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: var(--color-background-sidebar);
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+    .badge-selector input[type="radio"]:checked + .badge-option { background: var(--color-accent-red-gradient); color: #fff; border-color: transparent; box-shadow: 0 4px 15px -5px var(--color-accent-red); }
+    /* Özel Dosya Girişi Stilleri */
+    .custom-file-input-wrapper { display: flex; align-items: center; gap: 15px; }
+    .file-input { display: none; }
+    .file-name {
+        color: var(--color-text-secondary);
+        font-size: 14px;
+        font-style: italic;
+    }
+</style>
+
+<script>
+    let editor;
+    function syncEditorContent() {
+        const descriptionTextarea = document.getElementById('description_textarea');
+        if (editor && descriptionTextarea) {
+            descriptionTextarea.value = editor.content.innerHTML;
+        }
+    }
+
+    $(document).ready(function() {
+        $('#game_id').select2({
+            placeholder: "-- Oyun ara veya seç --",
+            allowClear: true,
+        });
+
+        editor = window.pell.init({
+            element: document.getElementById('description-editor'),
+            defaultParagraphSeparator: 'p',
+            styleWithCSS: false,
+            actions: ['bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link']
+        });
+
+        document.getElementById('background_image_input').addEventListener('change', (event) => {
+            const fileNameSpan = document.getElementById('background_image_name');
+            fileNameSpan.textContent = event.target.files.length > 0 ? event.target.files[0].name : 'Dosya seçilmedi';
+        });
+    });
+</script>
+{% endblock %}

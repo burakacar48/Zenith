@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Yönetim Paneli{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_styles.css') }}">
+</head>
+<body>
+
+<div class="admin-panel">
+    <aside class="sidebar">
+        <header class="sidebar-header">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/PanelLogo.png') }}" alt="Oyun Paneli Logo" class="panel-logo">
+                <p class="slogan">Güçlü Bir Yönetim</p>
+            </div>
+        </header>
+        <nav class="sidebar-nav">
+            <p class="nav-title">Menü</p>
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-gauge-high"></i> <span>Gösterge Paneli</span></a></li>
+                <li><a href="{{ url_for('manage_sliders') }}" class="{% if 'slider' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-images"></i> <span>Slider Yönetimi</span></a></li>
+            </ul>
+
+            <p class="nav-title">Oyun Yönetimi</p>
+            <ul>
+                {% set game_list_endpoints = ['list_games', 'edit_game', 'delete_game'] %}
+                <li><a href="{{ url_for('list_games') }}" class="{% if request.endpoint in game_list_endpoints %}active{% endif %}"><i class="fa-solid fa-list-check"></i> <span>Oyun Listesi</span></a></li>
+                <li><a href="{{ url_for('add_game') }}" class="{% if request.endpoint == 'add_game' %}active{% endif %}"><i class="fa-solid fa-plus-circle"></i> <span>Oyun Ekle</span></a></li>
+                <li><a href="{{ url_for('download_games') }}" class="{% if request.endpoint == 'download_games' %}active{% endif %}"><i class="fa-solid fa-download"></i> <span>Oyun İndir</span></a></li>
+                <li><a href="{{ url_for('manage_categories') }}" class="{% if request.endpoint == 'manage_categories' or request.endpoint == 'delete_category' %}active{% endif %}"><i class="fa-solid fa-tags"></i> <span>Kategoriler</span></a></li>
+                <li><a href="{{ url_for('manage_ratings') }}" class="{% if request.endpoint == 'manage_ratings' or request.endpoint == 'reset_all_ratings' %}active{% endif %}"><i class="fa-solid fa-trophy"></i> <span>Puan Yönetimi</span></a></li>
+                <li><a href="{{ url_for('manage_statistics') }}" class="{% if request.endpoint == 'manage_statistics' %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i> <span>İstatistikler</span></a></li>
+            </ul>
+
+            <p class="nav-title">Kullanıcılar</p>
+            <ul>
+                {% set user_management_endpoints = ['manage_users', 'edit_user', 'delete_user'] %}
+                <li><a href="{{ url_for('manage_users') }}" class="{% if request.endpoint in user_management_endpoints %}active{% endif %}"><i class="fa-solid fa-users"></i> <span>Üye Yönetimi</span></a></li>
+            </ul>
+            
+            <p class="nav-title">Sistem</p>
+            <ul>
+                <li><a href="{{ url_for('general_settings') }}" class="{% if request.endpoint == 'general_settings' %}active{% endif %}"><i class="fa-solid fa-sliders"></i> <span>Genel Ayarlar</span></a></li>
+                <li><a href="{{ url_for('social_media_settings') }}" class="{% if request.endpoint == 'social_media_settings' %}active{% endif %}"><i class="fa-solid fa-share-alt"></i> <span>Sosyal Medya</span></a></li>
+                <li><a href="{{ url_for('license_management') }}" class="{% if request.endpoint == 'license_management' %}active{% endif %}"><i class="fa-solid fa-shield-halved"></i> <span>Lisans Yönetimi</span></a></li>
+            </ul>
+        </nav>
+        <footer class="sidebar-footer">
+            <div class="user-profile">
+                <img src="https://i.pravatar.cc/40?img=12" alt="Avatar" class="avatar">
+                <div class="user-info">
+                    <span class="user-name">Admin</span>
+                    <span class="user-role">Yönetici</span>
+                </div>
+                <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-right-from-bracket settings-icon"></i></a>
+            </div>
+        </footer>
+    </aside>
+    <main class="main-content">
+        <div class="content-scroll-area">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

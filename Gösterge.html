@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetim Paneli - Gösterge Paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --color-background-main: #1e2027;
+            --color-background-sidebar: #16181d;
+            --color-surface: #252831;
+            --color-border: #3b404d;
+            --color-text-primary: #f0f0f0;
+            --color-text-secondary: #a0a0b0;
+            --color-text-muted: #6c757d;
+            --color-accent-red: #E53935;
+            --color-accent-red-hover: #F44336;
+            --color-accent-red-gradient: linear-gradient(90deg, var(--color-accent-red), var(--color-accent-red-hover));
+            --color-success: #28a745;
+            --font-family-base: 'Poppins', sans-serif;
+            --border-radius-lg: 12px;
+            --border-radius-md: 8px;
+            --padding-base: 24px;
+            --sidebar-width: 280px;
+        }
+
+        /* Temel Stiller */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family-base); background-color: var(--color-background-main); color: var(--color-text-primary); line-height: 1.6; }
+        a { text-decoration: none; color: var(--color-accent-red); }
+
+        .admin-panel { display: grid; grid-template-columns: var(--sidebar-width) 1fr; height: 100vh; overflow: hidden; }
+        .sidebar { background-color: var(--color-background-sidebar); border-right: 1px solid var(--color-border); display: flex; flex-direction: column; padding: 20px; }
+        .sidebar-header { display: flex; align-items: center; gap: 16px; padding: 10px 12px; margin-bottom: 24px; }
+        .logo-icon { font-size: 32px; color: var(--color-accent-red); text-shadow: 0 0 15px rgba(229, 57, 53, 0.5); }
+        .sidebar-header h1 { font-size: 22px; font-weight: 700; }
+        .sidebar-nav { flex-grow: 1; overflow-y: auto; }
+        .sidebar-nav ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .sidebar-nav .nav-title { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--color-text-muted); letter-spacing: 1.5px; margin-top: 24px; margin-bottom: 12px; padding: 0 16px; }
+        .sidebar-nav ul li a { text-decoration: none; display: flex; align-items: center; gap: 16px; padding: 14px 20px; font-size: 15px; font-weight: 500; color: var(--color-text-secondary); border-radius: var(--border-radius-md); transition: all 0.2s ease; }
+        .sidebar-nav ul li a i { font-size: 18px; width: 22px; text-align: center; }
+        .sidebar-nav ul li a:not(.active):hover { background-color: var(--color-surface); color: var(--color-text-primary); }
+        .sidebar-nav ul li a.active { background: var(--color-accent-red-gradient); color: #fff; font-weight: 600; box-shadow: 0 8px 20px -6px rgba(229, 57, 53, 0.5); }
+        .sidebar-footer { margin-top: auto; padding-top: 12px; flex-shrink: 0; }
+        .user-profile { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: var(--border-radius-md); transition: background-color 0.3s; }
+        .user-profile:hover { background-color: var(--color-surface); }
+        .user-profile .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .user-profile .user-info { flex-grow: 1; }
+        .user-profile .user-name { font-size: 14px; font-weight: 600; }
+        .user-profile .user-role { font-size: 12px; color: var(--color-text-secondary); }
+        .user-profile .settings-icon { font-size: 16px; color: var(--color-text-secondary); cursor: pointer; }
+        
+        .main-content { display: flex; flex-direction: column; overflow: hidden; padding: var(--padding-base); }
+        .content-scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 12px; }
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--padding-base); flex-shrink: 0;}
+        .content-header h2 { font-size: 32px; font-weight: 700; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: var(--border-radius-md); cursor: pointer; border: 1px solid transparent; }
+        .btn-primary { background: var(--color-accent-red-gradient); color: #fff; border: none; box-shadow: 0 4px 15px -5px var(--color-accent-red); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px -5px var(--color-accent-red); }
+        
+        .widget { background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius-lg); padding: var(--padding-base); }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .widget-title { font-size: 18px; font-weight: 600; }
+
+        /* YENİ GÖSTERGE PANELİ YAPISI */
+        .dashboard-layout { display: flex; flex-direction: column; gap: var(--padding-base); }
+
+        /* Son Eklenen Oyunlar Listesi */
+        .game-list ul { list-style: none; display: flex; flex-direction: column; gap: 1px; background-color: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); overflow: hidden; }
+        .game-list-header, .game-list-item { display: grid; grid-template-columns: 60px 2fr 1.5fr 1fr 1fr; align-items: center; gap: 16px; padding: 12px 16px; background-color: var(--color-background-sidebar); }
+        .game-list-header { background-color: var(--color-surface); font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }
+        .game-cover { width: 40px; height: 50px; object-fit: cover; border-radius: 4px; }
+        .game-title { font-weight: 600; }
+        .game-category, .status-chip { font-size: 13px; color: var(--color-text-secondary); }
+        .status-chip { padding: 4px 10px; border-radius: 20px; font-weight: 500; text-align: center; }
+        .status-chip.active { background-color: rgba(40, 167, 69, 0.1); color: var(--color-success); }
+        .status-chip.passive { background-color: rgba(108, 117, 125, 0.1); color: var(--color-text-muted); }
+        .actions { text-align: right; }
+        .btn-secondary { background-color: var(--color-surface); color: var(--color-text-primary); border-color: var(--color-border); }
+        .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+        /* Genel Bakış Widget'ı */
+        .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .overview-item { display: flex; align-items: center; gap: 16px; }
+        .overview-icon { font-size: 24px; color: var(--color-text-secondary); width: 40px; text-align: center; }
+        .overview-info .value { font-size: 24px; font-weight: 600; line-height: 1.2; }
+        .overview-info .label { font-size: 14px; color: var(--color-text-secondary); }
+        
+        /* Sistem Durumu Widget'ı */
+        .stats-list { list-style: none; display: flex; flex-direction: column; gap: 20px; }
+        .stats-list-item { display: flex; align-items: center; gap: 16px; }
+        .stat-icon { font-size: 18px; color: var(--color-text-secondary); width: 20px; text-align: center; }
+        .stat-label { flex-grow: 1; font-size: 15px; color: var(--color-text-secondary); }
+        .stat-value { font-size: 18px; font-weight: 600; }
+        .progress-bar { width: 100%; height: 8px; background-color: var(--color-background-sidebar); border-radius: 8px; overflow: hidden; margin-top: 4px; }
+        .progress-bar-fill { height: 100%; background: var(--color-accent-red-gradient); border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="admin-panel">
+    <aside class="sidebar"></aside>
+    <main class="main-content">
+        <header class="content-header">
+            <h2>Gösterge Paneli</h2>
+            <a href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Yeni Oyun Ekle</a>
+        </header>
+        <div class="content-scroll-area">
+            <div class="dashboard-layout">
+                <div class="widget">
+                    <div class="widget-header"><h3 class="widget-title">Genel Bakış</h3></div>
+                    <div class="overview-grid">
+                        <div class="overview-item">
+                            <i class="fa-solid fa-gamepad overview-icon"></i>
+                            <div class="overview-info"><div class="value">1,254</div><div class="label">Toplam Oyun</div></div>
+                        </div>
+                         <div class="overview-item">
+                            <i class="fa-solid fa-toggle-on overview-icon"></i>
+                            <div class="overview-info"><div class="value">980</div><div class="label">Aktif Oyun</div></div>
+                        </div>
+                         <div class="overview-item">
+                            <i class="fa-solid fa-tags overview-icon"></i>
+                            <div class="overview-info"><div class="value">18</div><div class="label">Kategori</div></div>
+                        </div>
+                         <div class="overview-item">
+                            <i class="fa-solid fa-users overview-icon"></i>
+                            <div class="overview-info"><div class="value">4,312</div><div class="label">Toplam Üye</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget game-list">
+                    <div class="widget-header"><h3 class="widget-title">Son Eklenen 10 Oyun</h3></div>
+                    <ul>
+                        <li class="game-list-header"><span></span><span>Oyun</span><span>Kategoriler</span><span>Durum</span><span></span></li>
+                        <li class="game-list-item"><img src="https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/2902231572023a510526e0b7a421396f.png" class="game-cover"><span class="game-title">Left 4 Dead 2</span><span class="game-category">Aksiyon, Korku</span><span><span class="status-chip active">Aktif</span></span><span class="actions"><a href="#" class="btn btn-secondary btn-sm">Düzenle</a></span></li>
+                        <li class="game-list-item"><img src="https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/9922a965d1d9168b209a25959b79e39a.png" class="game-cover"><span class="game-title">Cyberpunk 2077</span><span class="game-category">RPG, Açık Dünya</span><span><span class="status-chip active">Aktif</span></span><span class="actions"><a href="#" class="btn btn-secondary btn-sm">Düzenle</a></span></li>
+                        <li class="game-list-item"><img src="https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/d94155aefb6920f66e01a4a44358b387.png" class="game-cover"><span class="game-title">Elden Ring</span><span class="game-category">RPG, Aksiyon</span><span><span class="status-chip active">Aktif</span></span><span class="actions"><a href="#" class="btn btn-secondary btn-sm">Düzenle</a></span></li>
+                        <li class="game-list-item"><img src="https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/335a44848d7907572624e52b619d9b4f.png" class="game-cover"><span class="game-title">The Witcher 3</span><span class="game-category">RPG, Fantezi</span><span><span class="status-chip passive">Pasif</span></span><span class="actions"><a href="#" class="btn btn-secondary btn-sm">Düzenle</a></span></li>
+                        <li class="game-list-item"><img src="https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/361e6417d4571d09e7019a16f5198083.png" class="game-cover"><span class="game-title">Red Dead Redemption 2</span><span class="game-category">Aksiyon, Macera</span><span><span class="status-chip active">Aktif</span></span><span class="actions"><a href="#" class="btn btn-secondary btn-sm">Düzenle</a></span></li>
+                    </ul>
+                </div>
+
+                <div class="widget">
+                     <div class="widget-header"><h3 class="widget-title">Sistem Durumu</h3></div>
+                     <ul class="stats-list">
+                         <li class="stats-list-item"><i class="fa-solid fa-microchip stat-icon"></i><span class="stat-label">Sürüm</span><span class="stat-value">v1.2.0</span></li>
+                         <li class="stats-list-item">
+                             <i class="fa-solid fa-hard-drive stat-icon"></i>
+                             <div style="flex-grow: 1;">
+                                <span class="stat-label">Disk Alanı</span>
+                                <div class="progress-bar"><div class="progress-bar-fill" style="width: 75%;"></div></div>
+                             </div>
+                             <span class="stat-value">75%</span>
+                         </li>
+                     </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.querySelector('.sidebar').innerHTML = `<header class="sidebar-header"><i class="fa-solid fa-gamepad logo-icon"></i><h1>Oyun Paneli</h1></header><nav class="sidebar-nav"><p class="nav-title">Menü</p><ul><li><a href="#" class="active"><i class="fa-solid fa-gauge-high"></i> <span>Gösterge Paneli</span></a></li><li><a href="#"><i class="fa-solid fa-list-check"></i> <span>Oyun Listesi</span></a></li><li><a href="#"><i class="fa-solid fa-plus-circle"></i> <span>Oyun Ekle</span></a></li><li><a href="#"><i class="fa-solid fa-tags"></i> <span>Kategoriler</span></a></li><li><a href="#"><i class="fa-solid fa-chart-pie"></i> <span>İstatistikler</span></a></li></ul><p class="nav-title">Sistem</p><ul><li><a href="#"><i class="fa-solid fa-users"></i> <span>Üye Yönetimi</span></a></li><li><a href="#"><i class="fa-solid fa-sliders"></i> <span>Genel Ayarlar</span></a></li><li><a href="#"><i class="fa-solid fa-shield-halved"></i> <span>Lisans Yönetimi</span></a></li></ul></nav><footer class="sidebar-footer"><div class="user-profile"><img src="https://i.pravatar.cc/40?img=12" alt="Avatar"><div class="user-info"><span class="user-name">Mehmet Yılmaz</span><span class="user-role">Yönetici</span></div><i class="fa-solid fa-right-from-bracket settings-icon"></i></div></footer>`;
+</script>
+
+</body>
+</html>

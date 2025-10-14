@@ -1,0 +1,271 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Oyunu Düzenle{% endblock %}
+
+{% block content %}
+<form method="POST" enctype="multipart/form-data" onsubmit="syncEditorContent()">
+    <header class="content-header">
+        <h2>"{{ game.oyun_adi }}" Düzenle</h2>
+    </header>
+    
+    <div class="tabs">
+        <button type="button" class="tab-button active" onclick="openTab(event, 'tab-general')">Genel & Medya</button>
+        <button type="button" class="tab-button" onclick="openTab(event, 'tab-technical')">Çalıştırma Ayarları</button>
+    </div>
+
+    <div id="tab-general" class="tab-content active">
+        <div class="content-body">
+            <section class="form-section">
+                <h3>Temel Bilgiler</h3>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="oyun_adi">Oyun Adı</label>
+                        <input type="text" id="oyun_adi" name="oyun_adi" class="form-control" value="{{ game.oyun_adi }}" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Açıklama</label>
+                        <textarea name="aciklama" id="aciklama_textarea" style="display:none;">{{ game.aciklama or '' }}</textarea>
+                        <div id="aciklama-editor" class="pell"></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Kategoriler</label>
+                        <div class="category-chip-group">
+                            {% for category in categories %}
+                            <input type="checkbox" name="category_ids" value="{{ category.id }}" id="cat-{{ category.id }}" style="display:none;" {% if category.id in game_category_ids %}checked{% endif %}>
+                            <label for="cat-{{ category.id }}" class="category-chip {% if category.id in game_category_ids %}active{% endif %}">{{ category.icon }} {{ category.name }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Oyun Dilleri</label>
+                        <div class="category-chip-group">
+                            {% set game_langs = game.oyun_dilleri.split(',') if game.oyun_dilleri else [] %}
+                            {% for lang in ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca', 'Rusça'] %}
+                            <input type="checkbox" name="oyun_dilleri" value="{{ lang }}" id="lang-{{ lang }}" style="display:none;" {% if lang in game_langs %}checked{% endif %}>
+                            <label for="lang-{{ lang }}" class="category-chip {% if lang in game_langs %}active{% endif %}">{{ lang }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="youtube_id">YouTube Fragman ID</label>
+                        <input type="text" id="youtube_id" name="youtube_id" class="form-control" value="{{ game.youtube_id or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="cikis_yili">Çıkış Yılı</label>
+                        <input type="number" id="cikis_yili" name="cikis_yili" class="form-control" value="{{ game.cikis_yili or '' }}" placeholder="Örn: 2025">
+                    </div>
+                    <div class="form-group">
+                        <label for="pegi">PEGI Derecelendirmesi</label>
+                        <select id="pegi" name="pegi" class="form-control">
+                            <option value="" {% if not game.pegi %}selected{% endif %}>Seçilmedi</option>
+                            <option value="3+" {% if game.pegi == '3+' %}selected{% endif %}>3+</option>
+                            <option value="7+" {% if game.pegi == '7+' %}selected{% endif %}>7+</option>
+                            <option value="12+" {% if game.pegi == '12+' %}selected{% endif %}>12+</option>
+                            <option value="16+" {% if game.pegi == '16+' %}selected{% endif %}>16+</option>
+                            <option value="18+" {% if game.pegi == '18+' %}selected{% endif %}>18+</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+            <section class="form-section">
+                <h3>Görsel Yönetimi</h3>
+                <div class="visual-management-grid">
+                    <div class="upload-card">
+                        <label class="upload-label">Kapak Resmi</label>
+                        <p class="upload-hint">Değiştirmek için resme tıklayın</p>
+                        <label for="cover_image" class="cover-image-uploader">
+                            <div class="overlay"><i class="fa-solid fa-upload"></i><span>Değiştir</span></div>
+                            <img id="cover_image_preview" src="{{ url_for('static', filename='images/covers/' + game.cover_image) if game.cover_image else 'https://via.placeholder.com/600x900/252831/6c757d?text=Kapak' }}" alt="Kapak Önizleme">
+                        </label>
+                        <input type="hidden" name="current_cover_image" value="{{ game.cover_image or '' }}">
+                        <input type="file" name="cover_image" id="cover_image" accept="image/*" style="display:none;">
+                    </div>
+                    <div class="upload-card">
+                        <label class="upload-label">Galeri Resimleri</label>
+                        <p class="upload-hint">Sürükle-bırak veya seçerek yükleyin</p>
+                        <div class="gallery-preview-grid" id="gallery_preview_grid">
+                            <label for="gallery_images" class="gallery-upload-trigger"><i class="fa-solid fa-plus"></i><span>Ekle</span></label>
+                            {% for img in gallery %}
+                            <div class="gallery-item existing-gallery-item">
+                                <img src="{{ url_for('static', filename='images/gallery/' + img.image_path) }}" alt="Galeri Resmi">
+                                <button type="button" class="delete-gallery-btn" data-path="{{ img.image_path }}"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="file" name="gallery_images" id="gallery_images" accept="image/*" multiple style="display:none;">
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <div id="tab-technical" class="tab-content">
+        <div class="content-body">
+            <section class="form-section">
+                <h3>Dinamik Yol (Path) Yönetimi</h3>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="exe_yol">Çalıştırma Dosyası (.EXE) Yolu</label>
+                        <div class="input-group">
+                            <span class="input-group-text">[GAME_ROOT]\</span>
+                            <input type="text" id="exe_yol" name="exe_yol" class="form-control" value="{{ game.exe_yol or '' }}" placeholder="OyunAdi\Binaries\Win64\Game.exe">
+                        </div>
+                        <p class="upload-hint" style="font-size: 12px; margin-top: 8px;">Ana disk yolu <strong>[GAME_ROOT]</strong>, panelin <a href="#">Genel Ayarlar</a> sayfasından yönetilir.</p>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Sonuç Yolu Önizlemesi</label>
+                        <p class="path-preview" id="path-preview">D:\Oyunlar\{{ game.exe_yol or '...' }}</p>
+                    </div>
+                </div>
+            </section>
+            <section class="form-section">
+                <h3>Özel Komut Dosyası (.BAT) Düzenleyici</h3>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Oyun başlamadan önce çalışacak özel komutlar</label>
+                        <div class="code-editor-wrapper">
+                            <div class="editor-header">custom_script.bat</div>
+                            <textarea name="launch_script" class="code-editor-textarea">{{ game.launch_script or '' }}</textarea>
+                        </div>
+                        <p class="upload-hint" style="font-size: 12px; margin-top: 8px;">
+                            Yukarıdaki .exe yolu boş bırakılırsa, bu script doğrudan çalıştırılır.
+                            Eğer .exe yolu doluysa, bu script çalıştırılmaz, sadece .exe başlatılır.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <footer class="page-actions-footer">
+        <div class="status-toggle-group">
+            <label for="aktif" class="form-label">Durum</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="aktif" name="aktif" {% if game.aktif %}checked{% endif %}>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="action-buttons">
+            <a href="{{ url_for('list_games') }}" class="btn btn-secondary">İptal</a>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Değişiklikleri Kaydet</button>
+        </div>
+    </footer>
+</form>
+
+<!-- Gerekli Kütüphaneler -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pell.css') }}">
+<script src="{{ url_for('static', filename='js/pell.min.js') }}"></script>
+
+<script>
+    // Chip'lerin seçili durumunu yönetmek için
+    document.querySelectorAll('.category-chip-group .category-chip').forEach(chip => {
+        chip.addEventListener('click', function(e) {
+            e.preventDefault();
+            const checkboxId = this.getAttribute('for');
+            const checkbox = document.getElementById(checkboxId);
+            checkbox.checked = !checkbox.checked;
+            this.classList.toggle('active', checkbox.checked);
+        });
+    });
+
+    function openTab(evt, tabName) {
+        let i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
+        tablinks = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    let aciklamaEditor;
+    function syncEditorContent() {
+        const descriptionTextarea = document.getElementById('aciklama_textarea');
+        if (aciklamaEditor && descriptionTextarea) {
+            descriptionTextarea.value = aciklamaEditor.content.innerHTML;
+        }
+        return true; // Formun gönderilmesine izin ver
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        aciklamaEditor = window.pell.init({
+            element: document.querySelector('.pell'),
+            defaultParagraphSeparator: 'p',
+            styleWithCSS: false,
+            actions: ['bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link'],
+        });
+        const initialContent = document.getElementById('aciklama_textarea').value;
+        if (aciklamaEditor && initialContent) {
+            aciklamaEditor.content.innerHTML = initialContent;
+        }
+
+        // Path preview
+        const exePathInput = document.getElementById('exe_yol');
+        const pathPreview = document.getElementById('path-preview');
+        exePathInput.addEventListener('input', function() {
+            pathPreview.textContent = `D:\\Oyunlar\\${this.value.replace(/\\/g, '\\')}`;
+        });
+
+        // Kapak resmi önizleme
+        const coverInput = document.getElementById('cover_image');
+        const coverPreview = document.getElementById('cover_image_preview');
+        coverInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                coverPreview.src = URL.createObjectURL(file);
+            }
+        });
+
+        // Galeri resimleri önizleme
+        const galleryInput = document.getElementById('gallery_images');
+        const galleryGrid = document.getElementById('gallery_preview_grid');
+        const uploadTrigger = galleryGrid.querySelector('.gallery-upload-trigger');
+
+        function createGalleryPreviewItem(file) {
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item new-gallery-item'; // Yeni eklenenleri ayırt etmek için
+
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            galleryItem.appendChild(img);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'delete-gallery-btn';
+            deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            deleteBtn.onclick = () => galleryItem.remove(); // Yeni eklenenler sadece DOM'dan silinir
+            galleryItem.appendChild(deleteBtn);
+
+            galleryGrid.insertBefore(galleryItem, uploadTrigger);
+        }
+
+        galleryInput.addEventListener('change', (event) => {
+            // Yeni seçilenleri ekle
+            Array.from(event.target.files).forEach(file => {
+                createGalleryPreviewItem(file);
+            });
+            event.target.value = ''; // Input'u temizle
+        });
+
+        // Mevcut galeri resimlerini silme
+        document.querySelectorAll('.delete-gallery-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const imagePath = this.dataset.path;
+                const parentItem = this.closest('.existing-gallery-item');
+                
+                // Gizli bir input oluşturup forma ekle
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'delete_gallery';
+                hiddenInput.value = imagePath;
+                this.form.appendChild(hiddenInput);
+                
+                // Görseli arayüzden kaldır
+                if (parentItem) {
+                    parentItem.remove();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
