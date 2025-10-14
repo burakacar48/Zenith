@@ -527,52 +527,94 @@ def edit_game(game_id):
     try: # Bağlantıyı güvence altına al
         if request.method == 'POST':
             form_data = request.form
-            oyun_adi, aciklama, youtube_id, save_yolu, calistirma_tipi, cikis_yili, pegi, oyun_dili = \
-                (form_data.get(k) for k in ['oyun_adi', 'aciklama', 'youtube_id', 'save_yolu', 'calistirma_tipi', 'cikis_yili', 'pegi', 'oyun_dili'])
+            # DEĞİŞKEN ATAMASI DÜZELTİLDİ
+            oyun_adi = form_data.get('oyun_adi')
+            aciklama = form_data.get('aciklama')
+            oyun_dilleri_list = request.form.getlist('oyun_dilleri')
+            oyun_dili = ','.join(oyun_dilleri_list) if oyun_dilleri_list else ''
+            launch_script = form_data.get('launch_script')
+            # HATA DÜZELTME: Eksik olan calistirma_tipi değişkeni formdan okunuyor.
+            calistirma_tipi = form_data.get('calistirma_tipi')
             category_ids = request.form.getlist('category_ids')
             
             cover_image_filename = form_data['current_cover_image']
             if 'cover_image' in request.files and request.files['cover_image'].filename:
                 cover_image_filename = convert_to_webp(request.files['cover_image'], app.config['UPLOAD_FOLDER_COVERS'])
                 
-            yuzde_yuz_save_filename = form_data['current_yuzde_yuz_save_file']
+            yuzde_yuz_save_filename = form_data.get('current_yuzde_yuz_save_file', '')
             if 'yuzde_yuz_save_file' in request.files and request.files['yuzde_yuz_save_file'].filename:
                 file = request.files['yuzde_yuz_save_file']
                 yuzde_yuz_save_filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER_100_SAVES'], yuzde_yuz_save_filename))
                 
-            folder_name = get_gallery_folder_name(oyun_adi)
-            delete_paths = request.form.getlist('delete_gallery')
-            if delete_paths:
-                for path in delete_paths:
-                    conn.execute('DELETE FROM gallery_images WHERE image_path = ? AND game_id = ?', (path, game_id))
-                    full_path = os.path.join(app.config['UPLOAD_FOLDER_GALLERY'], path)
-                    try:
+            # --- Geliştirilmiş Galeri Yönetimi ---
+            # 1. Silinecek resimleri işle (Frontend'den gelen JSON listesini kullanarak)
+            delete_paths_json = form_data.get('delete_gallery_paths')
+            if delete_paths_json:
+                try:
+                    paths_to_delete = json.loads(delete_paths_json)
+                    for path in paths_to_delete:
+                        # Veritabanından kaydı sil
+                        conn.execute('DELETE FROM gallery_images WHERE image_path = ? AND game_id = ?', (path, game_id))
+                        # Fiziksel dosyayı sil
+                        full_path = os.path.join(app.config['UPLOAD_FOLDER_GALLERY'], path)
                         if os.path.exists(full_path):
                             os.remove(full_path)
-                    except OSError as e:
-                        print(f"Galeri dosyası silinemedi: {e}")
-                    
-            if 'gallery_images' in request.files:
-                for file in request.files.getlist('gallery_images'):
-                    if file and file.filename:
-                        path = convert_to_webp(file, app.config['UPLOAD_FOLDER_GALLERY'], sub_folder=folder_name)
-                        conn.execute('INSERT INTO gallery_images (game_id, image_path) VALUES (?, ?)', (game_id, path))
+                except (json.JSONDecodeError, OSError) as e:
+                    print(f"Galeri dosyası silinirken veya JSON işlenirken hata oluştu: {e}")
+
+            # --- Yeni eklenen resimleri işle (hem gallery_images hem gallery_images[] anahtarlarını kabul et)
+            try:
+                # debug: hangi dosya alanlarının geldiğini yaz
+                print("DEBUG: request.files keys:", list(request.files.keys()))
+
+                uploaded_files = request.files.getlist('gallery_images[]')
+
+                if uploaded_files:
+                    # Yeni resimler için klasör adını güncel oyun adından al
+                    new_folder_name = get_gallery_folder_name(oyun_adi)
+                    for file in uploaded_files:
+                        if file and getattr(file, 'filename', ''):
+                            print(f"DEBUG: Saving gallery file for game {game_id}: {file.filename}")
+                            path = convert_to_webp(file, app.config['UPLOAD_FOLDER_GALLERY'], sub_folder=new_folder_name)
+                            if path:
+                                conn.execute('INSERT INTO gallery_images (game_id, image_path) VALUES (?, ?)', (game_id, path))
+            except Exception as e:
+                print(f"Galeri yükleme sırasında hata oluştu: {e}")
+            # --- Galeri Yönetimi Sonu ---
             
             if calistirma_tipi == 'exe':
-                calistirma_verisi = json.dumps({'yol': form_data.get('exe_yol'), 'argumanlar': form_data.get('exe_argumanlar', '')})
+                calistirma_verisi = json.dumps({'yol': form_data.get('exe_yol', ''), 'argumanlar': form_data.get('exe_argumanlar', '')})
             else: # steam
-                calistirma_verisi = json.dumps({'app_id': form_data.get('steam_app_id')})
+                calistirma_verisi = json.dumps({'app_id': form_data.get('steam_app_id', '')})
                 
-            sql = ''' UPDATE games SET oyun_adi=?, aciklama=?, cover_image=?, youtube_id=?, save_yolu=?, calistirma_tipi=?, calistirma_verisi=?, cikis_yili=?, pegi=?, oyun_dili=?, yuzde_yuz_save_path=?, aktif=? WHERE id=? '''
-            conn.execute(sql, (oyun_adi, aciklama, cover_image_filename, youtube_id, save_yolu, calistirma_tipi, calistirma_verisi, cikis_yili, pegi, oyun_dili, yuzde_yuz_save_filename, 1 if 'aktif' in form_data else 0, game_id))
+            # launch_script'i de güncelleyen sorgu
+            sql = ''' UPDATE games SET 
+                        oyun_adi=?, aciklama=?, cover_image=?, youtube_id=?, 
+                        cikis_yili=?, pegi=?, oyun_dili=?, 
+                        calistirma_verisi=?, launch_script=?, yuzde_yuz_save_path=?, aktif=? 
+                      WHERE id=? '''
+            conn.execute(sql, (
+                oyun_adi, aciklama, cover_image_filename, form_data.get('youtube_id'),
+                form_data.get('cikis_yili'), form_data.get('pegi'), oyun_dili,
+                calistirma_verisi, launch_script, yuzde_yuz_save_filename, 
+                1 if 'aktif' in form_data else 0, 
+                game_id
+            ))
             
             conn.execute('DELETE FROM game_categories WHERE game_id = ?', (game_id,))
-            # HATA DÜZELTME: category_ids listesindeki tekrar eden ID'leri kaldır ve int'e çevir
+            # KÖKTEN ÇÖZÜM: Kategori ID'lerini güvenli bir şekilde işle
             if category_ids:
-                unique_category_ids = {int(cat_id) for cat_id in category_ids} # Set comprehension ile benzersiz ID'leri topla
-                conn.executemany('INSERT INTO game_categories (game_id, category_id) VALUES (?, ?)', [(game_id, cat_id) for cat_id in unique_category_ids])
-            # HATA DÜZELTME SONU
+                unique_category_ids = set()
+                for cat_id in category_ids:
+                    try:
+                        # Formdan gelen string ID'leri integer'a çevir
+                        unique_category_ids.add(int(cat_id))
+                    except (ValueError, TypeError):
+                        # Eğer ID geçersizse (boş string vb.), hatayı görmezden gel ve devam et
+                        print(f"Geçersiz kategori ID'si atlandı: {cat_id}")
+                if unique_category_ids:
+                    conn.executemany('INSERT INTO game_categories (game_id, category_id) VALUES (?, ?)', [(game_id, cat_id) for cat_id in unique_category_ids])
                     
             conn.commit()
             return redirect(url_for('list_games'))
