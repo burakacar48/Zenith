@@ -1,55 +1,79 @@
 {% extends 'base_admin.html' %}
 
-{% block title %}Oyun Listesi{% endblock %}
+{% block title %}Oyun Yönetimi{% endblock %}
 
 {% block content %}
-    <div class="header">
-        <h1>Mevcut Oyunlar</h1>
+    <header class="header">
+        <h1>Oyun Yönetimi</h1>
         <div class="header-actions">
-            <form method="GET" action="{{ url_for('list_games') }}" class="search-bar">
+            <form method="GET" action="{{ url_for('list_games') }}" class="search-bar" style="flex-grow: 1;">
                 <input type="text" name="q" placeholder="Oyun adını yazarak ara..." value="{{ search_query or '' }}">
-                <button type="submit" class="btn btn-primary search-icon-btn">
+                <button type="submit" class="btn btn-primary search-icon-btn" style="height: 100%;">
                     <i class="fas fa-search"></i>
                 </button>
             </form>
             <a href="{{ url_for('add_game') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i>
-                Yeni Oyun Ekle
+                <i class="fas fa-plus"></i> Yeni Oyun Ekle
             </a>
         </div>
-    </div>
-    
-    <div class="games-table">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 60px;">ID</th>
-                    <th>Oyun Adı</th>
-                    <th style="width: 150px;">Kategori</th>
-                    <th style="width: 120px;">İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for game in games %}
-                <tr>
-                    <td>{{ game.id }}</td>
-                    <td class="game-name">{{ game.oyun_adi }}</td>
-                    <td>
-                        <span class="badge badge-{{ 'uncategorized' if not game.category_names else 'default' }}">
-                            {{ game.category_names or 'Kategorisiz' }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="{{ url_for('edit_game', game_id=game.id) }}" class="btn-icon btn-edit" title="Düzenle"><i class="fas fa-edit"></i></a>
-                            <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" class="actions-form">
-                                <button type="submit" class="btn-icon btn-delete" onclick="return confirm('`{{ game.oyun_adi }}` oyununu silmek istediğine emin misin?');" title="Sil"><i class="fas fa-trash"></i></button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    </header>
+
+    <div class="card full-width">
+        <div class="card-header">
+            <h2>Tüm Oyunlar ({{ games|length }})</h2>
+        </div>
+        <div class="card-body">
+            {% if games %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Oyun Adı</th>
+                        <th>Kategoriler</th>
+                        <th>Eklenme Tarihi</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for game in games %}
+                    <tr>
+                        <td>{{ game.id }}</td>
+                        <td>
+                            <div class="game-cell">
+                                <span>{{ game.oyun_adi }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if game.category_names %}
+                                {% for category in game.category_names.split(',') %}
+                                    <span class="badge badge-blue">{{ category.strip() }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="badge badge-red">Kategorisiz</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ game.created_at.split(' ')[0] if game.created_at else 'N/A' }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('edit_game', game_id=game.id) }}" class="btn-icon btn-edit"><i class="fas fa-pencil-alt"></i></a>
+                                <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" class="actions-form" onsubmit="return confirm('`{{ game.oyun_adi }}` oyununu silmek istediğine emin misin?');">
+                                    <button type="submit" class="btn-icon btn-delete"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+             <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>Aramanızla eşleşen bir oyun bulunamadı.</p>
+                <a href="{{ url_for('list_games') }}" class="btn btn-secondary" style="margin-top: 16px;">
+                    Tüm Oyunları Göster
+                </a>
+            </div>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}

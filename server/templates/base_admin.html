@@ -3,148 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Admin Paneli{% endblock %}</title>
+    <title>{% block title %}Admin Paneli{% endblock %} - Zenith</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/darcula.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/shell/shell.min.js"></script>
-    
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/pell/dist/pell.min.css">
-    <script src="https://unpkg.com/pell"></script>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_styles.css', v='1.5') }}">
-
-    <style>
-        .pell {
-            background-color: rgba(30, 30, 46, 0.8);
-            border: 2px solid rgba(220, 38, 38, 0.3);
-            border-radius: 12px;
-            box-shadow: none;
-        }
-        .pell-content {
-            background-color: rgba(30, 30, 46, 0.8);
-            color: #f1f5f9;
-            padding: 10px;
-            height: 150px;
-            border-radius: 0 0 10px 10px;
-            outline: 0;
-            overflow-y: auto;
-        }
-        .pell-actionbar {
-            background-color: rgba(20, 20, 36, 0.8);
-            border-bottom: 1px solid rgba(220, 38, 38, 0.2);
-            border-radius: 10px 10px 0 0;
-        }
-        .pell-button {
-            background-color: transparent;
-            border: none;
-            color: #cbd5e1;
-        }
-        .pell-button:hover {
-            background-color: rgba(220, 38, 38, 0.1);
-        }
-        .pell-button-selected {
-            background-color: rgba(220, 38, 38, 0.3);
-        }
-        .pell-emoji-picker {
-            position: absolute;
-            background: #1e1e2e;
-            border: 1px solid rgba(220, 38, 38, 0.3);
-            border-radius: 5px;
-            padding: 10px;
-            display: flex;
-            flex-wrap: wrap;
-            width: 280px;
-            max-height: 200px;
-            overflow-y: auto;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-        .pell-emoji {
-            cursor: pointer;
-            padding: 5px;
-            font-size: 1.3em;
-            transition: transform 0.2s;
-            color: #fff;
-        }
-        .pell-emoji:hover {
-            transform: scale(1.2);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_theme_v2.css', v='2.0') }}">
+    {% block head %}{% endblock %}
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
             <div class="logo">
-                <i class="fas fa-gamepad"></i>
-                <h2>Oyun Menüsü</h2>
+                <img src="{{ url_for('static', filename='images/PanelLogo.png') }}" alt="Panel Logosu">
+                <span class="slogan">Zenith Yönetim Paneli</span>
             </div>
 
-            <div class="menu-section">
-                <a href="{{ url_for('admin_index') }}" class="menu-item {% if request.endpoint == 'admin_index' %}active{% endif %}">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Gösterge Paneli</span>
-                </a>
-                <a href="{{ url_for('manage_sliders') }}" class="menu-item {% if 'slider' in request.endpoint %}active{% endif %}">
-                    <i class="fas fa-images"></i>
-                    <span>Slider Yönetimi</span>
-                </a>
-            </div>
+            <nav class="menu">
+                <div class="menu-section">
+                    <a href="{{ url_for('admin_index') }}" class="menu-item {% if request.endpoint == 'admin_index' %}active{% endif %}">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Gösterge Paneli</span>
+                    </a>
+                    <a href="{{ url_for('manage_sliders') }}" class="menu-item {% if 'slider' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-images"></i>
+                        <span>Slider Yönetimi</span>
+                    </a>
+                </div>
 
-            <div class="menu-section">
-                <div class="menu-title">Oyun Yönetimi</div>
-                {% set game_list_endpoints = ['list_games', 'edit_game', 'delete_game'] %}
-                <a href="{{ url_for('list_games') }}" class="menu-item {% if request.endpoint in game_list_endpoints %}active{% endif %}">
-                    <i class="fas fa-list"></i>
-                    <span>Oyun Listesi</span>
-                </a>
-                <a href="{{ url_for('add_game') }}" class="menu-item {% if request.endpoint == 'add_game' %}active{% endif %}">
-                    <i class="fas fa-plus"></i>
-                    <span>Oyun Ekle</span>
-                </a>
-                <a href="{{ url_for('download_games') }}" class="menu-item {% if request.endpoint == 'download_games' %}active{% endif %}">
-                    <i class="fas fa-download"></i>
-                    <span>Oyun İndir</span>
-                </a>
-                <a href="{{ url_for('manage_categories') }}" class="menu-item {% if request.endpoint == 'manage_categories' or request.endpoint == 'delete_category' %}active{% endif %}">
-                    <i class="fas fa-folder"></i>
-                    <span>Kategoriler</span>
-                </a>
-                <a href="{{ url_for('manage_ratings') }}" class="menu-item {% if request.endpoint == 'manage_ratings' or request.endpoint == 'reset_all_ratings' %}active{% endif %}">
-                    <i class="fas fa-trophy"></i>
-                    <span>Puan Yönetimi</span>
-                </a>
-                <a href="{{ url_for('manage_statistics') }}" class="menu-item {% if request.endpoint == 'manage_statistics' %}active{% endif %}">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>İstatistikler</span>
-                </a>
-            </div>
+                <div class="menu-section">
+                    <div class="menu-title">İÇERİK YÖNETİMİ</div>
+                    {% set game_endpoints = ['list_games', 'edit_game', 'add_game'] %}
+                     <a href="{{ url_for('list_games') }}" class="menu-item {% if request.endpoint in game_endpoints %}active{% endif %}">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Oyun Yönetimi</span>
+                    </a>
+                    <a href="{{ url_for('manage_categories') }}" class="menu-item {% if 'category' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-folder-tree"></i>
+                        <span>Kategoriler</span>
+                    </a>
+                </div>
 
-            <div class="menu-section">
-                <div class="menu-title">Kullanıcılar</div>
-                {% set user_management_endpoints = ['manage_users', 'edit_user', 'delete_user'] %}
-                <a href="{{ url_for('manage_users') }}" class="menu-item {% if request.endpoint in user_management_endpoints %}active{% endif %}">
-                    <i class="fas fa-users"></i>
-                    <span>Üye Bilgileri</span>
-                </a>
-            </div>
+                <div class="menu-section">
+                    <div class="menu-title">İSTATİSTİKLER</div>
+                     <a href="{{ url_for('manage_ratings') }}" class="menu-item {% if 'rating' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-trophy"></i>
+                        <span>Puan Yönetimi</span>
+                    </a>
+                    <a href="{{ url_for('manage_statistics') }}" class="menu-item {% if 'statistic' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Oyun İstatistikleri</span>
+                    </a>
+                </div>
 
-            <div class="menu-section">
-                <div class="menu-title">Sistem</div>
-                <a href="{{ url_for('general_settings') }}" class="menu-item {% if request.endpoint == 'general_settings' %}active{% endif %}">
-                    <i class="fas fa-cog"></i>
-                    <span>Genel Ayarlar</span>
-                </a>
-                <a href="{{ url_for('social_media_settings') }}" class="menu-item {% if request.endpoint == 'social_media_settings' %}active{% endif %}">
-                    <i class="fas fa-share-alt"></i>
-                    <span>Sosyal Medya</span>
-                </a>
-                <a href="{{ url_for('license_management') }}" class="menu-item {% if request.endpoint == 'license_management' %}active{% endif %}">
-                    <i class="fas fa-key"></i>
-                    <span>Lisans Yönetimi</span>
-                </a>
+                <div class="menu-section">
+                    <div class="menu-title">SİSTEM</div>
+                    {% set user_endpoints = ['manage_users', 'edit_user'] %}
+                    <a href="{{ url_for('manage_users') }}" class="menu-item {% if request.endpoint in user_endpoints %}active{% endif %}">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Kullanıcılar</span>
+                    </a>
+                    {% set settings_endpoints = ['general_settings', 'social_media_settings'] %}
+                    <a href="{{ url_for('general_settings') }}" class="menu-item {% if request.endpoint in settings_endpoints %}active{% endif %}">
+                        <i class="fas fa-cogs"></i>
+                        <span>Ayarlar</span>
+                    </a>
+                    <a href="{{ url_for('license_management') }}" class="menu-item {% if request.endpoint == 'license_management' %}active{% endif %}">
+                        <i class="fas fa-key"></i>
+                        <span>Lisans Yönetimi</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <p>&copy; 2024 Zenith Panel</p>
             </div>
         </aside>
 
@@ -153,93 +85,6 @@
         </main>
     </div>
     
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        var editorEl = document.getElementById('aciklama-editor');
-        if (editorEl) {
-          const emojis = [
-            '💥','🔥','⚡','🚀','✨','💫','🎯','🏆','🎮','⭐','🏁','💎','🌟','💪','🧠','💡','📈','🌍','🎉','🤣','😂','🎲','🎯','🧩','🎈','🕹️','🥳','🤩','👾','🎧','🎵','🎶','🪩','🎤','🎮','🧨','💣','💀','☠️','🪖','🛡️','⚔️','🔫','🔪','🏹','🏇','🚁','🗡️','🩸','🏴‍☠️','🚨','🧠','🗺️','🏗️','🏰','🏭','🛰️','🚜','📊','🪙','💼','⚙️','🧩','⛏️','📋','💡','🏔️','🌋','🏝️','🏞️','🌄','🌌','🛶','🦜','🐉','🪂','🗿','🌳','🗻','🔦','🎒','🕯️','📜','🌕','🌠','🎯','💨','🔥','🚦','⛽','🚗','🏎️','🏍️','🚓','🏆','🚧','🧤','🤖','🧠','🔭','🌌','🪐','👽','💫','✨','💡','⚙️','🔋','📡','🛰️','🧪','🔮','🧬','🕹️','💻','📱','🧰','🔩','⚽','🏀','🏈','⚾','🎾','🥇','🥈','🥉','🏋️‍♂️','🏃‍♂️','🚴‍♀️','🥊','🎯','💪','🏁','🏅','🧙‍♂️','‍♀️','🧛‍♂️','🐉','🦄','🗡️','🛡️','🔮','📜','🪄','⚗️','🏰','🌙','🌟','🧞‍♂️','🧜‍♀️','👑','💎','🪶','🧬','🦅','⚔️','👁️','🕷️','🕸️','🩸','🕯️','🏚️','😱','😨','🧛‍♂️','🧟‍♀️','🔦','🔮','🌑','⚰️','🪦','⛓️','📖','🪞','🫣'
-          ];
-          
-          let savedRange;
-
-          const editorInstance = pell.init({
-            element: editorEl,
-            onChange: html => {
-              document.getElementById('aciklama_textarea').value = html;
-            },
-            defaultParagraphSeparator: 'p',
-            styleWithCSS: false,
-            actions: [
-              'bold', 'italic', 'underline', 'strikethrough', 
-              { name: 'emoji', icon: '😊', title: 'Emoji Ekle' },
-              'olist', 'ulist', 'link'
-            ]
-          });
-
-          const saveSelection = () => {
-            if (window.getSelection().rangeCount > 0) {
-              savedRange = window.getSelection().getRangeAt(0);
-            }
-          };
-          editorInstance.content.addEventListener('keyup', saveSelection);
-          editorInstance.content.addEventListener('mouseup', saveSelection);
-          editorInstance.content.addEventListener('touchend', saveSelection);
-          editorInstance.content.addEventListener('blur', saveSelection);
-
-          editorInstance.content.innerHTML = document.getElementById('aciklama_textarea').value;
-          
-          const emojiButton = editorEl.querySelector('.pell-button[title="Emoji Ekle"]');
-          if (emojiButton) {
-            emojiButton.addEventListener('click', (event) => {
-              event.stopPropagation();
-              const existingPicker = document.querySelector('.pell-emoji-picker');
-              if (existingPicker) {
-                existingPicker.remove();
-                return;
-              }
-
-              const picker = document.createElement('div');
-              picker.className = 'pell-emoji-picker';
-              
-              emojis.forEach(emoji => {
-                const span = document.createElement('span');
-                span.className = 'pell-emoji';
-                span.textContent = emoji;
-                
-                span.addEventListener('mousedown', (e) => {
-                  e.preventDefault();
-                  
-                  editorInstance.content.focus();
-                  if (savedRange) {
-                    const selection = window.getSelection();
-                    selection.removeAllRanges();
-                    selection.addRange(savedRange);
-                  }
-                  
-                  document.execCommand('insertText', false, emoji);
-                  picker.remove();
-                });
-                picker.appendChild(span);
-              });
-
-              const rect = emojiButton.getBoundingClientRect();
-              picker.style.top = `${rect.bottom + window.scrollY + 5}px`;
-              picker.style.left = `${rect.left + window.scrollX}px`;
-              
-              document.body.appendChild(picker);
-
-              const closePicker = (e) => {
-                if (!picker.contains(e.target) && !emojiButton.contains(e.target)) {
-                  picker.remove();
-                  document.removeEventListener('click', closePicker);
-                }
-              };
-              document.addEventListener('click', closePicker);
-            });
-          }
-        }
-      });
-    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

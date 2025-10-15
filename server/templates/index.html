@@ -3,71 +3,121 @@
 {% block title %}Gösterge Paneli{% endblock %}
 
 {% block content %}
-    <div class="header">
+    <header class="header">
         <h1>Gösterge Paneli</h1>
-    </div>
+        <div class="header-actions">
+            <div class="user-profile">
+                <span>Admin</span>
+                <img src="https://i.pravatar.cc/40?u=admin" alt="Avatar">
+            </div>
+            <a href="#" class="btn btn-icon" title="Çıkış Yap"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </header>
 
     <div class="stats-grid">
-        
-        <div class="stat-card stat-games">
-            <div class="stat-icon"><i class="fas fa-gamepad"></i></div>
+        <div class="stat-card">
+            <div class="stat-icon" style="--icon-color: #e879f9;">
+                <i class="fas fa-gamepad"></i>
+            </div>
             <div class="stat-info">
                 <div class="stat-value">{{ stats.game_count }}</div>
-                <div class="stat-label">Toplam Oyun Sayısı</div>
+                <div class="stat-label">Toplam Oyun</div>
             </div>
         </div>
-        
-        <div class="stat-card stat-categories">
-            <div class="stat-icon"><i class="fas fa-folder"></i></div>
-            <div class="stat-info">
-                <div class="stat-value">{{ stats.category_count }}</div>
-                <div class="stat-label">Kategori Sayısı</div>
+        <div class="stat-card">
+            <div class="stat-icon" style="--icon-color: #38bdf8;">
+                <i class="fas fa-users"></i>
             </div>
-        </div>
-        
-        <div class="stat-card stat-users">
-            <div class="stat-icon"><i class="fas fa-users"></i></div>
             <div class="stat-info">
                 <div class="stat-value">{{ stats.user_count }}</div>
                 <div class="stat-label">Kayıtlı Kullanıcı</div>
             </div>
         </div>
-        
+        <div class="stat-card">
+            <div class="stat-icon" style="--icon-color: #34d399;">
+                <i class="fas fa-folder"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value">{{ stats.category_count }}</div>
+                <div class="stat-label">Kategori</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="--icon-color: #fbbf24;">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value">{{ total_clicks or 0 }}</div>
+                <div class="stat-label">Toplam Tıklanma</div>
+            </div>
+        </div>
     </div>
-    
-    <div class="form-container">
-        <div class="section-title">Son Eklenen 5 Oyun</div>
-        {% if recent_games %}
-            <table class="recent-games-table">
+
+    <div class="card full-width">
+        <div class="card-header">
+            <h2>Son Eklenen Oyunlar</h2>
+            <a href="{{ url_for('add_game') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Yeni Oyun Ekle
+            </a>
+        </div>
+        <div class="card-body">
+            {% if recent_games %}
+            <table>
                 <thead>
                     <tr>
-                        <th style="width: 60px;">ID</th>
                         <th>Oyun Adı</th>
-                        <th style="width: 150px;">Kategori</th>
-                        <th style="width: 100px; text-align: center;">İşlem</th>
+                        <th>Kategoriler</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for game in recent_games %}
                     <tr>
-                        <td>{{ game.id }}</td>
-                        <td class="game-name">{{ game.oyun_adi }}</td>
                         <td>
-                            <span class="badge badge-{{ 'uncategorized' if not game.category_names else 'default' }}">
-                                {{ game.category_names or 'Kategorisiz' }}
-                            </span>
+                            <div class="game-cell">
+                                {% if game.cover_image %}
+                                <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" alt="{{ game.oyun_adi }}">
+                                {% else %}
+                                <img src="{{ url_for('static', filename='images/covers/default.webp') }}" alt="{{ game.oyun_adi }}">
+                                {% endif %}
+                                <span>{{ game.oyun_adi }}</span>
+                            </div>
                         </td>
-                        <td style="text-align: center;">
-                            <a href="{{ url_for('edit_game', game_id=game.id) }}" class="btn-icon btn-edit" title="Düzenle">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                        <td>
+                            {% if game.category_names %}
+                                {% for category in game.category_names.split(',')[:2] %}
+                                    <span class="badge badge-blue">{{ category.strip() }}</span>
+                                {% endfor %}
+                                {% if game.category_names.split(',')|length > 2 %}
+                                    <span class="badge badge-blue">+{{ game.category_names.split(',')|length - 2 }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge badge-red">Kategorisiz</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge badge-green">Aktif</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('edit_game', game_id=game.id) }}" class="btn-icon btn-edit"><i class="fas fa-pencil-alt"></i></a>
+                                <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bu oyunu silmek istediğinizden emin misiniz?');">
+                                    <button type="submit" class="btn-icon btn-delete"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        {% else %}
-            <p style="color: #94a3b8; text-align: center;">Henüz sisteme eklenmiş bir oyun bulunmamaktadır. Hemen bir oyun ekleyin!</p>
-        {% endif %}
+            {% else %}
+            <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                <i class="fas fa-gamepad" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>Henüz hiç oyun eklenmemiş.</p>
+                <a href="{{ url_for('add_game') }}" class="btn btn-primary" style="margin-top: 16px;">
+                    <i class="fas fa-plus"></i> İlk Oyunu Ekle
+                </a>
+            </div>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}

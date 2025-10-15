@@ -376,6 +376,10 @@ def download_100_save(current_user_id, game_id):
     except FileNotFoundError:
         return jsonify({'mesaj': 'Save dosyası sunucuda bulunamadı.'}), 404
 
+@app.route('/')
+def root():
+    return redirect(url_for('admin_index'))
+
 # Admin Panel Routes
 @app.route('/admin')
 @license_required
@@ -386,10 +390,11 @@ def admin_index():
         'category_count': conn.execute('SELECT COUNT(*) FROM categories').fetchone()[0],
         'user_count': conn.execute('SELECT COUNT(*) FROM users').fetchone()[0]
     }
-    query = "SELECT g.id, g.oyun_adi, GROUP_CONCAT(c.name) as category_names FROM games g LEFT JOIN game_categories gc ON g.id = gc.game_id LEFT JOIN categories c ON gc.category_id = c.id GROUP BY g.id ORDER BY g.id DESC LIMIT 5"
+    total_clicks = conn.execute('SELECT SUM(click_count) FROM games').fetchone()[0] or 0
+    query = "SELECT g.id, g.oyun_adi, g.cover_image, g.created_at, GROUP_CONCAT(c.name) as category_names FROM games g LEFT JOIN game_categories gc ON g.id = gc.game_id LEFT JOIN categories c ON gc.category_id = c.id GROUP BY g.id ORDER BY g.id DESC LIMIT 5"
     recent_games = [dict(g) for g in conn.execute(query).fetchall()]
     conn.close()
-    return render_template('index.html', stats=stats, recent_games=recent_games)
+    return render_template('index.html', stats=stats, recent_games=recent_games, total_clicks=total_clicks)
 
 @app.route('/admin/games')
 @license_required
@@ -403,7 +408,7 @@ def list_games():
             SELECT 
                 g.id, g.oyun_adi, g.aciklama, g.cover_image, g.youtube_id, g.save_yolu, g.calistirma_tipi, 
                 g.calistirma_verisi, g.cikis_yili, g.pegi, g.oyun_dili, g.launch_script, g.yuzde_yuz_save_path,
-                g.average_rating, g.rating_count, g.click_count,
+                g.average_rating, g.rating_count, g.click_count, g.created_at,
                 (
                     SELECT GROUP_CONCAT(c.name) 
                     FROM game_categories gc

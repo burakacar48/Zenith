@@ -47,7 +47,8 @@ def init_db():
             rating_count INTEGER NOT NULL DEFAULT 0,
             click_count INTEGER NOT NULL DEFAULT 0,
             launch_script TEXT,
-            yuzde_yuz_save_path TEXT
+            yuzde_yuz_save_path TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
         ''')
 
@@ -105,6 +106,9 @@ def init_db():
         try:
             cursor.execute('ALTER TABLE slider ADD COLUMN is_active INTEGER DEFAULT 1')
             cursor.execute('ALTER TABLE slider ADD COLUMN display_order INTEGER DEFAULT 0')
+        except: pass
+        try:
+            cursor.execute('ALTER TABLE games ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP')
         except: pass
 
         cursor.execute('''
