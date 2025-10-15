@@ -66,11 +66,12 @@ def set_setting(key, value):
     conn.close()
 
 def convert_to_webp(file, upload_folder, sub_folder=None):
+    upload_folder = os.path.normpath(upload_folder)
     filename = secure_filename(file.filename)
     base, ext = os.path.splitext(filename)
     webp_filename = f"{base}.webp"
     
-    if sub_folder and upload_folder == app.config['UPLOAD_FOLDER_GALLERY']:
+    if sub_folder and upload_folder == os.path.normpath(app.config['UPLOAD_FOLDER_GALLERY']):
         final_dir = os.path.join(upload_folder, sub_folder)
         if not os.path.exists(final_dir):
             os.makedirs(final_dir)

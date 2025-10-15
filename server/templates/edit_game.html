@@ -81,54 +81,79 @@
                         </div>
                     </div>
 
-                    <div id="gorsel-yonetim" class="tab-content">
-                        <div class="visual-management-grid">
+                    <div id="gorsel-yonetim" class="tab-content" style="min-height: auto !important; height: auto !important; overflow: visible !important;">
+                        <div class="gallery-manager" style="min-height: auto !important; height: auto !important; overflow: visible !important;">
                             <!-- Cover Image Section -->
-                            <div class="visual-section">
-                                <h3 class="visual-section-title">Kapak Resmi</h3>
-                                <p class="file-prompt">Tavsiye: 600x900. Dikey bir resim seçin.</p>
-                                <div class="cover-image-upload">
-                                    <div class="image-preview-container cover-preview">
-                                        {% if game.cover_image %}
-                                            <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" id="cover-image-preview">
-                                        {% else %}
-                                            <img src="https://via.placeholder.com/600x900.png?text=Kapak+Resmi" id="cover-image-preview">
-                                        {% endif %}
+                            <div class="cover-section">
+                                <div class="section-header">
+                                    <div class="section-title">
+                                        <i class="fas fa-image"></i>
+                                        <h3>Kapak Resmi</h3>
+                                        <span class="required-badge">Gerekli</span>
                                     </div>
-                                    <input type="file" name="cover_image" id="cover_image_input" class="file-input" accept="image/*">
-                                    <label for="cover_image_input" class="btn btn-secondary">
-                                        <i class="fas fa-upload"></i> Resim Yükle
-                                    </label>
-                                    <span class="file-name" id="cover_image_name">Dosya seçilmedi</span>
+                                    <div class="section-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Önerilen boyut: 400x600px (2:3 oran)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="cover-upload-area">
+                                    <div class="cover-container {% if game.cover_image %}has-image{% endif %}" id="cover-container">
+                                        <div class="cover-placeholder">
+                                            <i class="fas fa-image"></i>
+                                            <h4>Kapak Resmi Yükle</h4>
+                                            <p>Sürükle & bırak veya tıkla</p>
+                                            <div class="file-formats">JPG, PNG, WEBP (Max 5MB)</div>
+                                        </div>
+                                        
+                                        <div class="cover-preview" id="cover-preview">
+                                            <img id="cover-image" src="{{ url_for('static', filename='images/covers/' + game.cover_image) if game.cover_image else '' }}" alt="Kapak Resmi">
+                                            <div class="cover-overlay">
+                                                <button type="button" class="btn-change" onclick="document.getElementById('cover-input').click()">
+                                                    <i class="fas fa-edit"></i>
+                                                    Değiştir
+                                                </button>
+                                                <button type="button" class="btn-remove" onclick="removeCoverImage()">
+                                                    <i class="fas fa-trash"></i>
+                                                    Kaldır
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <input type="file" name="cover_image" id="cover-input" accept="image/*" style="display: none;">
+                                        <input type="hidden" name="current_cover_image" value="{{ game.cover_image }}">
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Gallery Section -->
-                            <div class="visual-section">
-                                <h3 class="visual-section-title">Galeri Resimleri</h3>
-                                <p class="file-prompt">16:9 formatında yatay resimler seçin.</p>
-                                <div class="gallery-upload">
-                                    <input type="file" name="gallery_images" id="gallery_images_input" class="file-input" accept="image/*" multiple>
-                                    <label for="gallery_images_input" class="btn btn-secondary">
-                                        <i class="fas fa-images"></i> Resim Ekle
-                                    </label>
-                                    <span class="file-name" id="gallery_images_name">Dosya seçilmedi</span>
+                            <!-- YENİ GALERİ BÖLÜMÜ - SIFIRDAN TASARIM -->
+                            <div class="new-gallery-section">
+                                <div class="gallery-header">
+                                    <h3><i class="fas fa-images"></i> Galeri Resimleri</h3>
+                                    <button type="button" class="add-image-btn" onclick="document.getElementById('gallery-input').click()">
+                                        <i class="fas fa-plus"></i> Resim Ekle
+                                    </button>
                                 </div>
-                                <div class="gallery-grid-container">
-                                    {% if gallery %}
-                                        {% for img in gallery %}
-                                        <div class="gallery-grid-item">
-                                            <img src="{{ url_for('static', filename='images/gallery/' + img.image_path) }}">
-                                            <label class="delete-gallery-item">
-                                                <input type="checkbox" name="delete_gallery" value="{{ img.image_path }}">
-                                                <i class="fas fa-trash"></i>
-                                            </label>
+
+                                <input type="file" name="gallery_images" id="gallery-input" accept="image/*" multiple style="display: none;">
+
+                                <div class="simple-gallery-grid">
+                                    {% for img in gallery %}
+                                    <div class="simple-gallery-item" onclick="toggleSelection(this, '{{ img.image_path }}')">
+                                        <img src="{{ url_for('static', filename='images/gallery/' + img.image_path) }}" alt="Galeri {{ loop.index }}">
+                                        <div class="delete-overlay">
+                                            <i class="fas fa-times"></i>
                                         </div>
-                                        {% endfor %}
-                                    {% endif %}
+                                        <input type="checkbox" name="delete_gallery" value="{{ img.image_path }}" style="display: none;">
+                                    </div>
+                                    {% endfor %}
                                 </div>
                             </div>
+
                         </div>
+
+                        <!-- Hidden inputs -->
+                        <input type="hidden" name="current_yuzde_yuz_save_file" value="{{ game.yuzde_yuz_save_path }}">
                     </div>
 
                     <div id="calistirma-ayarlari" class="tab-content">
@@ -205,6 +230,12 @@
                 <button type="button" id="save-script-editor" class="btn btn-primary">Kaydet ve Kapat</button>
             </div>
         </div>
+    <div id="selection-bar">
+        <span id="selection-count"></span>
+        <button type="button" id="delete-selected-btn" class="action-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+            Seçilenleri Sil
+        </button>
     </div>
 {% endblock %}
 
@@ -214,86 +245,364 @@
     <script src="https://unpkg.com/pell"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Tab functionality
             const tabNavItems = document.querySelectorAll('.tab-nav-item');
             const tabContents = document.querySelectorAll('.tab-content');
-
             tabNavItems.forEach(item => {
                 item.addEventListener('click', () => {
                     const tabId = item.getAttribute('data-tab');
-
                     tabNavItems.forEach(navItem => navItem.classList.remove('active'));
                     tabContents.forEach(content => content.classList.remove('active'));
-
                     item.classList.add('active');
                     document.getElementById(tabId).classList.add('active');
                 });
             });
 
+            // Pell editor
             var editorEl = document.getElementById('aciklama-editor');
             if (editorEl) {
               const editorInstance = pell.init({
                 element: editorEl,
-                onChange: html => {
-                  document.getElementById('aciklama_textarea').value = html;
-                },
+                onChange: html => { document.getElementById('aciklama_textarea').value = html; },
                 defaultParagraphSeparator: 'p',
                 styleWithCSS: false,
-                actions: [
-                  'bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link'
-                ]
+                actions: ['bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link']
               });
               editorInstance.content.innerHTML = document.getElementById('aciklama_textarea').value;
             }
 
-            // Modern Görsel Yönetimi Fonksiyonları
-            initImageUploadHandlers();
-            initExistingGalleryHandlers();
+            // Yeni Galeri Yönetimi JavaScript
+            initializeGalleryManager();
         });
-
-        function initImageUploadHandlers() {
-            // Kapak resmi yükleme
-            const coverInput = document.getElementById('cover_image_input');
-            const coverImageName = document.getElementById('cover_image_name');
-            const coverImagePreview = document.getElementById('cover-image-preview');
-
-            coverInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    coverImageName.textContent = file.name;
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        coverImagePreview.src = event.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // Galeri resimleri yükleme
-            const galleryInput = document.getElementById('gallery_images_input');
-            const galleryImageName = document.getElementById('gallery_images_name');
-
-            galleryInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 1) {
-                    galleryImageName.textContent = `${e.target.files.length} dosya seçildi`;
-                } else if (e.target.files.length === 1) {
-                    galleryImageName.textContent = e.target.files[0].name;
-                }
-            });
-        }
-
-        function initExistingGalleryHandlers() {
-            // Mevcut galeri resimleri için checkbox stilleri
-            const checkboxes = document.querySelectorAll('.delete-gallery-item input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', (e) => {
-                    const container = e.target.closest('.gallery-grid-item');
-                    if (e.target.checked) {
-                        container.style.opacity = '0.5';
-                    } else {
-                        container.style.opacity = '1';
+        
+        // Global değişkenler
+        let selectedGalleryItems = new Set();
+        
+        // Galeri Yönetimi Fonksiyonları
+        function initializeGalleryManager() {
+            const coverInput = document.getElementById('cover-input');
+            const coverContainer = document.getElementById('cover-container');
+            const galleryInput = document.getElementById('gallery-input');
+            const galleryDropzone = document.getElementById('gallery-dropzone');
+            
+            // Cover Image Upload
+            if (coverInput && coverContainer) {
+                coverInput.addEventListener('change', handleCoverUpload);
+                coverContainer.addEventListener('click', (e) => {
+                    if (!coverContainer.classList.contains('has-image') && !e.target.closest('button')) {
+                        coverInput.click();
                     }
                 });
-            });
+                
+                // Drag & Drop for Cover
+                coverContainer.addEventListener('dragover', handleDragOver);
+                coverContainer.addEventListener('drop', (e) => handleDrop(e, 'cover'));
+            }
+            
+            // Gallery Upload
+            if (galleryInput && galleryDropzone) {
+                galleryInput.addEventListener('change', handleGalleryUpload);
+                
+                // Drag & Drop for Gallery
+                galleryDropzone.addEventListener('dragover', handleDragOver);
+                galleryDropzone.addEventListener('drop', (e) => handleDrop(e, 'gallery'));
+                galleryDropzone.addEventListener('dragenter', () => galleryDropzone.classList.add('drag-over'));
+                galleryDropzone.addEventListener('dragleave', (e) => {
+                    if (!galleryDropzone.contains(e.relatedTarget)) {
+                        galleryDropzone.classList.remove('drag-over');
+                    }
+                });
+            }
+            
+            // Update gallery count
+            updateGalleryCount();
+            updateDeleteButton();
         }
+        
+        function handleCoverUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Lütfen geçerli bir resim dosyası seçin!', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const coverContainer = document.getElementById('cover-container');
+                    const coverImage = document.getElementById('cover-image');
+                    
+                    coverImage.src = e.target.result;
+                    coverContainer.classList.add('has-image');
+                    
+                    showNotification('Kapak resmi başarıyla yüklendi!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function handleGalleryUpload(event) {
+            const files = Array.from(event.target.files);
+            const validFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            if (validFiles.length !== files.length) {
+                showNotification('Bazı dosyalar geçerli resim formatında değil!', 'warning');
+            }
+            
+            validFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    addGalleryPreview(e.target.result, file.name);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            if (validFiles.length > 0) {
+                showNotification(`${validFiles.length} resim galerie eklendi!`, 'success');
+                updateGalleryCount();
+            }
+        }
+        
+        function addGalleryPreview(src, name) {
+            const galleryGrid = document.getElementById('gallery-grid');
+            const newId = 'new-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item new-item';
+            galleryItem.dataset.id = newId;
+            galleryItem.innerHTML = `
+                <div class="gallery-item-container">
+                    <img src="${src}" alt="${name}" loading="lazy">
+                    <div class="gallery-item-overlay">
+                        <div class="gallery-item-actions">
+                            <button type="button" class="action-btn view-btn" onclick="previewImage('${src}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button type="button" class="action-btn select-btn" onclick="toggleGallerySelection('${newId}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="selection-indicator">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+            `;
+            
+            galleryGrid.appendChild(galleryItem);
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+        
+        function handleDrop(e, type) {
+            e.preventDefault();
+            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+            
+            if (type === 'cover' && files.length > 0) {
+                const coverInput = document.getElementById('cover-input');
+                const dt = new DataTransfer();
+                dt.items.add(files[0]);
+                coverInput.files = dt.files;
+                handleCoverUpload({ target: { files: [files[0]] } });
+            } else if (type === 'gallery' && files.length > 0) {
+                const galleryInput = document.getElementById('gallery-input');
+                const dt = new DataTransfer();
+                files.forEach(file => dt.items.add(file));
+                galleryInput.files = dt.files;
+                handleGalleryUpload({ target: { files: files } });
+            }
+            
+            document.getElementById('gallery-dropzone')?.classList.remove('drag-over');
+        }
+        
+        // Yeni basit seçim fonksiyonu
+        function toggleSelection(element, imagePath) {
+            element.classList.toggle('selected');
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.checked = element.classList.contains('selected');
+            }
+        }
+        
+        function updateDeleteButton() {
+            const deleteBtn = document.getElementById('delete-selected-btn');
+            if (deleteBtn) {
+                if (selectedGalleryItems.size > 0) {
+                    deleteBtn.style.display = 'flex';
+                    deleteBtn.innerHTML = `<i class="fas fa-trash"></i> ${selectedGalleryItems.size} Resmi Sil`;
+                } else {
+                    deleteBtn.style.display = 'none';
+                }
+            }
+        }
+        
+        function previewImage(src) {
+            const modal = document.createElement('div');
+            modal.className = 'image-preview-modal';
+            modal.innerHTML = `
+                <div class="modal-backdrop" onclick="closeImagePreview()"></div>
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeImagePreview()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <img src="${src}" alt="Resim Önizleme">
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+        
+        function closeImagePreview() {
+            const modal = document.querySelector('.image-preview-modal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+        
+        function removeCoverImage() {
+            const coverContainer = document.getElementById('cover-container');
+            const coverImage = document.getElementById('cover-image');
+            const coverInput = document.getElementById('cover-input');
+            
+            coverContainer.classList.remove('has-image');
+            coverImage.src = '';
+            coverInput.value = '';
+            
+            showNotification('Kapak resmi kaldırıldı', 'info');
+        }
+        
+        function updateGalleryCount() {
+            const galleryCount = document.getElementById('gallery-count');
+            const existingItems = document.querySelectorAll('.gallery-item:not(.new-item)').length;
+            const newItems = document.querySelectorAll('.gallery-item.new-item').length;
+            const total = existingItems + newItems;
+            
+            if (galleryCount) {
+                galleryCount.textContent = `${total} resim`;
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            
+            const icon = type === 'success' ? 'fa-check-circle' :
+                        type === 'error' ? 'fa-exclamation-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+            
+            notification.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Delete selected gallery items handler
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('#delete-selected-btn')) {
+                if (selectedGalleryItems.size > 0) {
+                    const confirmed = confirm(`${selectedGalleryItems.size} resmi silmek istediğinizden emin misiniz?`);
+                    if (confirmed) {
+                        selectedGalleryItems.forEach(id => {
+                            const item = document.querySelector(`[data-id="${id}"]`);
+                            if (item) {
+                                if (item.classList.contains('new-item')) {
+                                    item.remove();
+                                } else {
+                                    item.style.display = 'none';
+                                    const checkbox = item.querySelector('input[type="checkbox"]');
+                                    if (checkbox) checkbox.checked = true;
+                                }
+                            }
+                        });
+                        
+                        selectedGalleryItems.clear();
+                        updateDeleteButton();
+                        updateGalleryCount();
+                        showNotification('Seçilen resimler silindi', 'success');
+                    }
+                }
+            }
+        });
     </script>
+    
+    <style>
+        /* Image Preview Modal */
+        .image-preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-preview-modal.show {
+            opacity: 1;
+        }
+        
+        .modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: var(--accent-red);
+            color: white;
+            transform: scale(1.1);
+        }
+    </style>
 {% endblock %}

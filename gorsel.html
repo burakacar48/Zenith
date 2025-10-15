@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geliştirilmiş Medya Yöneticisi</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #4f86e4;
+            --danger-color: #e85a5a;
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --border-color: #333;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .media-manager {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--surface-color);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 24px 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        p { font-size: 16px; margin-bottom: 24px; color: var(--text-secondary); }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-item {
+            aspect-ratio: 16 / 9;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .grid-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* --- KAPAK RESMİ ALANI --- */
+        .cover-image-slot {
+            grid-column: 1 / span 2;
+            grid-row: 1 / span 2;
+            aspect-ratio: 3 / 4;
+            background-color: #252525;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #444;
+        }
+
+        .cover-image-slot.has-image { border: 2px solid var(--primary-color); }
+        
+        .cover-label {
+            position: absolute; top: 12px; left: 12px;
+            background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+            color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; z-index: 10;
+        }
+        
+        #cover-image {
+            transition: filter 0.3s ease-in-out; /* Kararma efekti için geçiş */
+        }
+        
+        /* YENİ: Resim varken üzerine gelince resmi karart */
+        .cover-image-slot.has-image:hover #cover-image {
+            filter: brightness(0.5);
+        }
+
+        /* Kapak Yükleyici */
+        .cover-uploader {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 12px; cursor: pointer; color: var(--text-secondary);
+            padding: 20px; text-align: center;
+        }
+        .cover-uploader svg { width: 40px; height: 40px; }
+        .cover-uploader span { font-weight: 500; font-size: 16px; }
+
+        /* YENİ: Kapak Değiştir Butonunu Ortala */
+        #change-cover-btn {
+            position: absolute;
+            top: 50%; /* Dikey ortala */
+            left: 50%; /* Yatay ortala */
+            transform: translate(-50%, -50%); /* Tam ortala */
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff; padding: 10px 20px; border-radius: 8px;
+            font-weight: 500; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            opacity: 0; 
+            transition: opacity 0.3s ease;
+        }
+        .cover-image-slot:hover #change-cover-btn { opacity: 1; }
+        
+        /* Duruma göre göster/gizle */
+        .cover-image-slot:not(.has-image) #cover-image,
+        .cover-image-slot:not(.has-image) #change-cover-btn { display: none; }
+        
+        .cover-image-slot.has-image .cover-uploader { display: none; }
+        .cover-image-slot.has-image #cover-image,
+        .cover-image-slot.has-image #change-cover-btn { display: flex; }
+
+
+        /* --- GALERİ RESMİ KUTUSU & SEÇİM --- */
+        .gallery-item {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .gallery-item.selected {
+            border-color: var(--primary-color); transform: scale(0.95);
+        }
+        .selection-tick {
+            position: absolute; top: 10px; left: 10px; width: 24px; height: 24px;
+            background-color: rgba(255, 255, 255, 0.9); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transform: scale(0); opacity: 0; transition: transform 0.2s ease, opacity 0.2s ease; z-index: 6;
+        }
+        .gallery-item.selected .selection-tick { transform: scale(1); opacity: 1; }
+        .selection-tick svg { color: var(--primary-color); }
+        
+        /* --- GALERİYE EKLE BUTONU --- */
+        .add-gallery-slot {
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; border: 2px dashed #444;
+            background-color: #252525; cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+        .add-gallery-slot:hover { border-color: #777; background-color: #2a2a2a; }
+        .add-gallery-slot svg { width: 28px; height: 28px; color: #777; margin-bottom: 8px; }
+        .add-gallery-slot span { color: var(--text-secondary); font-weight: 500; }
+
+        /* --- SEÇİM EYLEM ÇUBUĞU --- */
+        #selection-bar {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translate(-50%, 200%);
+            background-color: rgba(40, 40, 40, 0.8);
+            backdrop-filter: blur(10px); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 12px 20px; display: flex;
+            align-items: center; gap: 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+        }
+        #selection-bar.visible { transform: translate(-50%, 0); }
+        .action-button {
+            background-color: var(--danger-color); color: #fff;
+            border: none; padding: 8px 16px; border-radius: 8px;
+            cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;
+        }
+        .hidden-input { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="media-manager">
+        <h1>Oyun Medyalarını Yönet</h1>
+        <p>Resim seçmek için tıklayın. Çoklu seçim için Shift veya Ctrl/Cmd tuşlarını kullanın.</p>
+
+        <div class="media-grid">
+            <div id="cover-slot" class="grid-item cover-image-slot">
+                <div class="cover-label">✨ Kapak Resmi</div>
+                
+                <label for="cover-input" class="cover-uploader">
+                    <svg xmlns="http://www.w.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                    <span>Kapak Resmi Yükle</span>
+                </label>
+                
+                <img id="cover-image" src="" alt="Kapak Resmi">
+                <label for="cover-input" id="change-cover-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+                    Değiştir
+                </label>
+            </div>
+            <input type="file" id="cover-input" class="hidden-input" accept="image/*">
+
+            <div class="grid-item gallery-item" data-id="1">
+                <div class="selection-tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></div>
+                <img src="https://picsum.photos/id/10/800/450" alt="Galeri Resmi 1">
+            </div>
+            <div class="grid-item gallery-item" data-id="2">
+                 <div class="selection-tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></div>
+                <img src="https://picsum.photos/id/20/800/450" alt="Galeri Resmi 2">
+            </div>
+            
+            <label for="gallery-input" class="grid-item add-gallery-slot">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Resim Ekle</span>
+            </label>
+            <input type="file" id="gallery-input" class="hidden-input" accept="image/*" multiple>
+        </div>
+    </div>
+
+    <div id="selection-bar">
+        <span id="selection-count"></span>
+        <button id="delete-selected-btn" class="action-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+            Seçilenleri Sil
+        </button>
+    </div>
+
+    <script>
+        const coverInput = document.getElementById('cover-input');
+        const coverSlot = document.getElementById('cover-slot');
+        const coverImage = document.getElementById('cover-image');
+
+        coverInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    coverImage.src = e.target.result;
+                    coverSlot.classList.add('has-image');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        const mediaGrid = document.querySelector('.media-grid');
+        const selectionBar = document.getElementById('selection-bar');
+        const selectionCount = document.getElementById('selection-count');
+        const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+        
+        let selectedItems = new Set();
+        let lastClickedItem = null;
+
+        mediaGrid.addEventListener('click', (e) => {
+            const targetItem = e.target.closest('.gallery-item');
+            if (!targetItem) return;
+
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            const isShiftPressed = e.shiftKey;
+            const isCtrlPressed = e.ctrlKey || e.metaKey;
+
+            if (isShiftPressed && lastClickedItem) {
+                handleShiftSelection(targetItem, galleryItems);
+            } else if (isCtrlPressed) {
+                toggleSelection(targetItem);
+                lastClickedItem = targetItem;
+            } else {
+                clearSelection();
+                toggleSelection(targetItem);
+                lastClickedItem = targetItem;
+            }
+            updateUI();
+        });
+
+        function toggleSelection(item) {
+            const id = item.dataset.id;
+            if (selectedItems.has(id)) { selectedItems.delete(id); } else { selectedItems.add(id); }
+        }
+
+        function handleShiftSelection(currentItem, galleryItems) {
+            const itemsArray = Array.from(galleryItems);
+            const startIndex = itemsArray.indexOf(lastClickedItem);
+            const endIndex = itemsArray.indexOf(currentItem);
+            const [start, end] = [startIndex, endIndex].sort((a, b) => a - b);
+            
+            for (let i = start; i <= end; i++) {
+                selectedItems.add(itemsArray[i].dataset.id);
+            }
+        }
+
+        function clearSelection() { selectedItems.clear(); }
+
+        function updateUI() {
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            galleryItems.forEach(item => {
+                item.classList.toggle('selected', selectedItems.has(item.dataset.id));
+            });
+
+            if (selectedItems.size > 0) {
+                selectionCount.textContent = `${selectedItems.size} resim seçildi`;
+                selectionBar.classList.add('visible');
+            } else {
+                selectionBar.classList.remove('visible');
+            }
+        }
+
+        deleteSelectedBtn.addEventListener('click', () => {
+            selectedItems.forEach(id => {
+                const itemToRemove = document.querySelector(`.gallery-item[data-id="${id}"]`);
+                if (itemToRemove) {
+                    itemToRemove.style.transform = 'scale(0)';
+                    setTimeout(() => itemToRemove.remove(), 200);
+                }
+            });
+            clearSelection();
+            updateUI();
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>

@@ -80,37 +80,26 @@
                     </div>
 
                     <div id="gorsel-yonetim" class="tab-content">
-                        <div class="visual-management-grid">
-                            <!-- Cover Image Section -->
-                            <div class="visual-section">
-                                <h3 class="visual-section-title">Kapak Resmi</h3>
-                                <p class="file-prompt">Tavsiye: 600x900. Dikey bir resim seçin.</p>
-                                <div class="cover-image-upload">
-                                    <div class="image-preview-container cover-preview">
-                                        <img src="https://via.placeholder.com/600x900.png?text=Kapak+Resmi" id="cover-image-preview">
-                                    </div>
-                                    <input type="file" name="cover_image" id="cover_image_input" class="file-input" accept="image/*">
-                                    <label for="cover_image_input" class="btn btn-secondary">
-                                        <i class="fas fa-upload"></i> Resim Yükle
-                                    </label>
-                                    <span class="file-name" id="cover_image_name">Dosya seçilmedi</span>
-                                </div>
+                        <div class="media-grid">
+                            <div id="cover-slot" class="grid-item cover-image-slot">
+                                <div class="cover-label">✨ Kapak Resmi</div>
+                                <label for="cover-input" class="cover-uploader">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                                    <span>Kapak Resmi Yükle</span>
+                                </label>
+                                <img id="cover-image" src="" alt="Kapak Resmi">
+                                <label for="cover-input" id="change-cover-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+                                    Değiştir
+                                </label>
                             </div>
+                            <input type="file" name="cover_image" id="cover-input" class="hidden-input" accept="image/*">
 
-                            <!-- Gallery Section -->
-                            <div class="visual-section">
-                                <h3 class="visual-section-title">Galeri Resimleri</h3>
-                                <p class="file-prompt">16:9 formatında yatay resimler seçin.</p>
-                                <div class="gallery-upload">
-                                    <input type="file" name="gallery_images" id="gallery_images_input" class="file-input" accept="image/*" multiple>
-                                    <label for="gallery_images_input" class="btn btn-secondary">
-                                        <i class="fas fa-images"></i> Resim Ekle
-                                    </label>
-                                    <span class="file-name" id="gallery_images_name">Dosya seçilmedi</span>
-                                </div>
-                                <div class="gallery-grid-container">
-                                </div>
-                            </div>
+                            <label for="gallery-input" class="grid-item add-gallery-slot">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                <span>Resim Ekle</span>
+                            </label>
+                            <input type="file" name="gallery_images" id="gallery-input" class="hidden-input" accept="image/*" multiple>
                         </div>
                     </div>
 
@@ -172,244 +161,71 @@
     <script src="https://unpkg.com/pell"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Tab functionality
             const tabNavItems = document.querySelectorAll('.tab-nav-item');
             const tabContents = document.querySelectorAll('.tab-content');
-
             tabNavItems.forEach(item => {
                 item.addEventListener('click', () => {
                     const tabId = item.getAttribute('data-tab');
-
                     tabNavItems.forEach(navItem => navItem.classList.remove('active'));
                     tabContents.forEach(content => content.classList.remove('active'));
-
                     item.classList.add('active');
                     document.getElementById(tabId).classList.add('active');
                 });
             });
 
+            // Pell editor
             var editorEl = document.getElementById('aciklama-editor');
             if (editorEl) {
               const editorInstance = pell.init({
                 element: editorEl,
-                onChange: html => {
-                  document.getElementById('aciklama_textarea').value = html;
-                },
+                onChange: html => { document.getElementById('aciklama_textarea').value = html; },
                 defaultParagraphSeparator: 'p',
                 styleWithCSS: false,
-                actions: [
-                  'bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link'
-                ]
+                actions: ['bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link']
               });
               editorInstance.content.innerHTML = document.getElementById('aciklama_textarea').value;
             }
 
-            // Modern Görsel Yönetimi Fonksiyonları
-            initImageUploadHandlers();
-        });
+            // New Media Manager JS
+            const coverInput = document.getElementById('cover-input');
+            const coverSlot = document.getElementById('cover-slot');
+            const coverImage = document.getElementById('cover-image');
 
-        function initImageUploadHandlers() {
-            // Kapak resmi yükleme
-            const coverInput = document.getElementById('cover_image_input_custom');
-            const coverUploadArea = document.getElementById('cover-upload-area');
-            const coverPreview = document.getElementById('cover-preview');
-
-            if (coverInput && coverUploadArea) {
-                // Drag & drop
-                coverUploadArea.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    coverUploadArea.classList.add('drag-over');
-                });
-
-                coverUploadArea.addEventListener('dragleave', (e) => {
-                    e.preventDefault();
-                    coverUploadArea.classList.remove('drag-over');
-                });
-
-                coverUploadArea.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    coverUploadArea.classList.remove('drag-over');
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        handleCoverImageSelect(files[0]);
-                    }
-                });
-
-                // Dosya seçimi
-                coverInput.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
-                        handleCoverImageSelect(e.target.files[0]);
-                    }
-                });
-            }
-
-            // Galeri resimleri yükleme
-            const galleryInput = document.getElementById('gallery_images_input_custom');
-            const galleryUploadArea = document.getElementById('gallery-upload-area');
-            const galleryPreview = document.getElementById('gallery-preview');
-
-            if (galleryInput && galleryUploadArea) {
-                // Drag & drop
-                galleryUploadArea.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    galleryUploadArea.classList.add('drag-over');
-                });
-
-                galleryUploadArea.addEventListener('dragleave', (e) => {
-                    e.preventDefault();
-                    galleryUploadArea.classList.remove('drag-over');
-                });
-
-                galleryUploadArea.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    galleryUploadArea.classList.remove('drag-over');
-                    const files = Array.from(e.dataTransfer.files);
-                    if (files.length > 0) {
-                        handleGalleryImagesSelect(files);
-                    }
-                });
-
-                // Dosya seçimi
-                galleryInput.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
-                        handleGalleryImagesSelect(Array.from(e.target.files));
-                    }
-                });
-            }
-        }
-
-        function handleCoverImageSelect(file) {
-            if (!file.type.startsWith('image/')) {
-                showNotification('Lütfen sadece resim dosyası seçin!', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const coverUploadArea = document.getElementById('cover-upload-area');
-                const coverPreview = document.getElementById('cover-preview');
-                const previewImg = document.getElementById('cover-preview-img');
-                const fileName = document.getElementById('cover-file-name');
-                const fileSize = document.getElementById('cover-file-size');
-
-                previewImg.src = e.target.result;
-                fileName.textContent = file.name;
-                fileSize.textContent = formatFileSize(file.size);
-
-                coverUploadArea.style.display = 'none';
-                coverPreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removeCoverPreview() {
-            const coverInput = document.getElementById('cover_image_input_custom');
-            const coverUploadArea = document.getElementById('cover-upload-area');
-            const coverPreview = document.getElementById('cover-preview');
-
-            coverInput.value = '';
-            coverUploadArea.style.display = 'block';
-            coverPreview.style.display = 'none';
-        }
-
-        let galleryFiles = [];
-
-        function handleGalleryImagesSelect(files) {
-            const validFiles = files.filter(file => file.type.startsWith('image/'));
-            
-            if (validFiles.length !== files.length) {
-                showNotification('Bazı dosyalar resim formatında değil ve atlandı.', 'warning');
-            }
-
-            galleryFiles = [...galleryFiles, ...validFiles];
-            updateGalleryPreview();
-            updateGalleryInput();
-        }
-
-        function updateGalleryPreview() {
-            const galleryUploadArea = document.getElementById('gallery-upload-area');
-            const galleryPreview = document.getElementById('gallery-preview');
-            const galleryGrid = document.getElementById('gallery-grid');
-
-            if (galleryFiles.length > 0) {
-                galleryUploadArea.style.display = 'none';
-                galleryPreview.style.display = 'block';
-
-                galleryGrid.innerHTML = '';
-                galleryFiles.forEach((file, index) => {
+            coverInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
                     const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const galleryItem = document.createElement('div');
-                        galleryItem.className = 'gallery-preview-item';
-                        galleryItem.innerHTML = `
-                            <div class="preview-image-container">
-                                <img src="${e.target.result}" alt="Galeri önizleme">
-                                <div class="preview-overlay">
-                                    <button type="button" class="btn-remove" onclick="removeGalleryItem(${index})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="preview-info">
-                                <span class="file-name">${file.name}</span>
-                                <span class="file-size">${formatFileSize(file.size)}</span>
-                            </div>
-                        `;
-                        galleryGrid.appendChild(galleryItem);
-                    };
+                    reader.onload = function(e) {
+                        coverImage.src = e.target.result;
+                        coverSlot.classList.add('has-image');
+                    }
                     reader.readAsDataURL(file);
-                });
-            } else {
-                galleryUploadArea.style.display = 'block';
-                galleryPreview.style.display = 'none';
-            }
-        }
-
-        function removeGalleryItem(index) {
-            galleryFiles.splice(index, 1);
-            updateGalleryPreview();
-            updateGalleryInput();
-        }
-
-        function updateGalleryInput() {
-            const galleryInput = document.getElementById('gallery_images_input_custom');
-            const dataTransfer = new DataTransfer();
-            
-            galleryFiles.forEach(file => {
-                dataTransfer.items.add(file);
+                }
             });
-            
-            galleryInput.files = dataTransfer.files;
-        }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+            const galleryInput = document.getElementById('gallery-input');
+            const mediaGrid = document.querySelector('.media-grid');
 
-        function showNotification(message, type = 'info') {
-            // Basit bir bildirim sistemi
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
+            galleryInput.addEventListener('change', (e) => {
+                const files = e.target.files;
+                for(let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const newGalleryItem = document.createElement('div');
+                        newGalleryItem.className = 'grid-item gallery-item';
+                        newGalleryItem.dataset.id = 'new-' + i;
+                        newGalleryItem.innerHTML = `
+                            <div class="selection-tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></div>
+                            <img src="${e.target.result}" alt="Yeni Galeri Resmi">
+                            <input type="checkbox" name="new_gallery_images" value="${file.name}" class="hidden-input">
+                        `;
+                        mediaGrid.insertBefore(newGalleryItem, mediaGrid.querySelector('.add-gallery-slot'));
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
     </script>
 {% endblock %}
