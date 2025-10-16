@@ -513,7 +513,10 @@
 
 {% block content %}
     <header class="header">
-        <h1>Oyunu Düzenle: {{ game.oyun_adi }}</h1>
+        <h1 class="page-title-with-icon">
+            <i class="fas fa-edit"></i>
+            Oyunu Düzenle: {{ game.oyun_adi }}
+        </h1>
         <div class="header-actions">
             <a href="{{ url_for('list_games') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Geri Dön

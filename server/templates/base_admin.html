@@ -11,6 +11,18 @@
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_theme_v2.css', v='2.0') }}">
     {% block head %}{% endblock %}
+    <style>
+        .page-title-with-icon {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .page-title-with-icon i {
+            font-size: 1em; /* İkon boyutu başlık fontu ile aynı */
+            color: var(--accent-red, #e50914);
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -31,7 +43,7 @@
                 </div>
 
                 <div class="menu-section">
-                    <div class="menu-title">İÇERİK YÖNETİMİ</div>
+                    <div class="menu-title">OYUN YÖNETİMİ</div>
                     {% set game_endpoints = ['list_games', 'edit_game'] %}
                     <a href="{{ url_for('list_games') }}" class="menu-item {% if request.endpoint in game_endpoints %}active{% endif %}">
                         <i class="fas fa-gamepad"></i>
@@ -49,6 +61,23 @@
                         <i class="fas fa-globe"></i>
                         <span>Dil Seçenekleri</span>
                     </a>
+                    <a href="{{ url_for('download_games') }}" class="menu-item {% if request.endpoint == 'download_games' %}active{% endif %}">
+                        <i class="fas fa-download"></i>
+                        <span>Oyun İndir</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-title">GÖRSEL YÖNETİMİ</div>
+                    {% set slider_endpoints = ['manage_sliders', 'add_slider', 'edit_slider'] %}
+                    <a href="{{ url_for('manage_sliders') }}" class="menu-item {% if request.endpoint in slider_endpoints %}active{% endif %}">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Slider Yönetimi</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-title">İSTATİSTİK & KULLANICI</div>
                     <a href="{{ url_for('manage_ratings') }}" class="menu-item {% if 'rating' in request.endpoint %}active{% endif %}">
                         <i class="fas fa-trophy"></i>
                         <span>Puan Yönetimi</span>
@@ -65,7 +94,7 @@
                 </div>
 
                 <div class="menu-section">
-                    <div class="menu-title">SİSTEM</div>
+                    <div class="menu-title">SİSTEM AYARLARI</div>
                     <a href="{{ url_for('general_settings') }}" class="menu-item {% if request.endpoint == 'general_settings' %}active{% endif %}">
                         <i class="fas fa-cogs"></i>
                         <span>Genel Ayarlar</span>
@@ -84,11 +113,12 @@
                     </a>
                 </div>
             </nav>
-            <div class="sidebar-footer">
-                {% if session.admin_logged_in %}
+
+            {% if session.admin_logged_in %}
+            <div class="user-panel-container">
                 <div class="user-panel">
                     <div class="user-avatar">
-                        <i class="fas fa-user-circle"></i>
+                        <img src="{{ url_for('static', filename='images/profil.jpg') }}" alt="Profil Fotoğrafı">
                     </div>
                     <div class="user-details">
                         <div class="username">{{ session.admin_username }}</div>
@@ -97,7 +127,10 @@
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </div>
-                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="sidebar-footer">
                 <div class="copyright">
                     <p>&copy; 2024 Zenith Panel</p>
                 </div>

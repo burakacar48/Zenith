@@ -4,7 +4,10 @@
 
 {% block content %}
     <header class="header">
-        <h1>Oyun Yönetimi</h1>
+        <h1 class="page-title-with-icon">
+            <i class="fas fa-gamepad"></i>
+            Oyun Yönetimi
+        </h1>
         <div class="header-actions">
             <form method="GET" action="{{ url_for('list_games') }}" class="search-bar" style="flex-grow: 1;">
                 <input type="text" name="q" placeholder="Oyun adını yazarak ara..." value="{{ search_query or '' }}">

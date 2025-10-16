@@ -445,7 +445,11 @@ def download_100_save(current_user_id, game_id):
 
 @app.route('/')
 def root():
-    return redirect(url_for('admin_index'))
+    # Eğer admin giriş yapmışsa admin panele, yapmamışsa login sayfasına yönlendir
+    if session.get('admin_logged_in'):
+        return redirect(url_for('admin_index'))
+    else:
+        return redirect(url_for('admin_login'))
 
 # Admin Authentication Routes
 @app.route('/admin/login', methods=['GET', 'POST'])

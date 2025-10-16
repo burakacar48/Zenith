@@ -4,7 +4,10 @@
 
 {% block content %}
     <header class="header">
-        <h1>Oyun Tıklanma İstatistikleri</h1>
+        <h1 class="page-title-with-icon">
+            <i class="fas fa-chart-bar"></i>
+            Oyun Tıklanma İstatistikleri
+        </h1>
         <div class="header-actions">
             <form action="{{ url_for('reset_all_clicks') }}" method="POST" onsubmit="return confirm('TÜM oyunlara ait BÜTÜN tıklama verilerini kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz!');">
                 <button type="submit" class="btn btn-danger">
