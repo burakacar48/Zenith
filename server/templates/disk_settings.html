@@ -91,6 +91,84 @@
         </div>
     </form>
 
+    <!-- Disk Kullanım Durumu Bölümü -->
+    <div class="card full-width" style="margin-top: 30px;">
+        <div class="card-header">
+            <h2>
+                <i class="fas fa-chart-pie"></i>
+                Disk Kullanım Durumu
+            </h2>
+        </div>
+        <div class="card-body">
+            {% if drives %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    {% for drive in drives %}
+                    <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; transition: all 0.3s ease;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--accent-red), #F6121D); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">
+                                    {{ drive.device_id.replace(':', '') }}
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">
+                                        {% if drive.custom_name %}
+                                            {{ drive.custom_name }}
+                                        {% else %}
+                                            {{ drive.volume_name }}
+                                        {% endif %}
+                                    </h3>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">{{ drive.device_id }}</p>
+                                </div>
+                            </div>
+                            {% if drive.usage_percent > 0 %}
+                            <div style="text-align: right;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--text-primary);">{{ drive.usage_percent }}%</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Kullanılıyor</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if drive.size_gb != 'Bilinmiyor' and drive.usage_percent > 0 %}
+                        <!-- Progress Bar -->
+                        <div style="background: var(--bg-dark-primary); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 15px;">
+                            <div style="height: 100%; background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #ef4444 90%); width: {{ drive.usage_percent }}%; transition: width 0.3s ease; border-radius: 10px;"></div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Disk Bilgileri -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
+                            <div>
+                                <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                    {% if drive.used_gb != 'Bilinmiyor' %}{{ drive.used_gb }} GB{% else %}{{ drive.used_gb }}{% endif %}
+                                </div>
+                                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Kullanılan</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                    {% if drive.free_space_gb != 'Bilinmiyor' %}{{ drive.free_space_gb }} GB{% else %}{{ drive.free_space_gb }}{% endif %}
+                                </div>
+                                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Boş</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                                    {% if drive.size_gb != 'Bilinmiyor' %}{{ drive.size_gb }} GB{% else %}{{ drive.size_gb }}{% endif %}
+                                </div>
+                                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Toplam</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 40px;">
+                    <i class="fas fa-hdd" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <h3>Disk Bulunamadı</h3>
+                    <p>C: diski dışında hiçbir disk bulunamadı veya disk listesi alınamadı.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block scripts %}

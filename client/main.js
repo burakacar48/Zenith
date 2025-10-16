@@ -188,3 +188,19 @@ ipcMain.on('launch-game', async (event, game) => {
         shell.openExternal(`steam://run/${data.app_id}`);
     }
 });
+
+// YENİ: Arayüzden gelen dosya seçme isteğini işlemek için IPC dinleyicisi
+ipcMain.handle('select-exe-file', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    title: 'Oyunun .exe Dosyasını Seçin',
+    buttonLabel: 'Uygulamayı Seç',
+    properties: ['openFile'],
+    filters: [
+      { name: 'Uygulamalar', extensions: ['exe'] },
+      { name: 'Tüm Dosyalar', extensions: ['*'] }
+    ]
+  });
+
+  if (canceled || filePaths.length === 0) return null;
+  return filePaths[0]; // Seçilen dosyanın tam yolunu döndür
+});

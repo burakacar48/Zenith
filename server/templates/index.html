@@ -138,7 +138,7 @@
         </div>
         
         {% if drives %}
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
             {% for drive in drives %}
             <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; transition: all 0.3s ease;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">

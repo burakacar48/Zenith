@@ -508,6 +508,551 @@
             font-size: 12px;
             opacity: 1;
         }
+        
+        /* Execution Type Button Styles */
+        .execution-type-container {
+            margin-top: 10px;
+        }
+        
+        .execution-type-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        
+        .execution-btn {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+            padding: 18px 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 200px;
+            width: 220px;
+            position: relative;
+        }
+        
+        .execution-btn i {
+            font-size: 22px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .execution-btn span {
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .execution-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        /* EXE Button - Red Theme (Design Colors) */
+        .exe-btn.active {
+            background: linear-gradient(135deg, #e50914 0%, #f6121d 100%);
+            border-color: #e50914;
+            color: white;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+        
+        .exe-btn.active i {
+            color: white;
+        }
+        
+        .exe-btn:hover:not(.active) {
+            color: #ff4757;
+            border-color: rgba(229, 9, 20, 0.3);
+        }
+        
+        .exe-btn:hover:not(.active) i {
+            color: #ff4757;
+        }
+        
+        /* Steam Button - Blue/Steam Theme */
+        .steam-btn.active {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-color: #66a3e0;
+            color: #66a3e0;
+            box-shadow: 0 4px 15px rgba(102, 163, 224, 0.2);
+        }
+        
+        .steam-btn.active i {
+            color: #66a3e0;
+        }
+        
+        .steam-btn:hover:not(.active) {
+            color: #94a3b8;
+            border-color: rgba(102, 163, 224, 0.2);
+        }
+        
+        .steam-btn:hover:not(.active) i {
+            color: #94a3b8;
+        }
+        
+        /* Responsive Execution Buttons */
+        @media (max-width: 768px) {
+            .execution-type-buttons {
+                flex-direction: column;
+                gap: 20px;
+                align-items: stretch;
+            }
+            
+            .execution-btn {
+                width: 100%;
+                min-width: auto;
+                padding: 20px 30px;
+                justify-content: center;
+            }
+            
+            .execution-btn i {
+                font-size: 24px;
+            }
+            
+            .execution-btn span {
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .execution-type-buttons {
+                gap: 15px;
+            }
+            
+            .execution-btn {
+                padding: 18px 25px;
+                gap: 15px;
+            }
+            
+            .execution-btn i {
+                font-size: 22px;
+            }
+            
+            .execution-btn span {
+                font-size: 14px;
+            }
+        }
+        
+        /* Execution Settings Sections */
+        .execution-settings-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        /* EXE Path Selector */
+        .exe-path-selector {
+            margin-top: 10px;
+        }
+        
+        .path-display-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .path-display-box:hover {
+            border-color: #e50914;
+            background: rgba(229, 9, 20, 0.05);
+            transform: translateY(-1px);
+        }
+        
+        .path-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .path-icon {
+            font-size: 24px;
+            color: #e50914;
+            transition: all 0.3s ease;
+        }
+        
+        .path-display-box:hover .path-icon {
+            transform: scale(1.1);
+        }
+        
+        .path-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .path-label {
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .path-value {
+            font-size: 14px;
+            color: #f1f5f9;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .path-action {
+            flex-shrink: 0;
+        }
+
+        .path-action .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            margin-left: 8px;
+        }
+
+        .btn-primary-action {
+             background: linear-gradient(135deg, #e50914 0%, #f6121d 100%);
+             color: white;
+        }
+
+        .btn-secondary-action {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f1f5f9;
+        }
+        
+        /* Steam ID Input */
+        .steam-id-input-container {
+            margin-top: 10px;
+        }
+        
+        .steam-id-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 2px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 10px;
+            color: #f1f5f9;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .steam-id-input:focus {
+            border-color: #66a3e0 !important;
+            background: rgba(102, 163, 224, 0.05) !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 163, 224, 0.1);
+        }
+        
+        .steam-id-input::placeholder {
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .steam-id-help {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(102, 163, 224, 0.1);
+            border: 1px solid rgba(102, 163, 224, 0.2);
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        
+        .steam-id-help i {
+            color: #66a3e0;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .path-display-box {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+                padding: 16px;
+            }
+            
+            .path-info {
+                width: 100%;
+            }
+            
+            .path-action {
+                width: 100%;
+            }
+            
+            .select-btn {
+                display: block;
+                text-align: center;
+                padding: 12px;
+            }
+        }
+        
+        /* Modern Disk Selector - Compact Grid Styles */
+        .new-disk-selector-container {
+            margin-top: 15px;
+        }
+
+        .disk-selector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .disk-selector-title .title-main {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .disk-selector-title .title-sub {
+            font-size: 12px;
+            color: #94a3b8;
+            display: block;
+            margin-top: 3px;
+        }
+
+        .disk-refresh-btn {
+            width: 34px;
+            height: 34px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .disk-refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .disks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .disk-card {
+            background: rgba(20, 20, 20, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 14px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .disk-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(229, 9, 20, 0.3);
+        }
+        
+        .disk-card.selected {
+            border-color: #e50914;
+            border-width: 2px;
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.25);
+        }
+        
+        .disk-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .disk-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #e50914 0%, #f6121d 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            box-shadow: 0 3px 10px rgba(229, 9, 20, 0.3);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .disk-text-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .disk-name-inline {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .disk-letter {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .disk-info-content {
+            transition: opacity 0.3s ease;
+            display: none;
+        }
+        
+        .disk-path {
+            font-size: 11px;
+            color: #94a3b8;
+            font-family: 'Courier New', monospace;
+            display: none;
+        }
+        
+        .disk-space {
+            margin-top: 10px;
+        }
+        
+        .disk-space-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        
+        .disk-space-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .disk-space-fill.low { background: linear-gradient(90deg, #22c55e, #84cc16); }
+        .disk-space-fill.medium { background: linear-gradient(90deg, #f59e0b, #facc15); }
+        .disk-space-fill.high { background: linear-gradient(90deg, #ef4444, #f87171); }
+        
+        .disk-space-text {
+            font-size: 10px;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .disk-loading-state, .disk-error-card {
+            width: 100%;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+        }
+
+        .disk-error-card {
+             border-color: rgba(220, 38, 38, 0.4);
+             color: #fca5a5;
+        }
+        
+        .disk-error-card i {
+            font-size: 24px;
+            color: #ef4444;
+            margin-bottom: 10px;
+        }
+
+        .loading-animation {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .loading-circle {
+            width: 10px;
+            height: 10px;
+            background-color: #e50914;
+            border-radius: 50%;
+            animation: loading-bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-circle:nth-child(1) { animation-delay: -0.32s; }
+        .loading-circle:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes loading-bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        .loading-text {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        /* Responsive Grid */
+        @media (max-width: 768px) {
+            .disks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+            
+            .disk-card {
+                padding: 12px;
+            }
+            
+            .disk-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+            
+            .disk-name-inline {
+                font-size: 12px;
+            }
+            
+            .disk-letter {
+                font-size: 10px;
+            }
+        }
     </style>
 {% endblock %}
 
@@ -733,43 +1278,93 @@
                 </div>
 
                 <div id="calistirma-ayarlari" class="tab-content" style="padding: 15px;">
-                        <h2 class="form-section-title">Teknik Bilgiler</h2>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="save_yolu_input"><i class="fas fa-folder-open" style="color: #e50914; margin-right: 8px;"></i>Save Dosyası Yolu:</label>
-                                <input type="text" name="save_yolu" id="save_yolu_input" value="{{ game.save_yolu or '' }}" placeholder="%USERPROFILE%\Documents\My Games\...">
+                        <h2 class="form-section-title">Çalıştırma Ayarları</h2>
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-play-circle" style="color: #e50914; margin-right: 8px;"></i>Çalıştırma Tipi:</label>
+                            <div class="execution-type-container">
+                                <div class="execution-type-buttons">
+                                    <button type="button" class="execution-btn exe-btn active" data-type="exe" onclick="selectExecutionType('exe')">
+                                        <i class="fas fa-desktop"></i>
+                                        <span>EXE</span>
+                                    </button>
+                                    <button type="button" class="execution-btn steam-btn" data-type="steam" onclick="selectExecutionType('steam')">
+                                        <i class="fab fa-steam"></i>
+                                        <span>Steam</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="calistirma_tipi" id="calistirma_tipi" value="{{ game.calistirma_tipi or 'exe' }}">
                             </div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="calistirma_tipi"><i class="fas fa-play-circle" style="color: #e50914; margin-right: 8px;"></i>Çalıştırma Tipi:</label>
-                                <select name="calistirma_tipi" id="calistirma_tipi" onchange="updateCalistirmaInputs()">
-                                    <option value="exe" {% if game.calistirma_tipi == 'exe' or not game.calistirma_tipi %}selected{% endif %}>EXE</option>
-                                    <option value="steam" {% if game.calistirma_tipi == 'steam' %}selected{% endif %}>Steam</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="flex-grow: 1.5;">
-                                <div id="exe_fields" class="calistirma-field-group">
-                                    <label for="exe_yol_input_file"><i class="fas fa-file-code" style="color: #e50914; margin-right: 8px;"></i>EXE Yolu:</label>
-                                    <input type="hidden" name="exe_yol" id="exe_yol_input" value="{{ game.calistirma_verisi_dict.yol or '' }}">
-                                    <div class="custom-file-path-wrapper">
-                                        <input type="file" name="exe_yol_file" id="exe_yol_input_file" class="file-input" accept=".exe">
-                                        <label for="exe_yol_input_file" class="file-path-display" id="exe_yol_display">
-                                            <span class="file-path-placeholder">{% if game.calistirma_verisi_dict.yol %}{{ game.calistirma_verisi_dict.yol }}{% else %}Dosya seçmek için tıklayın...{% endif %}</span>
-                                        </label>
+                        
+                        <!-- EXE Settings Section -->
+                        <div id="exe-settings" class="execution-settings-section">
+                            <!-- Modern Disk Seçimi -->
+                            <div class="form-group full-width">
+                                <label><i class="fas fa-server" style="color: #e50914; margin-right: 8px;"></i>Sistem Diski Seçimi</label>
+                                <div class="new-disk-selector-container">
+                                    <div class="disk-selector-header">
+                                        <div class="disk-selector-title">
+                                            <span class="title-main">Oyun Konumu</span>
+                                            <span class="title-sub">Oyununuzun kurulu olduğu diski seçin</span>
+                                        </div>
+                                        <div class="disk-refresh-btn" onclick="loadAvailableDisks()">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </div>
+                                    </div>
+                                    <div id="disks-grid-container">
+                                        <div class="disk-loading-state">
+                                            <div class="loading-animation">
+                                                <div class="loading-circle"></div>
+                                                <div class="loading-circle"></div>
+                                                <div class="loading-circle"></div>
+                                            </div>
+                                            <span class="loading-text">Sistem diskleri taranıyor...</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div id="steam_fields" class="hidden calistirma-field-group">
-                                    <label for="steam_app_id_input"><i class="fab fa-steam" style="color: #e50914; margin-right: 8px;"></i>Steam App ID:</label>
-                                    <input type="text" name="steam_app_id" id="steam_app_id_input" value="{{ game.calistirma_verisi_dict.app_id or '' }}" placeholder="Örn: 730">
+                            </div>
+
+                            <!-- EXE Dosya Yolu -->
+                            <div class="form-group full-width">
+                                <label><i class="fas fa-file-code" style="color: #e50914; margin-right: 8px;"></i>EXE Dosya Yolu:</label>
+                                <div class="exe-path-selector">
+                                    <div class="path-display-box" onclick="selectExeFile()">
+                                        <div class="path-info">
+                                            <i class="fas fa-folder-open path-icon"></i>
+                                            <div class="path-text">
+                                                <span class="path-label">Oyun EXE Dosyası</span>
+                                                <span class="path-value" id="exe-path-display">
+                                                    {% if game.calistirma_verisi_dict and game.calistirma_verisi_dict.yol %}
+                                                        {{ game.calistirma_verisi_dict.yol }}
+                                                    {% else %}
+                                                        C:\Program Files\Rockstar Games\Grand Theft Auto V\GTA5.exe
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="path-action">
+                                            <span class="select-btn">Dosya Seç</span>
+                                        </div>
+                                    </div>
+                                    <input type="file" name="exe_yol_file" id="exe-file-input" accept=".exe" style="display: none;">
+                                    <input type="hidden" name="exe_yol" id="exe-path-hidden" value="{{ game.calistirma_verisi_dict.yol or '' }}">
                                 </div>
                             </div>
                         </div>
-                        <div id="exe_extra_fields">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="exe_argumanlar_input"><i class="fas fa-terminal" style="color: #e50914; margin-right: 8px;"></i>Argümanlar (isteğe bağlı):</label>
-                                    <input type="text" name="exe_argumanlar" id="exe_argumanlar_input" value="{{ game.calistirma_verisi_dict.argumanlar or '' }}" placeholder="-fullscreen -novid">
+                        
+                        <!-- Steam Settings Section -->
+                        <div id="steam-settings" class="execution-settings-section" style="display: none;">
+                            <div class="form-group full-width">
+                                <label><i class="fab fa-steam" style="color: #e50914; margin-right: 8px;"></i>Steam Game ID:</label>
+                                <div class="steam-id-input-container">
+                                    <input type="text" name="steam_app_id" id="steam-app-id"
+                                           value="{{ game.calistirma_verisi_dict.app_id or '' }}"
+                                           placeholder="Örn: 271590 (GTA V), 730 (CS:GO), 440 (TF2)"
+                                           class="steam-id-input">
+                                    <div class="steam-id-help">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Steam oyun sayfasındaki sayısal ID'yi girin</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -787,17 +1382,69 @@
     <script src="https://unpkg.com/pell"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Tab functionality
+            // Tab functionality with persistent state
             const tabNavItems = document.querySelectorAll('.tab-nav-item');
             const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Function to switch tabs
+            function switchTab(tabId) {
+                tabNavItems.forEach(navItem => navItem.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                const targetNavItem = document.querySelector(`[data-tab="${tabId}"]`);
+                const targetContent = document.getElementById(tabId);
+                
+                if (targetNavItem && targetContent) {
+                    targetNavItem.classList.add('active');
+                    targetContent.classList.add('active');
+                    
+                    // Save to localStorage and update URL
+                    localStorage.setItem('activeEditTab', tabId);
+                    window.location.hash = `tab-${tabId}`;
+                }
+            }
+            
+            // Add click listeners to tab items
             tabNavItems.forEach(item => {
                 item.addEventListener('click', () => {
                     const tabId = item.getAttribute('data-tab');
-                    tabNavItems.forEach(navItem => navItem.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    item.classList.add('active');
-                    document.getElementById(tabId).classList.add('active');
+                    switchTab(tabId);
                 });
+            });
+            
+            // Initialize active tab on page load
+            function initializeActiveTab() {
+                let activeTab = null;
+                
+                // 1. Check URL hash first
+                if (window.location.hash && window.location.hash.startsWith('#tab-')) {
+                    activeTab = window.location.hash.substring(5); // Remove '#tab-'
+                }
+                
+                // 2. If no hash, check localStorage
+                if (!activeTab) {
+                    activeTab = localStorage.getItem('activeEditTab');
+                }
+                
+                // 3. If neither, default to 'temel-bilgiler'
+                if (!activeTab || !document.getElementById(activeTab)) {
+                    activeTab = 'temel-bilgiler';
+                }
+                
+                switchTab(activeTab);
+            }
+            
+            // Initialize the active tab
+            initializeActiveTab();
+            
+            // Listen for hash changes (back/forward buttons)
+            window.addEventListener('hashchange', () => {
+                if (window.location.hash.startsWith('#tab-')) {
+                    const tabId = window.location.hash.substring(5);
+                    if (document.getElementById(tabId)) {
+                        switchTab(tabId);
+                    }
+                }
             });
 
             // Pell editor
@@ -815,8 +1462,8 @@
 
             // Modern Image Manager JavaScript - Enhanced Version
             let selectedImages = new Set();
-            let galleryCount = {{ gallery|length }};
-            let coverImageExists = {% if game.cover_image %}true{% else %}false{% endif %};
+            let galleryCount = {{ gallery|length if gallery else 0 }};
+            let coverImageExists = {{ 'true' if game.cover_image else 'false' }};
 
             // Cover Image Handler
             const coverInput = document.getElementById('cover-input');
@@ -1098,26 +1745,90 @@
                 console.log(`${count} dosya yükleniyor...`);
             }
 
-            // Execution type toggle function
-            window.updateCalistirmaInputs = function() {
-                const calistirmaTipi = document.getElementById('calistirma_tipi').value;
-                const exeFields = document.getElementById('exe_fields');
-                const steamFields = document.getElementById('steam_fields');
-                const exeExtraFields = document.getElementById('exe_extra_fields');
-
-                if (calistirmaTipi === 'exe') {
-                    exeFields.classList.remove('hidden');
-                    steamFields.classList.add('hidden');
-                    exeExtraFields.style.display = 'block';
-                } else if (calistirmaTipi === 'steam') {
-                    exeFields.classList.add('hidden');
-                    steamFields.classList.remove('hidden');
-                    exeExtraFields.style.display = 'none';
+            // Execution type selection function
+            window.selectExecutionType = function(type) {
+                // Remove active class from all buttons
+                document.querySelectorAll('.execution-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to selected button
+                const selectedBtn = document.querySelector(`.execution-btn[data-type="${type}"]`);
+                if (selectedBtn) {
+                    selectedBtn.classList.add('active');
+                }
+                
+                // Update hidden input value
+                document.getElementById('calistirma_tipi').value = type;
+                
+                // Show/hide appropriate settings sections
+                const exeSettings = document.getElementById('exe-settings');
+                const steamSettings = document.getElementById('steam-settings');
+                
+                if (type === 'exe') {
+                    exeSettings.style.display = 'block';
+                    steamSettings.style.display = 'none';
+                } else if (type === 'steam') {
+                    exeSettings.style.display = 'none';
+                    steamSettings.style.display = 'block';
                 }
             };
 
             // Initialize execution type display
-            updateCalistirmaInputs();
+            const currentType = '{{ game.calistirma_tipi or "exe" }}';
+            selectExecutionType(currentType);
+            
+            // EXE file selection
+            window.selectExeFile = function() {
+                document.getElementById('exe-file-input').click();
+            };
+            
+            // Handle EXE file selection
+            document.getElementById('exe-file-input').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const pathDisplay = document.getElementById('exe-path-display');
+                    const hiddenInput = document.getElementById('exe-path-hidden');
+                    
+                    // Note: Browsers can't access full file paths for security reasons
+                    // Just use the filename and build a basic path
+                    const fileName = file.name;
+                    
+                    // Build a simple path using selected disk
+                    let fullPath = '';
+                    if (allDisks.length > 0 && selectedDiskIndex >= 0) {
+                        const selectedDisk = allDisks[selectedDiskIndex];
+                        fullPath = `${selectedDisk.drive_letter}\\${fileName}`;
+                    } else {
+                        fullPath = `C:\\${fileName}`;
+                    }
+                    
+                    pathDisplay.textContent = fullPath;
+                    
+                    // Auto-select disk based on path
+                    autoSelectDiskFromPath(fullPath);
+                }
+            });
+            
+            // Auto-select disk based on path
+            function autoSelectDiskFromPath(path) {
+                if (!path || !allDisks.length) return;
+                
+                // Extract drive letter from path (e.g., "C:" from "C:\...")
+                const driveMatch = path.match(/^([A-Za-z]):/);
+                if (driveMatch && driveMatch[1]) {
+                    const driveLetter = driveMatch[1].toUpperCase();
+                    
+                    // Find disk index by drive letter
+                    const diskIndex = allDisks.findIndex(disk =>
+                        disk.drive_letter.toUpperCase() === driveLetter
+                    );
+                    
+                    if (diskIndex !== -1 && diskIndex !== selectedDiskIndex) {
+                        selectDisk(diskIndex);
+                    }
+                }
+            }
 
             // Initialize drag & drop when DOM is ready
             setupDragAndDrop();
@@ -1139,22 +1850,178 @@
 
             // Initialize on page load
             initializeImageManager();
-
-            // File path display for exe files
-            const exeFileInput = document.getElementById('exe_yol_input_file');
-            if (exeFileInput) {
-                exeFileInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    const hiddenInput = document.getElementById('exe_yol_input');
-                    const display = document.getElementById('exe_yol_display');
-                    const placeholder = display.querySelector('.file-path-placeholder');
-                    
-                    if (file) {
-                        hiddenInput.value = file.name;
-                        placeholder.textContent = file.name;
-                    }
-                });
+            
+            // Disk listesini yükle
+            loadAvailableDisks().then(() => {
+                // Diskler yüklendikten sonra mevcut EXE yoluna göre disk seç
+                setTimeout(initializeDiskSelection, 100);
+            });
+            
+            // Initialize disk selection based on current EXE path
+            function initializeDiskSelection() {
+                const exePathDisplay = document.getElementById('exe-path-display');
+                const currentPath = exePathDisplay ? exePathDisplay.textContent.trim() : '';
+                
+                if (currentPath && allDisks.length > 0) {
+                     autoSelectDiskFromPath(currentPath);
+                }
             }
         });
+        
+        // Modern Disk Selector Functions
+        let allDisks = [];
+
+        let selectedDiskIndex = 0;
+
+        async function loadAvailableDisks() {
+            const gridContainer = document.getElementById('disks-grid-container');
+            
+            gridContainer.innerHTML = `
+                <div class="disk-loading-state">
+                    <div class="loading-animation">
+                        <div class="loading-circle"></div>
+                        <div class="loading-circle"></div>
+                        <div class="loading-circle"></div>
+                    </div>
+                    <span class="loading-text">Sistem diskleri taranıyor...</span>
+                </div>`;
+
+            try {
+                const response = await fetch('/api/disk_list');
+                const data = await response.json();
+
+                if (data.success && data.disks && data.disks.length > 0) {
+                    allDisks = data.disks;
+                    displayDisksGrid();
+                    // İlk diski seç
+                    selectDisk(0);
+                } else {
+                    gridContainer.innerHTML = `
+                        <div class="disk-error-card">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Disk bulunamadı veya liste alınamadı.</span>
+                        </div>`;
+                }
+            } catch (error) {
+                console.error('Disk yükleme hatası:', error);
+                gridContainer.innerHTML = `
+                    <div class="disk-error-card">
+                        <i class="fas fa-plug"></i>
+                        <span>Diskler yüklenirken bir hata oluştu.</span>
+                    </div>`;
+            }
+        }
+
+        function displayDisksGrid() {
+            const gridContainer = document.getElementById('disks-grid-container');
+            const grid = document.createElement('div');
+            grid.className = 'disks-grid';
+            
+            allDisks.forEach((disk, index) => {
+                const diskCard = createDiskCard(disk, index);
+                grid.appendChild(diskCard);
+            });
+            
+            gridContainer.innerHTML = '';
+            gridContainer.appendChild(grid);
+        }
+
+        function selectDisk(index) {
+            selectedDiskIndex = index;
+            const selectedDisk = allDisks[index];
+            
+            // Tüm kartlardan selected sınıfını kaldır
+            document.querySelectorAll('.disk-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Seçilen karta selected sınıfı ekle
+            const selectedCard = document.querySelector(`[data-disk-index="${index}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            // EXE yolunu güncelle
+            updateExePathWithSelectedDisk(selectedDisk);
+        }
+        
+        function createDiskCard(disk, index) {
+            const card = document.createElement('div');
+            card.className = 'disk-card';
+            card.dataset.diskIndex = index;
+            card.onclick = () => selectDisk(index);
+            
+            const displayName = disk.custom_name || disk.volume_name || 'Yerel Disk';
+            const usagePercent = calculateUsagePercent(disk);
+            const spaceClass = getSpaceClass(usagePercent);
+            
+            card.innerHTML = `
+                <div class="disk-header">
+                    <div class="disk-icon">
+                        <i class="fas fa-hdd"></i>
+                    </div>
+                    <div class="disk-text-container">
+                        <div class="disk-name-inline">${displayName}</div>
+                        <div class="disk-letter">${disk.drive_letter}</div>
+                    </div>
+                </div>
+                ${disk.size && disk.free_space ? `
+                    <div class="disk-space">
+                        <div class="disk-space-bar">
+                            <div class="disk-space-fill ${spaceClass}" style="width: ${usagePercent}%"></div>
+                        </div>
+                        <div class="disk-space-text">
+                            <span>${formatBytes(disk.size - disk.free_space)} kullanılan</span>
+                            <span>${formatBytes(disk.free_space)} boş</span>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            
+            return card;
+        }
+        
+        function updateExePathWithSelectedDisk(disk) {
+            const exePathDisplay = document.getElementById('exe-path-display');
+            const exePathHidden = document.getElementById('exe-path-hidden');
+            
+            const currentPath = exePathHidden.value || exePathDisplay.textContent.trim();
+            let newPath = '';
+            
+            // Check if current path is a valid-looking path or the placeholder
+            if (currentPath && currentPath.includes('\\') && /^[a-zA-Z]:\\/.test(currentPath)) {
+                // Mevcut yolun disk harfini değiştir
+                const pathParts = currentPath.split('\\');
+                pathParts[0] = `${disk.drive_letter}:`;
+                newPath = pathParts.join('\\');
+            } else {
+                // Varsayılan örnek yol oluştur
+                newPath = `${disk.drive_letter}:\\Games\\ExampleGame\\Game.exe`;
+            }
+            
+            exePathDisplay.textContent = newPath;
+            exePathHidden.value = newPath;
+        }
+        
+        function calculateUsagePercent(disk) {
+            if (!disk.size || !disk.free_space) return 0;
+            return Math.round(((disk.size - disk.free_space) / disk.size) * 100);
+        }
+        
+        function getSpaceClass(percent) {
+            if (percent < 60) return 'low';
+            if (percent < 85) return 'medium';
+            return 'high';
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === null || bytes === undefined) return 'Bilinmiyor';
+            const gb = bytes / (1024 * 1024 * 1024);
+            if (gb < 1) {
+                const mb = bytes / (1024 * 1024);
+                return mb.toFixed(0) + ' MB';
+            }
+            return gb.toFixed(1) + ' GB';
+        }
     </script>
 {% endblock %}

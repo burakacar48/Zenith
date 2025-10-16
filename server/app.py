@@ -1303,8 +1303,12 @@ def disk_settings():
             # Boyut bilgilerini formatla
             if drive['size']:
                 drive['size_gb'] = round(drive['size'] / (1024**3), 1)
+                drive['used_gb'] = round((drive['size'] - drive['free_space']) / (1024**3), 1)
+                drive['usage_percent'] = round(((drive['size'] - drive['free_space']) / drive['size']) * 100, 1)
             else:
                 drive['size_gb'] = 'Bilinmiyor'
+                drive['used_gb'] = 'Bilinmiyor'
+                drive['usage_percent'] = 0
                 
             if drive['free_space']:
                 drive['free_space_gb'] = round(drive['free_space'] / (1024**3), 1)
