@@ -1565,6 +1565,88 @@ def get_disk_list_api():
     except Exception as e:
         return jsonify({'success': False, 'error': f'Disk listesi alınamadı: {str(e)}'}), 500
 
+@app.route('/api/find_exe_path', methods=['POST'])
+@admin_required
+@license_required
+def find_exe_path():
+    """Seçilen EXE dosyasının tam yolunu bulur"""
+    try:
+        data = request.get_json()
+        filename = data.get('filename', '')
+        selected_disk = data.get('selected_disk', '')
+        
+        if not filename or not filename.endswith('.exe'):
+            return jsonify({'success': False, 'error': 'Geçersiz dosya adı'}), 400
+        
+        # Tüm disklerde ara
+        drives_to_search = []
+        if selected_disk:
+            drives_to_search = [selected_disk]
+        else:
+            # Eğer disk seçilmediyse C: ve D: disklerinde ara
+            drives_to_search = ['C:', 'D:']
+        
+        found_paths = []
+        
+        for drive in drives_to_search:
+            try:
+                # PowerShell ile dosyayı ara
+                search_command = [
+                    'powershell', '-Command',
+                    f'Get-ChildItem -Path "{drive}\\" -Recurse -Filter "{filename}" -ErrorAction SilentlyContinue | Where-Object {{ $_.Extension -eq ".exe" }} | Select-Object FullName, LastWriteTime | ConvertTo-Json'
+                ]
+                
+                process = subprocess.run(search_command, capture_output=True, text=True,
+                                       check=True, creationflags=subprocess.CREATE_NO_WINDOW,
+                                       timeout=30)  # 30 saniye timeout
+                
+                if process.stdout.strip() and process.stdout.strip() != 'null':
+                    try:
+                        import json
+                        results = json.loads(process.stdout)
+                        
+                        # Tek sonuç varsa listeye çevir
+                        if isinstance(results, dict):
+                            results = [results]
+                        
+                        for result in results:
+                            if result.get('FullName'):
+                                found_paths.append({
+                                    'path': result['FullName'],
+                                    'last_modified': result.get('LastWriteTime', ''),
+                                    'drive': drive
+                                })
+                                
+                    except json.JSONDecodeError:
+                        continue
+                        
+            except subprocess.TimeoutExpired:
+                continue
+            except Exception as e:
+                print(f"Disk {drive} aranırken hata: {e}")
+                continue
+        
+        if found_paths:
+            # En son değiştirilen dosyayı seç
+            found_paths.sort(key=lambda x: x.get('last_modified', ''), reverse=True)
+            best_match = found_paths[0]
+            
+            return jsonify({
+                'success': True,
+                'path': best_match['path'],
+                'drive': best_match['drive'],
+                'all_matches': found_paths[:5]  # İlk 5 sonucu döndür
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f"'{filename}' dosyası bulunamadı",
+                'suggestion': f"Lütfen dosyanın bulunduğu diski manuel olarak seçin veya dosya adını kontrol edin."
+            }), 404
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Dosya aranırken hata oluştu: {str(e)}'}), 500
+
 @app.route('/api/internal/check_status')
 def check_status_for_client():
     global license_status_cache

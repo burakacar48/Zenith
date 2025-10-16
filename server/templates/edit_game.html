@@ -1784,50 +1784,203 @@
             };
             
             // Handle EXE file selection
-            document.getElementById('exe-file-input').addEventListener('change', function(e) {
+            document.getElementById('exe-file-input').addEventListener('change', async function(e) {
                 const file = e.target.files[0];
                 if (file) {
                     const pathDisplay = document.getElementById('exe-path-display');
                     const hiddenInput = document.getElementById('exe-path-hidden');
-                    
-                    // Note: Browsers can't access full file paths for security reasons
-                    // Just use the filename and build a basic path
                     const fileName = file.name;
                     
-                    // Build a simple path using selected disk
-                    let fullPath = '';
-                    if (allDisks.length > 0 && selectedDiskIndex >= 0) {
-                        const selectedDisk = allDisks[selectedDiskIndex];
-                        fullPath = `${selectedDisk.drive_letter}\\${fileName}`;
-                    } else {
-                        fullPath = `C:\\${fileName}`;
+                    // Show loading state
+                    pathDisplay.textContent = 'Dosya yolu tespit ediliyor...';
+                    pathDisplay.style.color = '#f59e0b';
+                    
+                    try {
+                        // Get selected disk
+                        let selectedDisk = '';
+                        if (allDisks.length > 0 && selectedDiskIndex >= 0) {
+                            selectedDisk = allDisks[selectedDiskIndex].drive_letter;
+                        }
+                        
+                        // Call API to find the actual file path
+                        const response = await fetch('/api/find_exe_path', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                filename: fileName,
+                                selected_disk: selectedDisk
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            // File found - use the actual path
+                            pathDisplay.textContent = result.path;
+                            hiddenInput.value = result.path;
+                            pathDisplay.style.color = '#22c55e';
+                            
+                            // Auto-select disk based on found path
+                            autoSelectDiskFromPath(result.path);
+                            
+                            // Show success notification
+                            showNotification(`✅ Dosya bulundu: ${result.path}`, 'success');
+                        } else {
+                            // File not found - create smart fallback path
+                            let fallbackPath = '';
+                            
+                            // Try to construct a more intelligent path
+                            if (allDisks.length > 0 && selectedDiskIndex >= 0) {
+                                const selectedDisk = allDisks[selectedDiskIndex];
+                                // Common game directories to try
+                                const commonPaths = [
+                                    `${selectedDisk.drive_letter}\\Games\\${fileName}`,
+                                    `${selectedDisk.drive_letter}\\Program Files\\${fileName}`,
+                                    `${selectedDisk.drive_letter}\\Program Files (x86)\\${fileName}`,
+                                    `${selectedDisk.drive_letter}\\Steam\\steamapps\\common\\${fileName}`,
+                                    `${selectedDisk.drive_letter}\\Epic Games\\${fileName}`,
+                                    `${selectedDisk.drive_letter}\\${fileName}`
+                                ];
+                                fallbackPath = commonPaths[0]; // Use the first one as default
+                            } else {
+                                fallbackPath = `C:\\Games\\${fileName}`;
+                            }
+                            
+                            pathDisplay.textContent = fallbackPath;
+                            hiddenInput.value = fallbackPath;
+                            pathDisplay.style.color = '#f59e0b';
+                            
+                            // Show warning notification
+                            showNotification(`⚠️ Dosya otomatik bulunamadı: ${result.error || 'Bilinmeyen hata'}`, 'warning');
+                            showNotification(`📝 Lütfen dosya yolunu manuel olarak kontrol edin: ${fallbackPath}`, 'info');
+                        }
+                    } catch (error) {
+                        console.error('Dosya yolu aranırken hata:', error);
+                        
+                        // Fallback to smart path
+                        let fallbackPath = '';
+                        if (allDisks.length > 0 && selectedDiskIndex >= 0) {
+                            const selectedDisk = allDisks[selectedDiskIndex];
+                            fallbackPath = `${selectedDisk.drive_letter}\\Games\\${fileName}`;
+                        } else {
+                            fallbackPath = `C:\\Games\\${fileName}`;
+                        }
+                        
+                        pathDisplay.textContent = fallbackPath;
+                        hiddenInput.value = fallbackPath;
+                        pathDisplay.style.color = '#f59e0b';
+                        
+                        showNotification('⚠️ Dosya yolu aranırken bağlantı hatası oluştu', 'warning');
+                        showNotification(`📝 Kullanılan yol: ${fallbackPath}`, 'info');
                     }
-                    
-                    pathDisplay.textContent = fullPath;
-                    
-                    // Auto-select disk based on path
-                    autoSelectDiskFromPath(fullPath);
                 }
             });
+            
+            // Notification function
+            function showNotification(message, type = 'info') {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    max-width: 400px;
+                    word-wrap: break-word;
+                    animation: slideIn 0.3s ease-out;
+                `;
+                
+                // Set background color based on type
+                switch (type) {
+                    case 'success':
+                        notification.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                        break;
+                    case 'warning':
+                        notification.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                        break;
+                    case 'error':
+                        notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                        break;
+                    default:
+                        notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                }
+                
+                notification.textContent = message;
+                
+                // Add to page
+                document.body.appendChild(notification);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 5000);
+            }
+            
+            // Add CSS animations for notifications
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
             
             // Auto-select disk based on path
             function autoSelectDiskFromPath(path) {
                 if (!path || !allDisks.length) return;
                 
-                // Extract drive letter from path (e.g., "C:" from "C:\...")
+                // Extract drive letter from path (e.g., "C:" from "C:\..." or "E:" from "E:\...")
                 const driveMatch = path.match(/^([A-Za-z]):/);
                 if (driveMatch && driveMatch[1]) {
-                    const driveLetter = driveMatch[1].toUpperCase();
+                    const driveLetter = driveMatch[1].toUpperCase() + ':';
                     
                     // Find disk index by drive letter
-                    const diskIndex = allDisks.findIndex(disk =>
-                        disk.drive_letter.toUpperCase() === driveLetter
-                    );
+                    const diskIndex = allDisks.findIndex(disk => {
+                        const diskLetter = disk.drive_letter.trim().toUpperCase();
+                        return diskLetter === driveLetter;
+                    });
                     
-                    if (diskIndex !== -1 && diskIndex !== selectedDiskIndex) {
+                    console.log(`Dosya yolu: ${path}, Aranan disk: ${driveLetter}, Bulunan index: ${diskIndex}`);
+                    
+                    if (diskIndex !== -1) {
+                        console.log(`Disk otomatik seçiliyor: ${allDisks[diskIndex].drive_letter}`);
                         selectDisk(diskIndex);
+                        return true;
+                    } else {
+                        console.warn(`Disk bulunamadı: ${driveLetter}`);
+                        return false;
                     }
                 }
+                return false;
             }
 
             // Initialize drag & drop when DOM is ready
