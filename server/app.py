@@ -489,6 +489,7 @@ def admin_logout():
 
 # Admin Panel Routes
 @app.route('/admin')
+@app.route('/admin/')
 @admin_required
 @license_required
 def admin_index():
@@ -499,10 +500,38 @@ def admin_index():
         'user_count': conn.execute('SELECT COUNT(*) FROM users').fetchone()[0]
     }
     total_clicks = conn.execute('SELECT SUM(click_count) FROM games').fetchone()[0] or 0
-    query = "SELECT g.id, g.oyun_adi, g.cover_image, g.created_at, GROUP_CONCAT(c.name) as category_names FROM games g LEFT JOIN game_categories gc ON g.id = gc.game_id LEFT JOIN categories c ON gc.category_id = c.id GROUP BY g.id ORDER BY g.id DESC LIMIT 5"
-    recent_games = [dict(g) for g in conn.execute(query).fetchall()]
+    query = "SELECT g.id, g.oyun_adi, g.cover_image, g.created_at, GROUP_CONCAT(c.name) as category_names FROM games g LEFT JOIN game_categories gc ON g.id = gc.game_id LEFT JOIN categories c ON gc.category_id = c.id WHERE g.id IS NOT NULL GROUP BY g.id ORDER BY g.id DESC LIMIT 5"
+    recent_games = [dict(g) for g in conn.execute(query).fetchall() if g['id'] is not None]
+    
+    # Disk bilgilerini al
+    available_drives = get_windows_drives()
+    custom_names = {}
+    custom_names_result = conn.execute('SELECT drive_letter, custom_name FROM disk_settings').fetchall()
+    for row in custom_names_result:
+        custom_names[row['drive_letter']] = row['custom_name']
+    
+    # Diskleri hazırla
+    for drive in available_drives:
+        drive_letter = drive['device_id']
+        drive['custom_name'] = custom_names.get(drive_letter, '')
+        
+        # Boyut bilgilerini formatla
+        if drive['size']:
+            drive['size_gb'] = round(drive['size'] / (1024**3), 1)
+            drive['used_gb'] = round((drive['size'] - drive['free_space']) / (1024**3), 1)
+            drive['usage_percent'] = round(((drive['size'] - drive['free_space']) / drive['size']) * 100, 1)
+        else:
+            drive['size_gb'] = 'Bilinmiyor'
+            drive['used_gb'] = 'Bilinmiyor'
+            drive['usage_percent'] = 0
+            
+        if drive['free_space']:
+            drive['free_space_gb'] = round(drive['free_space'] / (1024**3), 1)
+        else:
+            drive['free_space_gb'] = 'Bilinmiyor'
+    
     conn.close()
-    return render_template('index.html', stats=stats, recent_games=recent_games, total_clicks=total_clicks)
+    return render_template('index.html', stats=stats, recent_games=recent_games, total_clicks=total_clicks, drives=available_drives)
 
 @app.route('/admin/games')
 @admin_required
@@ -510,42 +539,119 @@ def admin_index():
 def list_games():
     conn = get_db_connection()
     try:
-        search_query = request.args.get('q', '') 
+        # Filtre parametrelerini al
+        search_query = request.args.get('q', '')
+        category_filter = request.args.get('category', '')
+        year_filter = request.args.get('year', '')
+        language_filter = request.args.get('language', '')
         
-        # HATA DÜZELTME: Kategori birleştirmesini alt sorgu ile yaparak her oyunun listelenmesini garanti ediyoruz.
+        # Sayfalama parametrelerini al
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 8, type=int)  # Varsayılan 8 oyun
+        
+        # Geçerli per_page değerlerini kontrol et (16'nın katları)
+        valid_per_page = [8, 16, 32, 48]
+        if per_page not in valid_per_page:
+            per_page = 8
+            
+        offset = (page - 1) * per_page
+        
+        # Ana sorgu - toplam sayım için
+        count_query = """
+            SELECT COUNT(DISTINCT g.id)
+            FROM games g
+            LEFT JOIN game_categories gc ON g.id = gc.game_id
+            LEFT JOIN categories c ON gc.category_id = c.id
+        """
+        
+        # Ana sorgu - oyunları getirmek için
         query = """
-            SELECT 
-                g.id, g.oyun_adi, g.aciklama, g.cover_image, g.youtube_id, g.save_yolu, g.calistirma_tipi, 
+            SELECT
+                g.id, g.oyun_adi, g.aciklama, g.cover_image, g.youtube_id, g.save_yolu, g.calistirma_tipi,
                 g.calistirma_verisi, g.cikis_yili, g.pegi, g.oyun_dili, g.launch_script, g.yuzde_yuz_save_path,
                 g.average_rating, g.rating_count, g.click_count, g.created_at,
                 (
-                    SELECT GROUP_CONCAT(c.name) 
-                    FROM game_categories gc
-                    JOIN categories c ON gc.category_id = c.id
-                    WHERE gc.game_id = g.id
+                    SELECT GROUP_CONCAT(c2.name)
+                    FROM game_categories gc2
+                    JOIN categories c2 ON gc2.category_id = c2.id
+                    WHERE gc2.game_id = g.id
                 ) AS category_names
             FROM games g
+            LEFT JOIN game_categories gc ON g.id = gc.game_id
+            LEFT JOIN categories c ON gc.category_id = c.id
         """
-        params = ()
-        if search_query:
-            query += " WHERE g.oyun_adi LIKE ?"
-            params = ('%' + search_query + '%',)
         
-        query += " ORDER BY g.id DESC"
+        # Filtre koşullarını oluştur
+        where_conditions = []
+        params = []
+        
+        if search_query:
+            where_conditions.append("g.oyun_adi LIKE ?")
+            params.append('%' + search_query + '%')
+            
+        if category_filter:
+            where_conditions.append("c.id = ?")
+            params.append(category_filter)
+            
+        if year_filter:
+            where_conditions.append("g.cikis_yili = ?")
+            params.append(year_filter)
+            
+        if language_filter:
+            where_conditions.append("g.oyun_dili = ?")
+            params.append(language_filter)
+        
+        # WHERE koşullarını ekle
+        if where_conditions:
+            where_clause = " WHERE " + " AND ".join(where_conditions)
+            count_query += where_clause
+            query += where_clause
+        
+        # Toplam oyun sayısını al
+        total_games = conn.execute(count_query, params).fetchone()[0]
+        
+        # Ana sorguyu tamamla
+        query += " GROUP BY g.id ORDER BY g.id DESC LIMIT ? OFFSET ?"
+        params.extend([per_page, offset])
         
         games_raw = conn.execute(query, params).fetchall()
         
-        # Nihai kontrol: Row objelerini dict'e çevirip, ID'si olanları alıyoruz.
+        # Row objelerini dict'e çevir ve NULL ID'leri filtrele
         games_filtered = []
         for g_row in games_raw:
              g_dict = dict(g_row)
              if g_dict['id'] is not None:
                  games_filtered.append(g_dict)
 
-        return render_template('manage_games.html', games=games_filtered, search_query=search_query)
+        # Sayfalama bilgilerini hesapla
+        total_pages = (total_games + per_page - 1) // per_page
+        has_prev = page > 1
+        has_next = page < total_pages
+        
+        # Filtre seçenekleri için verileri al
+        categories = conn.execute('SELECT id, name FROM categories ORDER BY name ASC').fetchall()
+        years = conn.execute('SELECT DISTINCT cikis_yili FROM games WHERE cikis_yili IS NOT NULL AND cikis_yili != "" ORDER BY cikis_yili DESC').fetchall()
+        languages = conn.execute('SELECT DISTINCT oyun_dili FROM games WHERE oyun_dili IS NOT NULL AND oyun_dili != "" ORDER BY oyun_dili ASC').fetchall()
+
+        return render_template('manage_games.html',
+                             games=games_filtered,
+                             search_query=search_query,
+                             category_filter=category_filter,
+                             year_filter=year_filter,
+                             language_filter=language_filter,
+                             categories=categories,
+                             years=years,
+                             languages=languages,
+                             page=page,
+                             per_page=per_page,
+                             total_pages=total_pages,
+                             total_games=total_games,
+                             has_prev=has_prev,
+                             has_next=has_next,
+                             valid_per_page=valid_per_page)
     finally:
         if conn:
-            conn.close() # Bağlantıyı kapat
+            conn.close()
 
 @app.route('/admin/add', methods=['GET', 'POST'])
 @admin_required
@@ -572,7 +678,7 @@ def add_game():
             if calistirma_tipi == 'exe':
                 calistirma_verisi = json.dumps({'yol': form_data.get('exe_yol'), 'argumanlar': form_data.get('exe_argumanlar', '')})
                 
-                # YENİ VARSAYILAN BETİK TANIMI BAŞLANGIÇ
+                # BASIT VARSAYILAN BETİK TANIMI
                 DEFAULT_LAUNCH_SCRIPT_CLEAN = """@echo off
 set _EXE_PATH="%%EXE_YOLU%%"
 
@@ -588,42 +694,18 @@ echo Oyun Klasörü: %%~p_EXE_PATH%%
 echo EXE: %%~nx_EXE_PATH%%
 echo Argümanlar: %%EXE_ARGS%%
 
-:: 2. Örnek Registry Kaydı (Gerekliyse bu bloğu aktif edin)
-:: REG ADD "HKCU\\Software\\OyunAdi" /v "KeyName" /t REG_SZ /d "Deger" /f
-
-:: 3. Oyunu Başlat
+:: 2. Oyunu Başlat
 start "" "%%EXE_YOLU%%" %%EXE_ARGS%%
 
 :: NOT: Programı çalıştırmadan önce ek komutlar ekleyebilirsiniz.
 """
 
-                # Eski varsayılanları kontrol etmek için örnekler
-                old_default_content = """@echo off
-
-:: *****************************************************************
-:: * OYUN BAŞLATMA OTOMATİK SCRIPTİ
-:: * Sunucu Tarafından Otomatik Üretilmiştir.
-:: * %EXE_YOLU% ve %EXE_ARGS% değişkenleri otomatik doldurulur.
-:: *****************************************************************
-
-:: 1. Kaynak Disk ve Dosya Yolu Bilgisi
-echo Oyun Yolu: %EXE_YOLU%
-echo Argümanlar: %EXE_ARGS%
-
-:: 2. Örnek Registry Kaydı (Gerekliyse bu bloğu aktif edin)
-:: REG ADD "HKCU\Software\OyunAdi" /v "KeyName" /t REG_SZ /d "Deger" /f
-
-:: 3. Oyunu Başlat
-start "" "%EXE_YOLU%" %EXE_ARGS%
-
-:: NOT: Programı çalıştırmadan önce ek komutlar ekleyebilirsiniz.
-"""
+                # Basit varsayılan
                 simple_old_default = 'start "" "%EXE_YOLU%" %EXE_ARGS%'
                 
-                # Eğer betik boşsa veya eski varsayılan içeriklerden biriyse yeni betiği kullan
-                if not launch_script or launch_script.strip() in [simple_old_default, old_default_content.strip(), old_default_content.replace('\\', '').strip()]: 
+                # Eğer betik boşsa veya basit varsayılan ise yeni betiği kullan
+                if not launch_script or launch_script.strip() == simple_old_default:
                     launch_script = DEFAULT_LAUNCH_SCRIPT_CLEAN.strip()
-                # YENİ VARSAYILAN BETİK TANIMI SONU
             else: # steam
                 calistirma_verisi, launch_script = json.dumps({'app_id': form_data.get('steam_app_id')}), None
                 
@@ -707,7 +789,7 @@ def edit_game(game_id):
             if calistirma_tipi == 'exe':
                 calistirma_verisi = json.dumps({'yol': form_data.get('exe_yol'), 'argumanlar': form_data.get('exe_argumanlar', '')})
                 
-                # YENİ VARSAYILAN BETİK TANIMI BAŞLANGIÇ
+                # BASIT VARSAYILAN BETİK TANIMI
                 DEFAULT_LAUNCH_SCRIPT_CLEAN = """@echo off
 set _EXE_PATH="%%EXE_YOLU%%"
 
@@ -723,42 +805,18 @@ echo Oyun Klasörü: %%~p_EXE_PATH%%
 echo EXE: %%~nx_EXE_PATH%%
 echo Argümanlar: %%EXE_ARGS%%
 
-:: 2. Örnek Registry Kaydı (Gerekliyse bu bloğu aktif edin)
-:: REG ADD "HKCU\\Software\\OyunAdi" /v "KeyName" /t REG_SZ /d "Deger" /f
-
-:: 3. Oyunu Başlat
+:: 2. Oyunu Başlat
 start "" "%%EXE_YOLU%%" %%EXE_ARGS%%
 
 :: NOT: Programı çalıştırmadan önce ek komutlar ekleyebilirsiniz.
 """
 
-                # Eski varsayılanları kontrol etmek için örnekler
-                old_default_content = """@echo off
-
-:: *****************************************************************
-:: * OYUN BAŞLATMA OTOMATİK SCRIPTİ
-:: * Sunucu Tarafından Otomatik Üretilmiştir.
-:: * %EXE_YOLU% ve %EXE_ARGS% değişkenleri otomatik doldurulur.
-:: *****************************************************************
-
-:: 1. Kaynak Disk ve Dosya Yolu Bilgisi
-echo Oyun Yolu: %EXE_YOLU%
-echo Argümanlar: %EXE_ARGS%
-
-:: 2. Örnek Registry Kaydı (Gerekliyse bu bloğu aktif edin)
-:: REG ADD "HKCU\Software\OyunAdi" /v "KeyName" /t REG_SZ /d "Deger" /f
-
-:: 3. Oyunu Başlat
-start "" "%EXE_YOLU%" %EXE_ARGS%
-
-:: NOT: Programı çalıştırmadan önce ek komutlar ekleyebilirsiniz.
-"""
+                # Basit varsayılan
                 simple_old_default = 'start "" "%EXE_YOLU%" %EXE_ARGS%'
                 
-                # Eğer betik boşsa veya eski varsayılan içeriklerden biriyse yeni betiği kullan
-                if not launch_script or launch_script.strip() in [simple_old_default, old_default_content.strip(), old_default_content.replace('\\', '').strip()]:
+                # Eğer betik boşsa veya basit varsayılan ise yeni betiği kullan
+                if not launch_script or launch_script.strip() == simple_old_default:
                     launch_script = DEFAULT_LAUNCH_SCRIPT_CLEAN.strip()
-                # YENİ VARSAYILAN BETİK TANIMI SONU
             else: # steam
                 calistirma_verisi, launch_script = json.dumps({'app_id': form_data.get('steam_app_id')}), None
                 
@@ -1525,4 +1583,4 @@ if __name__ == '__main__':
         folder_path = app.config.get(folder_key)
         if folder_path and not os.path.exists(folder_path):
             os.makedirs(folder_path)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)

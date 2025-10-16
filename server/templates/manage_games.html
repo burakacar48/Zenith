@@ -1,82 +1,323 @@
+
 {% extends 'base_admin.html' %}
 
 {% block title %}Oyun Yönetimi{% endblock %}
 
 {% block content %}
+    <!-- Sayfa Başlığı ve Kontroller -->
     <header class="header">
         <h1 class="page-title-with-icon">
             <i class="fas fa-gamepad"></i>
             Oyun Yönetimi
         </h1>
-        <div class="header-actions">
-            <form method="GET" action="{{ url_for('list_games') }}" class="search-bar" style="flex-grow: 1;">
-                <input type="text" name="q" placeholder="Oyun adını yazarak ara..." value="{{ search_query or '' }}">
-                <button type="submit" class="btn btn-primary search-icon-btn" style="height: 100%;">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
+        <div class="header-controls">
             <a href="{{ url_for('add_game') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Yeni Oyun Ekle
             </a>
+            <!-- Gelecek Aktif/Pasif Buton Alanı -->
+            <div class="future-toggle-area">
+                <!-- Bu alan gelecekte toggle butonu için rezerve edildi -->
+            </div>
         </div>
     </header>
 
-    <div class="card full-width">
-        <div class="card-header">
-            <h2>Tüm Oyunlar ({{ games|length }})</h2>
-        </div>
-        <div class="card-body">
-            {% if games %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Oyun Adı</th>
-                        <th>Kategoriler</th>
-                        <th>Eklenme Tarihi</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for game in games %}
-                    <tr>
-                        <td>{{ game.id }}</td>
-                        <td>
-                            <div class="game-cell">
-                                <span>{{ game.oyun_adi }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            {% if game.category_names %}
-                                {% for category in game.category_names.split(',') %}
-                                    <span class="badge badge-blue">{{ category.strip() }}</span>
-                                {% endfor %}
-                            {% else %}
-                                <span class="badge badge-red">Kategorisiz</span>
+
+    <!-- Filtre Bölümü -->
+    <div class="filters-section">
+        <form method="GET" action="{{ url_for('list_games') }}" class="filters-form" id="filtersForm">
+            <div class="filters-grid">
+                <!-- Oyun Adı Arama -->
+                <div class="filter-group">
+                    <label for="search">
+                        <i class="fas fa-search"></i> Oyun Adı
+                    </label>
+                    <input type="text" 
+                           id="search" 
+                           name="q" 
+                           placeholder="Oyun adını yazın..." 
+                           value="{{ search_query or '' }}"
+                           class="filter-input">
+                </div>
+
+                <!-- Kategori Filtresi -->
+                <div class="filter-group">
+                    <label for="category">
+                        <i class="fas fa-folder"></i> Kategori
+                    </label>
+                    <select id="category" name="category" class="filter-select">
+                        <option value="">Tüm Kategoriler</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" 
+                                    {% if category_filter|string == cat.id|string %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Çıkış Yılı Filtresi -->
+                <div class="filter-group">
+                    <label for="year">
+                        <i class="fas fa-calendar"></i> Çıkış Yılı
+                    </label>
+                    <select id="year" name="year" class="filter-select">
+                        <option value="">Tüm Yıllar</option>
+                        {% for year in years %}
+                            {% if year.cikis_yili %}
+                                <option value="{{ year.cikis_yili }}" 
+                                        {% if year_filter == year.cikis_yili %}selected{% endif %}>
+                                    {{ year.cikis_yili }}
+                                </option>
                             {% endif %}
-                        </td>
-                        <td>{{ game.created_at.split(' ')[0] if game.created_at else 'N/A' }}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="{{ url_for('edit_game', game_id=game.id) }}" class="btn-icon btn-edit"><i class="fas fa-pencil-alt"></i></a>
-                                <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" class="actions-form" onsubmit="return confirm('`{{ game.oyun_adi }}` oyununu silmek istediğine emin misin?');">
-                                    <button type="submit" class="btn-icon btn-delete"><i class="fas fa-trash"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-             <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                <p>Aramanızla eşleşen bir oyun bulunamadı.</p>
-                <a href="{{ url_for('list_games') }}" class="btn btn-secondary" style="margin-top: 16px;">
-                    Tüm Oyunları Göster
-                </a>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Dil Filtresi -->
+                <div class="filter-group">
+                    <label for="language">
+                        <i class="fas fa-globe"></i> Dil
+                    </label>
+                    <select id="language" name="language" class="filter-select">
+                        <option value="">Tüm Diller</option>
+                        {% for lang in languages %}
+                            {% if lang.oyun_dili %}
+                                <option value="{{ lang.oyun_dili }}" 
+                                        {% if language_filter == lang.oyun_dili %}selected{% endif %}>
+                                    {{ lang.oyun_dili }}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            {% endif %}
-        </div>
+
+            <!-- Filtre Sonuçları ve Temizle Butonu -->
+            <div class="filter-results">
+                {% if search_query or category_filter or year_filter or language_filter %}
+                    <button type="button" class="btn-clear-filters" onclick="clearAllFilters()">
+                        <i class="fas fa-times"></i> Filtreleri Temizle
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Gizli alanlar -->
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="per_page" value="{{ per_page }}">
+        </form>
     </div>
+
+    <!-- Oyun Grid Listesi -->
+    {% if games %}
+    <div class="games-grid">
+        {% for game in games %}
+        <div class="game-card">
+            <div class="game-poster">
+                {% if game.cover_image %}
+                    <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" 
+                         alt="{{ game.oyun_adi }}" 
+                         onerror="this.src='{{ url_for('static', filename='images/covers/default-cover.jpg') }}'">
+                {% else %}
+                    <div class="no-poster">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Poster Yok</span>
+                    </div>
+                {% endif %}
+                
+                <!-- Hover Actions -->
+                <div class="game-actions">
+                    {% if game.id %}
+                    <a href="{{ url_for('edit_game', game_id=game.id) }}" class="action-btn edit-btn" title="Düzenle">
+                        <i class="fas fa-pencil-alt"></i>
+                    </a>
+                    <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" class="delete-form"
+                          onsubmit="return confirm('{{ game.oyun_adi }} oyununu silmek istediğine emin misin?');">
+                        <button type="submit" class="action-btn delete-btn" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="action-btn disabled" title="ID eksik">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Oyun Bilgi Overlay -->
+                <div class="game-info-overlay">
+                    <div class="game-categories">
+                        {% if game.category_names %}
+                            {% for category in game.category_names.split(',')[:2] %}
+                                <span class="category-tag">{{ category.strip() }}</span>
+                            {% endfor %}
+                            {% if game.category_names.split(',')|length > 2 %}
+                                <span class="category-tag more">+{{ game.category_names.split(',')|length - 2 }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="category-tag no-category">Kategorisiz</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="game-details">
+                <h3 class="game-title">{{ game.oyun_adi }}</h3>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Sayfalama -->
+    {% if total_pages > 1 %}
+        <div class="pagination-wrapper" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 15px; flex: 1;">
+                <div class="pagination-nav">
+                    {% if has_prev %}
+                        <a href="{{ url_for('list_games', page=1, per_page=per_page, q=search_query, category=category_filter, year=year_filter, language=language_filter) }}"
+                           class="pagination-btn" title="İlk Sayfa">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="{{ url_for('list_games', page=page-1, per_page=per_page, q=search_query, category=category_filter, year=year_filter, language=language_filter) }}"
+                           class="pagination-btn">
+                            <i class="fas fa-chevron-left"></i> Önceki
+                        </a>
+                    {% endif %}
+                    
+                    <div class="pagination-numbers">
+                        {% set start_page = [1, page - 2]|max %}
+                        {% set end_page = [total_pages, page + 2]|min %}
+                        
+                        {% if start_page > 1 %}
+                            <a href="{{ url_for('list_games', page=1, per_page=per_page, q=search_query, category=category_filter, year=year_filter, language=language_filter) }}"
+                               class="pagination-number">1</a>
+                            {% if start_page > 2 %}
+                                <span class="pagination-dots">...</span>
+                            {% endif %}
+                        {% endif %}
+                        
+                        {% for p in range(start_page, end_page + 1) %}
+                            <a href="{{ url_for('list_games', page=p, per_page=per_page, q=search_query, category=category_filter, year=year_filter, language=language_filter) }}"
+                               class="pagination-number {% if p == page %}active{% endif %}">{{ p }}</a>
+                        {% endfor %}
+                        
+                        {% if end_page < total_pages %}
+                            {% if end_page < total_pages - 1 %}
+                                <span class="pagination-dots">...</span>
+                            {% endif %}
+                            <a href="{{ url_for('list_games', page=total_pages, per_page=per_page, q=search_query, category=category_filter, year=year_filter, language=language_filter) }}"
+                               class="pagination-number">{{ total_pages }}</a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if has_next %}
+                        <a href="{{ url_for('list_games', page=page+1, per_page=per_page, q=search_query, category=category_filter, year=year_filter, language=language_filter) }}"
+                           class="pagination-btn">
+                            Sonraki <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{{ url_for('list_games', page=total_pages, per_page=per_page, q=search_query, category=category_filter, year=year_filter, language=language_filter) }}"
+                           class="pagination-btn" title="Son Sayfa">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="pagination-info">
+                    <span>{{ ((page-1) * per_page + 1) }} - {{ [page * per_page, total_games]|min }} arası,
+                          toplam {{ total_pages }} sayfa, {{ total_games }} oyun</span>
+                </div>
+            </div>
+            
+            <div class="page-size-selector-bottom" style="display: flex; align-items: center; gap: 12px;">
+                <span class="page-size-label">Sayfa Boyutu:</span>
+                <div class="page-size-boxes">
+                    <div class="page-size-box {% if per_page == 8 %}active{% endif %}" onclick="changePageSize(8)">8</div>
+                    <div class="page-size-box {% if per_page == 16 %}active{% endif %}" onclick="changePageSize(16)">16</div>
+                    <div class="page-size-box {% if per_page == 32 %}active{% endif %}" onclick="changePageSize(32)">32</div>
+                    <div class="page-size-box {% if per_page == 48 %}active{% endif %}" onclick="changePageSize(48)">48</div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Boş Durum -->
+    <div class="empty-state">
+        <i class="fas fa-search"></i>
+        <h3>Oyun Bulunamadı</h3>
+        {% if search_query or category_filter or year_filter or language_filter %}
+            <p>Filtreleme kriterlerinizle eşleşen oyun bulunamadı.</p>
+            <button type="button" class="btn btn-secondary" onclick="clearAllFilters()">
+                <i class="fas fa-times"></i> Filtreleri Temizle
+            </button>
+        {% else %}
+            <p>Henüz hiç oyun eklenmemiş.</p>
+            <a href="{{ url_for('add_game') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> İlk Oyunu Ekle
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtre inputlarını dinle
+    const filterInputs = document.querySelectorAll('.filter-input, .filter-select');
+    const form = document.getElementById('filtersForm');
+    let filterTimeout;
+
+    filterInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(() => {
+                // Sayfa numarasını 1'e sıfırla
+                const pageInput = form.querySelector('input[name="page"]');
+                if (pageInput) pageInput.value = 1;
+                
+                form.submit();
+            }, 500);
+        });
+
+        input.addEventListener('change', function() {
+            clearTimeout(filterTimeout);
+            // Sayfa numarasını 1'e sıfırla
+            const pageInput = form.querySelector('input[name="page"]');
+            if (pageInput) pageInput.value = 1;
+            
+            form.submit();
+        });
+    });
+});
+
+// Sayfa boyutu değiştirme
+function changePageSize(size) {
+    const form = document.getElementById('filtersForm');
+    const perPageInput = form.querySelector('input[name="per_page"]');
+    const pageInput = form.querySelector('input[name="page"]');
+    
+    if (perPageInput) perPageInput.value = size;
+    if (pageInput) pageInput.value = 1; // Sayfa 1'e dön
+    
+    // Aktif sınıfını güncelle
+    document.querySelectorAll('.page-size-box').forEach(box => {
+        box.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    form.submit();
+}
+
+// Tüm filtreleri temizle
+function clearAllFilters() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('q');
+    url.searchParams.delete('category');
+    url.searchParams.delete('year');
+    url.searchParams.delete('language');
+    url.searchParams.set('page', '1');
+    
+    window.location.href = url.toString();
+}
+</script>
 {% endblock %}
