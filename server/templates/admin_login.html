@@ -1,0 +1,618 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Paneli Giriş - Zenith</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables - Admin Panel ile uyumlu */
+        :root {
+            --bg-dark-primary: #111111;
+            --bg-dark-secondary: #1E1E1E;
+            --bg-dark-tertiary: #2a2a2a;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --accent-red: #E50914;
+            --accent-red-hover: #F6121D;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #0f0f0f;
+            background-image: url('/static/images/background.webp');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-dark-secondary);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-hover) 100%);
+        }
+
+        .login-header {
+            text-align: center;
+            padding: 40px 30px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-container {
+            margin-bottom: 0px;
+        }
+
+        .logo-container img {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 0px;
+            filter: brightness(1.1);
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+
+        .login-form {
+            padding: 35px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 15px;
+            font-family: inherit;
+            background: var(--bg-dark-tertiary);
+            color: var(--text-primary);
+            transition: all var(--transition-speed) ease;
+            position: relative;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+            background: var(--bg-dark-primary);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: var(--text-secondary);
+            pointer-events: none;
+            z-index: 2;
+            margin-top: 12px;
+        }
+
+        .form-group input:focus + .input-icon {
+            color: var(--accent-red);
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 13px;
+        }
+
+        .remember-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-red);
+            margin: 0;
+        }
+
+        .remember-checkbox label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .forgot-link:hover {
+            color: var(--accent-red);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-hover) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .login-button:hover::before {
+            left: 100%;
+        }
+
+        .login-button:hover {
+            background: linear-gradient(135deg, var(--accent-red-hover) 0%, var(--accent-red) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4), 0 0 20px rgba(229, 9, 20, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-footer {
+            text-align: center;
+            padding: 20px 30px 30px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .footer-text i {
+            color: var(--accent-red);
+            font-size: 14px;
+        }
+
+        /* Error/Success Messages */
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #4ade80;
+        }
+
+        .alert i {
+            font-size: 16px;
+        }
+
+        /* Loading State */
+        .loading-spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .login-button.loading .loading-spinner {
+            display: inline-block;
+        }
+
+        .login-button.loading span {
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-container {
+                max-width: 100%;
+                margin: 10px;
+                border-radius: 16px;
+            }
+
+            .login-header {
+                padding: 30px 25px 15px;
+            }
+
+            .login-form {
+                padding: 25px 25px;
+            }
+
+            .login-title {
+                font-size: 22px;
+            }
+
+            .form-group input {
+                padding: 14px 18px 14px 45px;
+            }
+
+            .remember-forgot {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+        }
+
+        /* Focus Ring Enhancement */
+        .form-group input:focus-visible {
+            outline: none;
+        }
+
+        /* Modern Checkbox Styling */
+        .remember-checkbox input[type="checkbox"] {
+            appearance: none;
+            background: var(--bg-dark-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .remember-checkbox input[type="checkbox"]:checked {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .remember-checkbox input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/PanelLogo.png') }}" alt="Zenith Logo">
+            </div>
+            <p class="login-subtitle">Yeni Nesil Oyun Menüsü</p>
+        </div>
+
+        <form class="login-form" id="loginForm" method="POST">
+            <!-- Flash Messages Area -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="form-group">
+                <label for="username">Kullanıcı Adı</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="Kullanıcı adınızı girin"
+                    required
+                    autocomplete="username"
+                    value="{{ request.form.username if request.form.username }}"
+                >
+                <i class="fas fa-user input-icon"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Şifre</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Şifrenizi girin"
+                    required
+                    autocomplete="current-password"
+                >
+                <i class="fas fa-lock input-icon"></i>
+            </div>
+
+            <div class="remember-forgot">
+                <div class="remember-checkbox">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Beni Hatırla</label>
+                </div>
+                <a href="#" class="forgot-link">Şifrenizi mi Unuttunuz?</a>
+            </div>
+
+            <button type="submit" class="login-button" id="loginBtn">
+                <div class="loading-spinner"></div>
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Giriş Yap</span>
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <div class="footer-text">
+                <i class="fas fa-shield-alt"></i>
+                <span>&copy; 2024 Zenith Panel - Güvenli Giriş</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form submission handling with loading state
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const loginBtn = document.getElementById('loginBtn');
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            // Basic validation
+            if (!username || !password) {
+                e.preventDefault();
+                showNotification('Lütfen kullanıcı adı ve şifrenizi girin.', 'error');
+                return;
+            }
+
+            // Show loading state
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+
+            // Let the form submit naturally
+            // Remove loading state after 3 seconds if still on page (error case)
+            setTimeout(() => {
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }, 3000);
+        });
+
+        // Input focus enhancement
+        document.querySelectorAll('.form-group input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+
+        // Simple notification system
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Show notification
+            setTimeout(() => notification.classList.add('show'), 100);
+
+            // Hide notification after 4 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Auto-hide flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => alert.remove(), 300);
+                }, 5000);
+            });
+        });
+
+        // Forgot password link handler (placeholder)
+        document.querySelector('.forgot-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            showNotification('Şifre sıfırlama özelliği yakında eklenecek.', 'info');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Enter key in any input field submits the form
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit', { cancelable: true }));
+            }
+        });
+
+        // Add notification styles if not already present
+        const notificationStyles = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--bg-dark-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 15px 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 10000;
+                transform: translateX(400px);
+                opacity: 0;
+                transition: all 0.3s ease;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                max-width: 350px;
+            }
+
+            .notification.show {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            .notification-info {
+                border-left: 4px solid #3b82f6;
+            }
+
+            .notification-error {
+                border-left: 4px solid #ef4444;
+            }
+
+            .notification-success {
+                border-left: 4px solid #10b981;
+            }
+
+            .notification i {
+                font-size: 16px;
+            }
+
+            .notification-info i { color: #3b82f6; }
+            .notification-error i { color: #ef4444; }
+            .notification-success i { color: #10b981; }
+
+            .notification span {
+                color: var(--text-primary);
+                font-size: 14px;
+                font-weight: 500;
+            }
+        `;
+
+        // Add styles to head
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = notificationStyles;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html>

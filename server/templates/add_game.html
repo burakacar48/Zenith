@@ -4,6 +4,500 @@
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="https://unpkg.com/pell/dist/pell.min.css">
+    <style>
+        .modern-image-manager {
+            display: grid;
+            gap: 2rem;
+            padding: 1rem;
+        }
+
+        .image-section {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-section:hover {
+            border-color: rgba(229, 9, 20, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #e50914, #f6121d);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .section-info h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin: 0 0 5px 0;
+        }
+
+        .section-info p {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .gallery-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-badge {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-delete-selected {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-delete-selected:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+        }
+
+        .upload-zone {
+            border: 3px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 50px 30px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .upload-zone:hover {
+            border-color: #e50914;
+            background: rgba(229, 9, 20, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .upload-zone.upload-hidden {
+            display: none !important;
+        }
+
+        .upload-icon {
+            font-size: 56px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover .upload-icon {
+            color: #e50914;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .upload-zone h4 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin: 0 0 12px 0;
+        }
+
+        .upload-zone p {
+            color: #94a3b8;
+            margin: 0 0 20px 0;
+            font-size: 15px;
+        }
+
+        .upload-specs {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .upload-specs span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .cover-images-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            min-height: 200px;
+        }
+
+        .cover-image-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 300px;
+            max-width: 100%;
+        }
+
+        .cover-image-card:hover {
+            border-color: #e50914;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .image-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .image-card:hover {
+            border-color: #e50914;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .image-card.selected {
+            border-color: #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .selection-checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .selection-checkbox.checked {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: white;
+        }
+
+        .image-wrapper {
+            position: relative;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+            background: #2a2a2a;
+        }
+
+        .cover-image-wrapper {
+            position: relative;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+            background: #2a2a2a;
+        }
+
+        .image-wrapper img,
+        .cover-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover .image-wrapper img,
+        .cover-image-card:hover .cover-image-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .cover-image-card:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: #2d3748;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .action-btn.delete {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-info {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .image-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin: 0 0 8px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .image-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            color: #94a3b8;
+        }
+
+        .empty-state h4 {
+            font-size: 1.25rem;
+            margin: 0 0 0.5rem 0;
+            color: #f1f5f9;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .drag-over {
+            border-color: #22c55e !important;
+            background: rgba(34, 197, 94, 0.05) !important;
+        }
+
+        .file-counter {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e53e3e;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .modern-image-manager {
+                padding: 0.5rem;
+                gap: 1rem;
+            }
+
+            .gallery-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .upload-zone {
+                margin: 1rem;
+                padding: 2rem 1rem;
+            }
+
+            .upload-specs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+        /* Pell Editor Custom Styles */
+        .pell-content {
+            background: rgba(0, 0, 0, 0.2) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .pell-actionbar {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .pell-button {
+            background: transparent !important;
+            color: var(--text-secondary) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            margin: 2px !important;
+        }
+        
+        .pell-button:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .pell-button-selected {
+            background: var(--accent-red) !important;
+            color: white !important;
+        }
+        
+        /* Form Input Styles - Sidebar Background Color */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background: rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .category-checkbox-container {
+            background: rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .search-bar input {
+            background: rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        /* Language Selection - Hide Radio Buttons, Use Category Style */
+        .radio-checkbox-container .category-checkbox-label input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .radio-checkbox-container .category-checkbox-label {
+            cursor: pointer;
+        }
+        
+        .radio-checkbox-container .category-checkbox-label input[type="radio"]:checked + .category-checkbox-custom {
+            background: rgba(229, 9, 20, 0.15);
+            border-color: #e50914;
+            color: #e50914;
+        }
+        
+        .radio-checkbox-container .category-checkbox-label input[type="radio"]:checked + .category-checkbox-custom .fas.fa-check {
+            opacity: 1;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -16,26 +510,23 @@
         </div>
     </header>
 
-    <div class="card full-width">
-        <div class="card-body">
             <form method="POST" enctype="multipart/form-data">
-                <div class="tab-container">
-                    <div class="tab-nav">
-                        <div class="tab-nav-item active" data-tab="temel-bilgiler">Temel Bilgiler</div>
-                        <div class="tab-nav-item" data-tab="gorsel-yonetim">Görsel Yönetimi</div>
-                        <div class="tab-nav-item" data-tab="calistirma-ayarlari">Çalıştırma Ayarları</div>
-                    </div>
+                <div class="tab-nav" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 5px; margin-bottom: 20px; display: flex;">
+                    <div class="tab-nav-item active" data-tab="temel-bilgiler">Temel Bilgiler</div>
+                    <div class="tab-nav-item" data-tab="gorsel-yonetim">Görsel Yönetimi</div>
+                    <div class="tab-nav-item" data-tab="calistirma-ayarlari">Çalıştırma Ayarları</div>
+                </div>
 
-                    <div id="temel-bilgiler" class="tab-content active">
+                <div id="temel-bilgiler" class="tab-content active" style="padding: 15px;">
                         <h2 class="form-section-title">Temel Bilgiler</h2>
                         <div class="form-grid">
                             <div class="form-group full-width">
-                                <label for="oyun_adi_input">Oyun Adı:</label>
+                                <label for="oyun_adi_input"><i class="fas fa-gamepad" style="color: #e50914; margin-right: 8px;"></i>Oyun Adı:</label>
                                 <input type="text" name="oyun_adi" id="oyun_adi_input" required>
                             </div>
                             
                             <div class="form-group full-width">
-                                <label>Kategoriler:</label>
+                                <label><i class="fas fa-tags" style="color: #e50914; margin-right: 8px;"></i>Kategoriler:</label>
                                 <div class="category-checkbox-container">
                                     {% for category in categories %}
                                         <label class="category-checkbox-label">
@@ -50,77 +541,149 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="youtube_id_input">YouTube Fragman ID:</label>
+                                <label for="youtube_id_input"><i class="fab fa-youtube" style="color: #e50914; margin-right: 8px;"></i>YouTube Fragman ID:</label>
                                 <input type="text" name="youtube_id" id="youtube_id_input" placeholder="video_id">
                             </div>
                             <div class="form-group">
-                                <label for="cikis_yili_input">Çıkış Yılı:</label>
+                                <label for="cikis_yili_input"><i class="fas fa-calendar-alt" style="color: #e50914; margin-right: 8px;"></i>Çıkış Yılı:</label>
                                 <input type="text" name="cikis_yili" id="cikis_yili_input" placeholder="2023">
                             </div>
                             <div class="form-group">
-                                <label for="pegi_input">PEGI Rating:</label>
+                                <label for="pegi_input"><i class="fas fa-shield-alt" style="color: #e50914; margin-right: 8px;"></i>PEGI Rating:</label>
                                 <input type="text" name="pegi" id="pegi_input" placeholder="PEGI 18">
                             </div>
                             
-                            <div class="form-group">
-                                <label for="oyun_dili_select">Oyun Dili:</label>
-                                <select name="oyun_dili" id="oyun_dili_select">
-                                    <option value="Türkçe Dublaj">Türkçe Dublaj</option>
-                                    <option value="Türkçe Altyazı">Türkçe Altyazı</option>
-                                    <option value="İngilizce" selected>İngilizce</option>
-                                </select>
+                            <div class="form-group full-width">
+                                <label><i class="fas fa-globe" style="color: #e50914; margin-right: 8px;"></i>Oyun Dili:</label>
+                                <div class="category-checkbox-container radio-checkbox-container">
+                                    {% for language in languages %}
+                                        <label class="category-checkbox-label">
+                                            <input type="radio" name="oyun_dili" value="{{ language.name }}" {% if loop.first %}checked{% endif %}>
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                {{ language.name }}
+                                            </span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
                             </div>
                             
                             <div class="form-group full-width">
-                                <label for="aciklama_textarea">Açıklama:</label>
+                                <label for="aciklama_textarea"><i class="fas fa-align-left" style="color: #e50914; margin-right: 8px;"></i>Açıklama:</label>
                                 <textarea name="aciklama" id="aciklama_textarea" rows="4" style="display:none;"></textarea>
                                 <div id="aciklama-editor" class="pell"></div>
                             </div>
                         </div>
-                    </div>
+                </div>
 
-                    <div id="gorsel-yonetim" class="tab-content">
-                        <div class="media-grid">
-                            <div id="cover-slot" class="grid-item cover-image-slot">
-                                <div class="cover-label">✨ Kapak Resmi</div>
-                                <label for="cover-input" class="cover-uploader">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                                    <span>Kapak Resmi Yükle</span>
-                                </label>
-                                <img id="cover-image" src="" alt="Kapak Resmi">
-                                <label for="cover-input" id="change-cover-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
-                                    Değiştir
-                                </label>
+                <div id="gorsel-yonetim" class="tab-content" style="padding: 15px;">
+                        <div style="display: grid; gap: 2rem; padding: 1rem;">
+                            <!-- Cover Images Section -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #e50914, #f6121d); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white;">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                        <div>
+                                            <h3 style="font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0 0 5px 0;">Kapak Görseli</h3>
+                                            <p style="font-size: 13px; color: #94a3b8; margin: 0;">Oyun kapak resmi - tek görsel (2:3 oran)</p>
+                                        </div>
+                                    </div>
+                                    <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-image"></i>
+                                        <span id="cover-count">0</span> Görsel
+                                    </span>
+                                </div>
+
+                                <div class="upload-zone" id="cover-upload-zone" onclick="triggerFileUpload('covers')">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <h4>Kapak Görseli Yükle</h4>
+                                    <p>Tek bir kapak görseli seçin (eski görsel değiştirilir)</p>
+                                    <div class="upload-specs">
+                                        <span><i class="fas fa-file-image"></i> PNG, JPG, WEBP</span>
+                                        <span><i class="fas fa-expand-arrows-alt"></i> Dikey (2:3)</span>
+                                        <span><i class="fas fa-exclamation-triangle"></i> Tek Dosya</span>
+                                    </div>
+                                </div>
+
+                                <div class="cover-images-grid" id="covers-container">
+                                    <div class="empty-state">
+                                        <i class="fas fa-image"></i>
+                                        <h4>Henüz kapak görseli yok</h4>
+                                        <p>Yukarıdaki upload alanını kullanarak kapak görseli yükleyebilirsiniz</p>
+                                    </div>
+                                </div>
                             </div>
-                            <input type="file" name="cover_image" id="cover-input" class="hidden-input" accept="image/*">
 
-                            <label for="gallery-input" class="grid-item add-gallery-slot">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                <span>Resim Ekle</span>
-                            </label>
-                            <input type="file" name="gallery_images" id="gallery-input" class="hidden-input" accept="image/*" multiple>
+                            <!-- Gallery Images Section -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); flex-wrap: wrap; gap: 1rem; width: 100%;">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #e50914, #f6121d); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white;">
+                                            <i class="fas fa-images"></i>
+                                        </div>
+                                        <div>
+                                            <h3 style="font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0 0 5px 0;">Galeri Görselleri</h3>
+                                            <p style="font-size: 13px; color: #94a3b8; margin: 0;">Oyun galeri resimleri - çoklu görsel (16:9 oran)</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-images"></i>
+                                            <span id="gallery-count">0</span> Görsel
+                                        </span>
+                                        <button class="btn-delete-selected" id="delete-selected-btn" onclick="deleteSelectedImages()" style="display: none; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; align-items: center; gap: 10px;">
+                                            <i class="fas fa-trash-alt"></i>
+                                            Seçilileri Sil (<span id="selected-count">0</span>)
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="upload-zone" onclick="triggerFileUpload('gallery')">
+                                    <i class="fas fa-camera upload-icon"></i>
+                                    <h4>Galeri Görselleri Yükle</h4>
+                                    <p>Birden fazla oyun ekran görüntüsü ve tanıtım görseli seçebilirsiniz</p>
+                                    <div class="upload-specs">
+                                        <span><i class="fas fa-file-image"></i> PNG, JPG, WEBP</span>
+                                        <span><i class="fas fa-expand-arrows-alt"></i> Yatay (16:9)</span>
+                                        <span><i class="fas fa-layer-group"></i> Çoklu Dosya</span>
+                                    </div>
+                                </div>
+
+                                <div class="images-grid" id="gallery-grid">
+                                    <div class="empty-state">
+                                        <i class="fas fa-images"></i>
+                                        <h4>Henüz galeri görseli yok</h4>
+                                        <p>Yukarıdaki upload alanını kullanarak galeri görselleri yükleyebilirsiniz</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        
+                        <!-- Hidden file inputs -->
+                        <input type="file" name="cover_image" id="cover-input" accept="image/*" style="display: none;">
+                        <input type="file" name="gallery_images" id="gallery-input" accept="image/*" multiple style="display: none;">
+                </div>
 
-                    <div id="calistirma-ayarlari" class="tab-content">
+                <div id="calistirma-ayarlari" class="tab-content" style="padding: 15px;">
                         <h2 class="form-section-title">Teknik Bilgiler</h2>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="save_yolu_input">Save Dosyası Yolu:</label>
+                                <label for="save_yolu_input"><i class="fas fa-folder-open" style="color: #e50914; margin-right: 8px;"></i>Save Dosyası Yolu:</label>
                                 <input type="text" name="save_yolu" id="save_yolu_input" placeholder="%USERPROFILE%\Documents\My Games\...">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="calistirma_tipi">Çalıştırma Tipi:</label>
+                                <label for="calistirma_tipi"><i class="fas fa-play-circle" style="color: #e50914; margin-right: 8px;"></i>Çalıştırma Tipi:</label>
                                 <select name="calistirma_tipi" id="calistirma_tipi" onchange="updateCalistirmaInputs()">
                                     <option value="exe" selected>EXE</option>
                                     <option value="steam">Steam</option>
                                 </select>
                             </div>
                             <div class="form-group" style="flex-grow: 1.5;"> <div id="exe_fields" class="calistirma-field-group">
-                                    <label for="exe_yol_input_file">EXE Yolu:</label>
+                                    <label for="exe_yol_input_file"><i class="fas fa-file-code" style="color: #e50914; margin-right: 8px;"></i>EXE Yolu:</label>
                                     <input type="hidden" name="exe_yol" id="exe_yol_input" value="">
                                     <div class="custom-file-path-wrapper">
                                         <input type="file" name="exe_yol_file" id="exe_yol_input_file" class="file-input" accept=".exe">
@@ -130,7 +693,7 @@
                                     </div>
                                 </div>
                                 <div id="steam_fields" class="hidden calistirma-field-group">
-                                    <label for="steam_app_id_input">Steam App ID:</label>
+                                    <label for="steam_app_id_input"><i class="fab fa-steam" style="color: #e50914; margin-right: 8px;"></i>Steam App ID:</label>
                                     <input type="text" name="steam_app_id" id="steam_app_id_input" placeholder="Örn: 730">
                                 </div>
                             </div>
@@ -138,21 +701,18 @@
                         <div id="exe_extra_fields">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="exe_argumanlar_input">Argümanlar (isteğe bağlı):</label>
+                                    <label for="exe_argumanlar_input"><i class="fas fa-terminal" style="color: #e50914; margin-right: 8px;"></i>Argümanlar (isteğe bağlı):</label>
                                     <input type="text" name="exe_argumanlar" id="exe_argumanlar_input" placeholder="-fullscreen -novid">
                                 </div>
 
                             </div>
                         </div>
-                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
                     <i class="fas fa-save"></i>
                     Yeni Oyunu Ekle
                 </button>
             </form>
-        </div>
-    </div>
 
 
 {% endblock %}
@@ -187,45 +747,337 @@
               editorInstance.content.innerHTML = document.getElementById('aciklama_textarea').value;
             }
 
-            // New Media Manager JS
+            // Modern Image Manager JavaScript - Enhanced Version
+            let selectedImages = new Set();
+            let galleryCount = 0;
+            let coverImageExists = false;
+
+            // Cover Image Handler
             const coverInput = document.getElementById('cover-input');
-            const coverSlot = document.getElementById('cover-slot');
-            const coverImage = document.getElementById('cover-image');
+            const coversContainer = document.getElementById('covers-container');
 
-            coverInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
+            coverInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        coverImage.src = e.target.result;
-                        coverSlot.classList.add('has-image');
-                    }
-                    reader.readAsDataURL(file);
+                    handleCoverImageUpload(file);
                 }
             });
 
+            // Gallery Images Handler
             const galleryInput = document.getElementById('gallery-input');
-            const mediaGrid = document.querySelector('.media-grid');
+            const galleryGrid = document.getElementById('gallery-grid');
 
-            galleryInput.addEventListener('change', (e) => {
-                const files = e.target.files;
-                for(let i = 0; i < files.length; i++) {
-                    const file = files[i];
+            galleryInput.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                handleGalleryImagesUpload(files);
+            });
+
+            // Handle Cover Image Upload
+            function handleCoverImageUpload(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    coversContainer.innerHTML = '';
+                    const imageCard = createCoverImageCard(file.name, e.target.result);
+                    coversContainer.appendChild(imageCard);
+                    coverImageExists = true;
+                    updateCoverUploadZone();
+                    updateCoverCount();
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Handle Gallery Images Upload
+            function handleGalleryImagesUpload(files) {
+                // Clear empty state if exists
+                const emptyState = galleryGrid.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                files.forEach((file, index) => {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        const newGalleryItem = document.createElement('div');
-                        newGalleryItem.className = 'grid-item gallery-item';
-                        newGalleryItem.dataset.id = 'new-' + i;
-                        newGalleryItem.innerHTML = `
-                            <div class="selection-tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></div>
-                            <img src="${e.target.result}" alt="Yeni Galeri Resmi">
-                            <input type="checkbox" name="new_gallery_images" value="${file.name}" class="hidden-input">
-                        `;
-                        mediaGrid.insertBefore(newGalleryItem, mediaGrid.querySelector('.add-gallery-slot'));
-                    }
+                        const imageCard = createGalleryImageCard(file.name, e.target.result, galleryCount + index);
+                        galleryGrid.appendChild(imageCard);
+                    };
                     reader.readAsDataURL(file);
+                });
+                
+                galleryCount += files.length;
+                updateGalleryCount();
+            }
+
+            // Create Cover Image Card
+            function createCoverImageCard(fileName, imageSrc) {
+                const card = document.createElement('div');
+                card.className = 'cover-image-card';
+                card.dataset.fileName = fileName;
+                
+                card.innerHTML = `
+                    <div class="cover-image-wrapper">
+                        <img src="${imageSrc}" alt="${fileName}">
+                        <div class="image-overlay">
+                            <div class="image-actions">
+                                <button class="action-btn delete" onclick="deleteCoverImage('${fileName}')">
+                                    <i class="fas fa-trash"></i> Değiştir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">${fileName}</div>
+                        <div class="image-details">
+                            <span>Kapak</span>
+                            <span>${getFileSize(imageSrc)}</span>
+                        </div>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            // Create Gallery Image Card
+            function createGalleryImageCard(fileName, imageSrc, index) {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.dataset.fileName = fileName;
+                card.dataset.index = index;
+                
+                card.innerHTML = `
+                    <div class="selection-checkbox" onclick="toggleImageSelection('${fileName}', ${index})">
+                        <i class="fas fa-check" style="display: none;"></i>
+                    </div>
+                    <div class="image-wrapper">
+                        <img src="${imageSrc}" alt="${fileName}">
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">${fileName}</div>
+                        <div class="image-details">
+                            <span>Galeri</span>
+                            <span>${getFileSize(imageSrc)}</span>
+                        </div>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            // Toggle Image Selection
+            window.toggleImageSelection = function(imageName, index) {
+                const card = document.querySelector(`[data-file-name="${imageName}"]`);
+                const checkbox = card.querySelector('.selection-checkbox');
+                const checkIcon = checkbox.querySelector('i');
+                
+                if (selectedImages.has(imageName)) {
+                    selectedImages.delete(imageName);
+                    card.classList.remove('selected');
+                    checkbox.classList.remove('checked');
+                    checkIcon.style.display = 'none';
+                } else {
+                    selectedImages.add(imageName);
+                    card.classList.add('selected');
+                    checkbox.classList.add('checked');
+                    checkIcon.style.display = 'block';
                 }
+                
+                updateDeleteButton();
+            };
+
+            // Delete Cover Image
+            window.deleteCoverImage = function(imageName) {
+                if (confirm(`${imageName} kapak görselini silmek istediğinizden emin misiniz?\nUpload bölümü tekrar görünecek.`)) {
+                    coversContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-image"></i>
+                            <h4>Henüz kapak görseli yok</h4>
+                            <p>Yukarıdaki upload alanını kullanarak kapak görseli yükleyebilirsiniz</p>
+                        </div>
+                    `;
+                    coverImageExists = false;
+                    updateCoverUploadZone();
+                    updateCoverCount();
+                    
+                    // Clear the file input
+                    coverInput.value = '';
+                }
+            };
+
+            // Delete Selected Gallery Images
+            window.deleteSelectedImages = function() {
+                if (selectedImages.size === 0) return;
+                
+                const imageNames = Array.from(selectedImages).join(', ');
+                if (confirm(`Seçili ${selectedImages.size} görseli silmek istediğinizden emin misiniz?\n\n${imageNames}`)) {
+                    selectedImages.forEach(fileName => {
+                        const card = document.querySelector(`[data-file-name="${fileName}"]`);
+                        if (card && card.dataset.index !== undefined) {
+                            card.remove();
+                            galleryCount--;
+                        }
+                    });
+                    
+                    selectedImages.clear();
+                    updateGalleryCount();
+                    updateDeleteButton();
+                    
+                    // Show empty state if no images left
+                    if (galleryCount === 0) {
+                        galleryGrid.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-images"></i>
+                                <h4>Henüz galeri görseli yok</h4>
+                                <p>Yukarıdaki upload alanını kullanarak galeri görselleri yükleyebilirsiniz</p>
+                            </div>
+                        `;
+                    }
+                }
+            };
+
+            // File Upload Trigger
+            window.triggerFileUpload = function(type) {
+                if (type === 'covers') {
+                    coverInput.click();
+                } else if (type === 'gallery') {
+                    galleryInput.click();
+                }
+            };
+
+            // Update Cover Upload Zone Visibility
+            function updateCoverUploadZone() {
+                const uploadZone = document.getElementById('cover-upload-zone');
+                if (coverImageExists) {
+                    uploadZone.classList.add('upload-hidden');
+                } else {
+                    uploadZone.classList.remove('upload-hidden');
+                }
+            }
+
+            // Update Cover Count
+            function updateCoverCount() {
+                const coverCount = document.getElementById('cover-count');
+                if (coverCount) {
+                    coverCount.textContent = coverImageExists ? '1' : '0';
+                }
+            }
+
+            // Update Gallery Count
+            function updateGalleryCount() {
+                const countElement = document.getElementById('gallery-count');
+                if (countElement) {
+                    countElement.textContent = galleryCount;
+                }
+            }
+
+            // Update Delete Button
+            function updateDeleteButton() {
+                const deleteBtn = document.getElementById('delete-selected-btn');
+                const selectedCount = document.getElementById('selected-count');
+                
+                if (selectedImages.size > 0) {
+                    deleteBtn.style.display = 'flex';
+                    selectedCount.textContent = selectedImages.size;
+                } else {
+                    deleteBtn.style.display = 'none';
+                }
+            }
+
+            // Get File Size (approximate)
+            function getFileSize(dataUrl) {
+                const base64 = dataUrl.split(',')[1];
+                const bytes = (base64.length * 3) / 4;
+                
+                if (bytes < 1024) return Math.round(bytes) + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+
+            // Initialize image manager
+            function initializeImageManager() {
+                updateCoverCount();
+                updateGalleryCount();
+                updateCoverUploadZone();
+            }
+
+            // Add Drag & Drop functionality
+            function setupDragAndDrop() {
+                const uploadZones = document.querySelectorAll('.upload-zone:not(.upload-hidden)');
+                
+                uploadZones.forEach(zone => {
+                    // Prevent default drag behaviors
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        zone.addEventListener(eventName, preventDefaults, false);
+                        document.body.addEventListener(eventName, preventDefaults, false);
+                    });
+
+                    // Highlight drop area when item is dragged over it
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        zone.addEventListener(eventName, highlight, false);
+                    });
+
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        zone.addEventListener(eventName, unhighlight, false);
+                    });
+
+                    // Handle dropped files
+                    zone.addEventListener('drop', handleDrop, false);
+                });
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                function highlight(e) {
+                    e.currentTarget.classList.add('drag-over');
+                }
+
+                function unhighlight(e) {
+                    e.currentTarget.classList.remove('drag-over');
+                }
+
+                function handleDrop(e) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    const zone = e.currentTarget;
+                    
+                    if (zone.id === 'cover-upload-zone') {
+                        if (files.length === 1) {
+                            handleCoverImageUpload(files[0]);
+                        } else {
+                            alert('Kapak görseli için sadece tek dosya seçin!');
+                        }
+                    } else {
+                        handleGalleryImagesUpload(Array.from(files));
+                    }
+                }
+            }
+
+            // File counter for multiple uploads
+            function showFileCounter(count) {
+                // This can be enhanced to show upload progress
+                console.log(`${count} dosya yükleniyor...`);
+            }
+
+            // Initialize drag & drop when DOM is ready
+            setupDragAndDrop();
+            
+            // Re-setup drag & drop when upload zones change visibility
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        setupDragAndDrop();
+                    }
+                });
             });
+
+            // Observe upload zones for class changes
+            const coverUploadZone = document.getElementById('cover-upload-zone');
+            if (coverUploadZone) {
+                observer.observe(coverUploadZone, { attributes: true });
+            }
+
+            // Initialize on page load
+            initializeImageManager();
         });
     </script>
 {% endblock %}

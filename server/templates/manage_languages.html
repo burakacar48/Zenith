@@ -1,0 +1,288 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Dil Seçenekleri{% endblock %}
+
+{% block content %}
+<div class="manage-languages">
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-globe"></i>
+        Dil Seçenekleri
+    </h1>
+</div>
+
+<div class="content-spacing">
+    <div class="cards-grid">
+    <!-- Yeni Dil Ekleme Kartı -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-plus-circle"></i>
+                Yeni Dil Ekle
+            </h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" class="form-horizontal">
+                <input type="hidden" name="action" value="add">
+                
+                <div class="form-group">
+                    <label for="name" class="form-label">Dil Adı</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Örn: Türkçe" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="code" class="form-label">Dil Kodu</label>
+                    <input type="text" id="code" name="code" class="form-control" placeholder="Örn: tr" maxlength="5" required>
+                    <small class="form-text text-muted">2-5 karakter arası ISO dil kodu</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Dil Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mevcut Diller Listesi -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-list"></i>
+                Mevcut Diller ({{ languages|length }})
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if languages %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Dil Adı</th>
+                                <th>Kod</th>
+                                <th>Durum</th>
+                                <th>Ekleme Tarihi</th>
+                                <th class="text-center">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for language in languages %}
+                            <tr>
+                                <td>
+                                    <strong>{{ language.name }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">{{ language.code.upper() }}</span>
+                                </td>
+                                <td>
+                                    {% if language.is_active %}
+                                        <span class="status-badge status-active">
+                                            <i class="fas fa-check-circle"></i>
+                                            Aktif
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">
+                                            <i class="fas fa-times-circle"></i>
+                                            Pasif
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if language.created_at %}
+                                        {{ language.created_at[:10] }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <!-- Durum Değiştir -->
+                                        <form method="POST" style="display: inline;">
+                                            <input type="hidden" name="action" value="toggle_status">
+                                            <input type="hidden" name="language_id" value="{{ language.id }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Durumu Değiştir">
+                                                {% if language.is_active %}
+                                                    <i class="fas fa-eye-slash"></i>
+                                                {% else %}
+                                                    <i class="fas fa-eye"></i>
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                        
+                                        <!-- Sil -->
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('{{ language.name }} dilini silmek istediğinize emin misiniz?');">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="language_id" value="{{ language.id }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-globe fa-3x"></i>
+                    <h4>Henüz dil eklenmemiş</h4>
+                    <p>Yukarıdaki formu kullanarak yeni dil ekleyebilirsiniz.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    </div>
+</div>
+</div>
+
+<style>
+.content-spacing {
+    margin-top: 2rem;
+}
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    margin-bottom: 0.75rem;
+}
+
+.form-text {
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.badge {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+}
+
+.badge-secondary {
+    background-color: var(--accent-red);
+    color: white;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+}
+
+.btn-outline-secondary {
+    border: 1px solid #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-outline-danger {
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--accent-red);
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h4 {
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.form-text.text-muted {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.table th {
+    background-color: #181818 !important;
+    border-top: none !important;
+    font-weight: 600;
+    color: #ffffff;
+    border-bottom: 2px solid #333333 !important;
+}
+
+.table thead th {
+    background-color: #181818 !important;
+    color: #ffffff !important;
+}
+
+.manage-languages .table th {
+    background-color: #181818 !important;
+    color: #ffffff !important;
+}
+
+.manage-languages .table thead tr th {
+    background-color: #181818 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,0.02);
+}
+</style>
+{% endblock %}

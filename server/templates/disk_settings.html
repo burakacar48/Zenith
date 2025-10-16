@@ -1,0 +1,211 @@
+
+{% extends 'base_admin.html' %}
+
+{% block title %}Disk Ayarları{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <h1>Disk Ayarları</h1>
+    </header>
+
+    <form method="POST" id="disk-settings-form">
+        <input type="hidden" name="action" value="update_all_disk_names">
+        
+        <div class="card full-width">
+            <div class="card-header">
+                <h2>Mevcut Diskler</h2>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Değişiklikleri Kaydet
+                </button>
+            </div>
+            <div class="card-body">
+                {% if drives %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Disk</th>
+                                    <th>Sistem Adı</th>
+                                    <th>Özel İsim</th>
+                                    <th>Toplam Boyut</th>
+                                    <th>Boş Alan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for drive in drives %}
+                                <tr>
+                                    <td>
+                                        <span class="drive-letter">{{ drive.device_id }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="volume-name">{{ drive.volume_name }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="input-wrapper">
+                                            <input type="text"
+                                                   name="custom_name_{{ drive.device_id.replace(':', '') }}"
+                                                   value="{{ drive.custom_name }}"
+                                                   placeholder="Özel disk ismi..."
+                                                   class="disk-name-input"
+                                                   maxlength="50">
+                                            <input type="hidden" name="drive_letter_{{ drive.device_id.replace(':', '') }}" value="{{ drive.device_id }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="size-info">
+                                            {% if drive.size_gb != 'Bilinmiyor' %}
+                                                {{ drive.size_gb }} GB
+                                            {% else %}
+                                                {{ drive.size_gb }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="free-space-info">
+                                            {% if drive.free_space_gb != 'Bilinmiyor' %}
+                                                {{ drive.free_space_gb }} GB
+                                            {% else %}
+                                                {{ drive.free_space_gb }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <h3>Disk Bulunamadı</h3>
+                        <p>C: diski dışında hiçbir disk bulunamadı veya disk listesi alınamadı.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* Drive Letter Styling */
+.drive-letter {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: var(--accent-red);
+}
+
+.volume-name {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+/* Modern Form Styling */
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.disk-name-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-dark-secondary);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+    position: relative;
+}
+
+.disk-name-input:focus {
+    border-color: var(--accent-red);
+    background: var(--bg-dark-primary);
+    box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+    transform: translateY(-1px);
+}
+
+.disk-name-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+
+.size-info, .free-space-info {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-size: 0.85em;
+    background: var(--bg-dark-tertiary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.empty-state-icon {
+    font-size: 4em;
+    margin-bottom: 24px;
+    opacity: 0.4;
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-red-hover));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .input-wrapper {
+        width: 100%;
+    }
+}
+
+/* Table Enhancements */
+.table th {
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border-color);
+    padding: 16px 12px;
+}
+
+.table td {
+    padding: 20px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Tüm tablo hover efektlerini kaldır */
+.table tr,
+.table tbody tr,
+.table thead tr {
+    transition: none !important;
+}
+
+.table tr:hover,
+.table tbody tr:hover,
+.table thead tr:hover {
+    background-color: transparent !important;
+}
+
+/* Ana CSS'deki hover efektlerini override et */
+tbody tr:hover {
+    background-color: transparent !important;
+}
+</style>
+{% endblock %}

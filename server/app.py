@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for, send_from_directory, Response
+from flask import Flask, jsonify, render_template, request, redirect, url_for, send_from_directory, Response, session, flash
 from flask_cors import CORS
 import sqlite3
 import os
@@ -110,6 +110,63 @@ def get_hwid():
         print(f"Anakart Seri Numarası alınamadı: {e}")
     return ""
 
+def get_windows_drives():
+    """Windows disklerini listeler (C: hariç)"""
+    try:
+        # JSON formatında çıktı almak için daha detaylı PowerShell komutu
+        command = [
+            'powershell', '-Command',
+            'Get-WmiObject -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3 -and $_.DeviceID -ne "C:"} | ForEach-Object { [PSCustomObject]@{ DeviceID=$_.DeviceID; VolumeName=if($_.VolumeName){$_.VolumeName}else{"Yerel Disk"}; Size=$_.Size; FreeSpace=$_.FreeSpace } } | ConvertTo-Json'
+        ]
+        process = subprocess.run(command, capture_output=True, text=True, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        
+        drives = []
+        output = process.stdout.strip()
+        
+        if output and output != 'null':
+            import json
+            try:
+                # JSON çıktısını parse et
+                drive_data = json.loads(output)
+                
+                # Tek disk varsa liste yapmak için
+                if isinstance(drive_data, dict):
+                    drive_data = [drive_data]
+                
+                for drive in drive_data:
+                    drives.append({
+                        'device_id': drive.get('DeviceID', ''),
+                        'volume_name': drive.get('VolumeName', 'Yerel Disk'),
+                        'size': int(drive.get('Size', 0)) if drive.get('Size') else None,
+                        'free_space': int(drive.get('FreeSpace', 0)) if drive.get('FreeSpace') else None
+                    })
+                    
+            except json.JSONDecodeError:
+                # JSON parse edilemezse eski yöntemi kullan
+                print("JSON parse hatası, manuel parsing yapılıyor...")
+                lines = output.split('\n')
+                for line in lines:
+                    if ':' in line and any(letter in line for letter in 'DEFGHIJKLMNOPQRSTUVWXYZ'):
+                        parts = line.strip().split()
+                        if parts:
+                            drives.append({
+                                'device_id': parts[0] if parts else 'Bilinmiyor',
+                                'volume_name': 'Yerel Disk',
+                                'size': None,
+                                'free_space': None
+                            })
+        
+        return drives
+    except Exception as e:
+        print(f"Disk listesi alınamadı: {e}")
+        # Hata durumunda test disk'i döndür
+        return [{
+            'device_id': 'D:',
+            'volume_name': 'Test Disk',
+            'size': None,
+            'free_space': None
+        }]
+
 def get_public_ip_from_server():
     try:
         response = requests.get('https://api.ipify.org?format=json', timeout=5)
@@ -163,6 +220,15 @@ def license_required(f):
                 
         if license_status_cache.get('status') != 'valid':
             return redirect(url_for('license_management'))
+        return f(*args, **kwargs)
+    return decorated
+
+# Admin Authentication Functions
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated
 
@@ -381,8 +447,45 @@ def download_100_save(current_user_id, game_id):
 def root():
     return redirect(url_for('admin_index'))
 
+# Admin Authentication Routes
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        
+        if not username or not password:
+            flash('Kullanıcı adı ve şifre gereklidir.', 'error')
+            return render_template('admin_login.html')
+        
+        # Admin kullanıcısını kontrol et
+        conn = get_db_connection()
+        try:
+            admin_user = conn.execute('SELECT * FROM admin_users WHERE username = ?', (username,)).fetchone()
+            
+            if admin_user and check_password_hash(admin_user['password_hash'], password):
+                session['admin_logged_in'] = True
+                session['admin_username'] = admin_user['username']
+                session['admin_id'] = admin_user['id']
+                flash('Başarıyla giriş yaptınız!', 'success')
+                return redirect(url_for('admin_index'))
+            else:
+                flash('Geçersiz kullanıcı adı veya şifre.', 'error')
+                
+        finally:
+            conn.close()
+    
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.clear()
+    flash('Başarıyla çıkış yaptınız.', 'info')
+    return redirect(url_for('admin_login'))
+
 # Admin Panel Routes
 @app.route('/admin')
+@admin_required
 @license_required
 def admin_index():
     conn = get_db_connection()
@@ -398,6 +501,7 @@ def admin_index():
     return render_template('index.html', stats=stats, recent_games=recent_games, total_clicks=total_clicks)
 
 @app.route('/admin/games')
+@admin_required
 @license_required
 def list_games():
     conn = get_db_connection()
@@ -440,6 +544,7 @@ def list_games():
             conn.close() # Bağlantıyı kapat
 
 @app.route('/admin/add', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def add_game():
     conn = get_db_connection()
@@ -541,12 +646,14 @@ start "" "%EXE_YOLU%" %EXE_ARGS%
             return redirect(url_for('list_games'))
             
         categories = conn.execute('SELECT * FROM categories ORDER BY name ASC').fetchall()
-        return render_template('add_game.html', categories=categories)
+        languages = conn.execute('SELECT * FROM languages WHERE is_active = 1 ORDER BY name ASC').fetchall()
+        return render_template('add_game.html', categories=categories, languages=languages)
     finally: # Bağlantı, ne olursa olsun burada kapatılır
         if conn:
             conn.close()
 
 @app.route('/admin/edit/<int:game_id>', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def edit_game(game_id):
     conn = get_db_connection()
@@ -568,6 +675,19 @@ def edit_game(game_id):
                 file.save(os.path.join(app.config['UPLOAD_FOLDER_100_SAVES'], yuzde_yuz_save_filename))
                 
             folder_name = get_gallery_folder_name(oyun_adi)
+            
+            # Seçili görselleri sil
+            delete_gallery_images = form_data.get('delete_gallery_images', '')
+            if delete_gallery_images:
+                image_paths = [path.strip() for path in delete_gallery_images.split(',') if path.strip()]
+                for path in image_paths:
+                    conn.execute('DELETE FROM gallery_images WHERE image_path = ? AND game_id = ?', (path, game_id))
+                    try:
+                        os.remove(os.path.join(app.config['UPLOAD_FOLDER_GALLERY'], path))
+                    except OSError as e:
+                        print(f"Dosya silinemedi: {e}")
+            
+            # Eski delete_gallery işlemini de koru (geriye uyumluluk için)
             if request.form.getlist('delete_gallery'):
                 for path in request.form.getlist('delete_gallery'):
                     conn.execute('DELETE FROM gallery_images WHERE image_path = ? AND game_id = ?', (path, game_id))
@@ -649,7 +769,7 @@ start "" "%EXE_YOLU%" %EXE_ARGS%
             # HATA DÜZELTME SONU
                     
             conn.commit()
-            return redirect(url_for('list_games'))
+            return redirect(url_for('edit_game', game_id=game_id))
             
         game = conn.execute('SELECT * FROM games WHERE id = ?', (game_id,)).fetchone()
         if not game: return "Oyun bulunamadı!", 404
@@ -657,15 +777,17 @@ start "" "%EXE_YOLU%" %EXE_ARGS%
         game_data = dict(game)
         game_data['calistirma_verisi_dict'] = json.loads(game['calistirma_verisi'] or '{}')
         categories = conn.execute('SELECT * FROM categories ORDER BY name ASC').fetchall()
+        languages = conn.execute('SELECT * FROM languages WHERE is_active = 1 ORDER BY name ASC').fetchall()
         gallery_images = conn.execute('SELECT * FROM gallery_images WHERE game_id = ?', (game_id,)).fetchall()
         game_category_ids = {row['category_id'] for row in conn.execute('SELECT category_id FROM game_categories WHERE game_id = ?', (game_id,)).fetchall()}
         
-        return render_template('edit_game.html', game=game_data, categories=categories, gallery=gallery_images, game_category_ids=game_category_ids)
+        return render_template('edit_game.html', game=game_data, categories=categories, languages=languages, gallery=gallery_images, game_category_ids=game_category_ids)
     finally: # Bağlantı, ne olursa olsun burada kapatılır
         if conn:
             conn.close()
 
 @app.route('/admin/delete/<int:game_id>', methods=['POST'])
+@admin_required
 @license_required
 def delete_game(game_id):
     conn = get_db_connection()
@@ -679,6 +801,7 @@ def delete_game(game_id):
 
 
 @app.route('/admin/categories', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def manage_categories():
     conn = get_db_connection()
@@ -699,6 +822,7 @@ def manage_categories():
             conn.close()
 
 @app.route('/admin/categories/edit/<int:category_id>', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def edit_category(category_id):
     conn = get_db_connection()
@@ -718,6 +842,7 @@ def edit_category(category_id):
             conn.close()
 
 @app.route('/admin/categories/delete/<int:category_id>', methods=['POST'])
+@admin_required
 @license_required
 def delete_category(category_id):
     conn = get_db_connection()
@@ -730,6 +855,7 @@ def delete_category(category_id):
             conn.close()
 
 @app.route('/admin/users')
+@admin_required
 @license_required
 def manage_users():
     conn = get_db_connection()
@@ -741,6 +867,7 @@ def manage_users():
             conn.close()
 
 @app.route('/admin/users/edit/<int:user_id>', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def edit_user(user_id):
     conn = get_db_connection()
@@ -764,6 +891,7 @@ def edit_user(user_id):
             conn.close()
 
 @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+@admin_required
 @license_required
 def delete_user(user_id):
     if user_id == 1: 
@@ -781,6 +909,7 @@ def delete_user(user_id):
             conn.close()
 
 @app.route('/admin/sliders')
+@admin_required
 @license_required
 def manage_sliders():
     conn = get_db_connection()
@@ -792,6 +921,7 @@ def manage_sliders():
             conn.close()
 
 @app.route('/admin/slider/add', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def add_slider():
     conn = get_db_connection()
@@ -816,6 +946,7 @@ def add_slider():
             conn.close()
 
 @app.route('/admin/slider/edit/<int:slider_id>', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def edit_slider(slider_id):
     conn = get_db_connection()
@@ -844,6 +975,7 @@ def edit_slider(slider_id):
             conn.close()
 
 @app.route('/admin/slider/delete/<int:slider_id>', methods=['POST'])
+@admin_required
 @license_required
 def delete_slider(slider_id):
     conn = get_db_connection()
@@ -860,6 +992,7 @@ def delete_slider(slider_id):
             conn.close()
 
 @app.route('/admin/ratings')
+@admin_required
 @license_required
 def manage_ratings():
     sort_by, order = request.args.get('sort_by', 'oyun_adi'), request.args.get('order', 'asc')
@@ -874,6 +1007,7 @@ def manage_ratings():
             conn.close()
 
 @app.route('/admin/statistics')
+@admin_required
 @license_required
 def manage_statistics():
     sort_by, order = request.args.get('sort_by', 'click_count'), request.args.get('order', 'desc')
@@ -888,6 +1022,7 @@ def manage_statistics():
             conn.close()
 
 @app.route('/admin/statistics/reset_all', methods=['POST'])
+@admin_required
 @license_required
 def reset_all_clicks():
     conn = get_db_connection()
@@ -900,6 +1035,7 @@ def reset_all_clicks():
             conn.close()
 
 @app.route('/admin/ratings/reset_all', methods=['POST'])
+@admin_required
 @license_required
 def reset_all_ratings():
     conn = get_db_connection()
@@ -913,6 +1049,7 @@ def reset_all_ratings():
             conn.close()
 
 @app.route('/admin/download_games')
+@admin_required
 @license_required
 def download_games():
     return render_template('download_games.html')
@@ -946,6 +1083,7 @@ def license_management():
                            last_check_time=license_status_cache.get('last_checked'))
 
 @app.route('/admin/social_media', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def social_media_settings():
     if request.method == 'POST':
@@ -957,6 +1095,7 @@ def social_media_settings():
     return render_template('social_media_settings.html', settings=settings)
 
 @app.route('/admin/settings', methods=['GET', 'POST'])
+@admin_required
 @license_required
 def general_settings():
     if request.method == 'POST':
@@ -1007,6 +1146,358 @@ def general_settings():
 
     settings = get_all_settings()
     return render_template('general_settings.html', settings=settings)
+
+@app.route('/admin/languages', methods=['GET', 'POST'])
+@admin_required
+@license_required
+def manage_languages():
+    conn = get_db_connection()
+    try:
+        if request.method == 'POST':
+            action = request.form.get('action')
+            
+            if action == 'add':
+                language_name = request.form.get('name', '').strip()
+                language_code = request.form.get('code', '').strip().lower()
+                if language_name and language_code:
+                    try:
+                        conn.execute('INSERT INTO languages (name, code) VALUES (?, ?)', (language_name, language_code))
+                        conn.commit()
+                    except sqlite3.IntegrityError:
+                        pass  # Dil zaten mevcut
+                        
+            elif action == 'toggle_status':
+                language_id = request.form.get('language_id')
+                if language_id:
+                    current_status = conn.execute('SELECT is_active FROM languages WHERE id = ?', (language_id,)).fetchone()
+                    if current_status:
+                        new_status = 0 if current_status['is_active'] else 1
+                        conn.execute('UPDATE languages SET is_active = ? WHERE id = ?', (new_status, language_id))
+                        conn.commit()
+                        
+            elif action == 'delete':
+                language_id = request.form.get('language_id')
+                if language_id:
+                    conn.execute('DELETE FROM languages WHERE id = ?', (language_id,))
+                    conn.commit()
+                    
+            return redirect(url_for('manage_languages'))
+            
+        languages = conn.execute('SELECT * FROM languages ORDER BY name ASC').fetchall()
+        return render_template('manage_languages.html', languages=languages)
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/admin/disk_settings', methods=['GET', 'POST'])
+@admin_required
+@license_required
+def disk_settings():
+    conn = get_db_connection()
+    try:
+        if request.method == 'POST':
+            action = request.form.get('action')
+            
+            if action == 'update_all_disk_names':
+                # Tüm form verilerini işle
+                for key, value in request.form.items():
+                    if key.startswith('custom_name_'):
+                        drive_suffix = key.replace('custom_name_', '')
+                        drive_letter_key = f'drive_letter_{drive_suffix}'
+                        drive_letter = request.form.get(drive_letter_key)
+                        custom_name = value.strip()
+                        
+                        if drive_letter:
+                            # Mevcut kaydı kontrol et
+                            existing = conn.execute('SELECT * FROM disk_settings WHERE drive_letter = ?', (drive_letter,)).fetchone()
+                            
+                            if existing:
+                                # Güncelle
+                                conn.execute('UPDATE disk_settings SET custom_name = ? WHERE drive_letter = ?',
+                                           (custom_name, drive_letter))
+                            else:
+                                # Yeni kayıt ekle
+                                conn.execute('INSERT INTO disk_settings (drive_letter, custom_name) VALUES (?, ?)',
+                                           (drive_letter, custom_name))
+                
+                conn.commit()
+            
+            return redirect(url_for('disk_settings'))
+        
+        # Sistem disklerini al
+        available_drives = get_windows_drives()
+        
+        # Veritabanından özel isimleri al
+        custom_names = {}
+        custom_names_result = conn.execute('SELECT drive_letter, custom_name FROM disk_settings').fetchall()
+        for row in custom_names_result:
+            custom_names[row['drive_letter']] = row['custom_name']
+        
+        # Diskleri birleştir
+        for drive in available_drives:
+            drive_letter = drive['device_id']
+            drive['custom_name'] = custom_names.get(drive_letter, '')
+            
+            # Boyut bilgilerini formatla
+            if drive['size']:
+                drive['size_gb'] = round(drive['size'] / (1024**3), 1)
+            else:
+                drive['size_gb'] = 'Bilinmiyor'
+                
+            if drive['free_space']:
+                drive['free_space_gb'] = round(drive['free_space'] / (1024**3), 1)
+            else:
+                drive['free_space_gb'] = 'Bilinmiyor'
+        
+        return render_template('disk_settings.html', drives=available_drives)
+        
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/admin/images')
+@admin_required
+@license_required
+def manage_images():
+    """Görsel yönetimi sayfası - tüm görsel dosyalarını listeler ve yönetim imkanı sağlar"""
+    try:
+        image_data = {}
+        
+        # Her klasör için görsel dosyalarını say ve listele
+        image_folders = {
+            'covers': app.config['UPLOAD_FOLDER_COVERS'],
+            'gallery': app.config['UPLOAD_FOLDER_GALLERY'],
+            'slider': app.config['UPLOAD_FOLDER_SLIDER'],
+            'backgrounds': app.config['UPLOAD_FOLDER_BG'],
+            'logos': app.config['UPLOAD_FOLDER_LOGOS']
+        }
+        
+        for folder_name, folder_path in image_folders.items():
+            if os.path.exists(folder_path):
+                files = []
+                for file in os.listdir(folder_path):
+                    if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
+                        file_path = os.path.join(folder_path, file)
+                        try:
+                            file_size = os.path.getsize(file_path)
+                            # Dosya boyutunu okunaklı formata çevir
+                            if file_size < 1024:
+                                size_str = f"{file_size} B"
+                            elif file_size < 1024 * 1024:
+                                size_str = f"{file_size / 1024:.1f} KB"
+                            else:
+                                size_str = f"{file_size / (1024 * 1024):.1f} MB"
+                            
+                            # Dosya tarihini al
+                            mod_time = os.path.getmtime(file_path)
+                            date_str = datetime.fromtimestamp(mod_time).strftime('%d.%m.%Y')
+                            
+                            files.append({
+                                'name': file,
+                                'size': size_str,
+                                'date': date_str,
+                                'path': file_path
+                            })
+                        except OSError:
+                            continue
+                
+                image_data[folder_name] = {
+                    'count': len(files),
+                    'files': sorted(files, key=lambda x: x['name'])
+                }
+            else:
+                image_data[folder_name] = {'count': 0, 'files': []}
+        
+        return render_template('manage_images.html', images=image_data)
+    
+    except Exception as e:
+        print(f"Görsel yönetimi sayfası hatası: {e}")
+        return render_template('manage_images.html', images={}, error=str(e))
+
+# Görsel Yönetimi API Endpoints
+@app.route('/admin/images/upload/cover', methods=['POST'])
+@admin_required
+@license_required
+def upload_cover_image():
+    """Kapak görseli yükleme"""
+    try:
+        if 'cover_image' not in request.files:
+            return jsonify({'success': False, 'error': 'Dosya seçilmedi'}), 400
+        
+        file = request.files['cover_image']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'Dosya seçilmedi'}), 400
+        
+        if file and file.filename:
+            # Dosya türü kontrolü
+            allowed_extensions = {'.png', '.jpg', '.jpeg', '.webp'}
+            file_ext = os.path.splitext(file.filename)[1].lower()
+            if file_ext not in allowed_extensions:
+                return jsonify({'success': False, 'error': 'Desteklenmeyen dosya türü'}), 400
+            
+            # WebP formatına çevir ve kaydet
+            stored_path = convert_to_webp(file, app.config['UPLOAD_FOLDER_COVERS'])
+            return jsonify({'success': True, 'filename': stored_path})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Yükleme hatası: {str(e)}'}), 500
+
+@app.route('/admin/images/upload/gallery', methods=['POST'])
+@admin_required
+@license_required
+def upload_gallery_images():
+    """Galeri görsellerini yükleme"""
+    try:
+        if 'gallery_images' not in request.files:
+            return jsonify({'success': False, 'error': 'Dosya seçilmedi'}), 400
+        
+        files = request.files.getlist('gallery_images')
+        if not files or all(f.filename == '' for f in files):
+            return jsonify({'success': False, 'error': 'Dosya seçilmedi'}), 400
+        
+        uploaded_count = 0
+        allowed_extensions = {'.png', '.jpg', '.jpeg', '.webp'}
+        
+        for file in files:
+            if file and file.filename:
+                file_ext = os.path.splitext(file.filename)[1].lower()
+                if file_ext in allowed_extensions:
+                    try:
+                        # WebP formatına çevir ve genel galeri klasörüne kaydet
+                        convert_to_webp(file, app.config['UPLOAD_FOLDER_GALLERY'])
+                        uploaded_count += 1
+                    except Exception as e:
+                        print(f"Dosya yükleme hatası: {e}")
+                        continue
+        
+        if uploaded_count > 0:
+            return jsonify({'success': True, 'uploaded_count': uploaded_count})
+        else:
+            return jsonify({'success': False, 'error': 'Hiç dosya yüklenemedi'}), 400
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Yükleme hatası: {str(e)}'}), 500
+
+@app.route('/admin/images/delete/cover', methods=['POST'])
+@admin_required
+@license_required
+def delete_cover_image():
+    """Kapak görseli silme"""
+    try:
+        data = request.get_json()
+        if not data or 'image_name' not in data:
+            return jsonify({'success': False, 'error': 'Görsel adı belirtilmedi'}), 400
+        
+        image_name = data['image_name']
+        file_path = os.path.join(app.config['UPLOAD_FOLDER_COVERS'], image_name)
+        
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Dosya bulunamadı'}), 404
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Silme hatası: {str(e)}'}), 500
+
+@app.route('/admin/images/delete/gallery', methods=['POST'])
+@admin_required
+@license_required
+def delete_gallery_images():
+    """Galeri görsellerini silme"""
+    try:
+        data = request.get_json()
+        if not data or 'image_names' not in data:
+            return jsonify({'success': False, 'error': 'Görsel adları belirtilmedi'}), 400
+        
+        image_names = data['image_names']
+        if not isinstance(image_names, list):
+            return jsonify({'success': False, 'error': 'Geçersiz veri formatı'}), 400
+        
+        deleted_count = 0
+        for image_name in image_names:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER_GALLERY'], image_name)
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    deleted_count += 1
+                except Exception as e:
+                    print(f"Dosya silme hatası: {e}")
+                    continue
+        
+        return jsonify({'success': True, 'deleted_count': deleted_count})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Silme hatası: {str(e)}'}), 500
+
+@app.route('/admin/images/data/covers', methods=['GET'])
+@admin_required
+@license_required
+def get_cover_images_data():
+    """Kapak görsellerini JSON olarak döndür"""
+    try:
+        covers_path = app.config['UPLOAD_FOLDER_COVERS']
+        files = []
+        
+        if os.path.exists(covers_path):
+            for file in os.listdir(covers_path):
+                if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
+                    file_path = os.path.join(covers_path, file)
+                    try:
+                        file_size = os.path.getsize(file_path)
+                        size_str = f"{file_size / 1024:.1f} KB" if file_size < 1024 * 1024 else f"{file_size / (1024 * 1024):.1f} MB"
+                        mod_time = os.path.getmtime(file_path)
+                        date_str = datetime.fromtimestamp(mod_time).strftime('%d.%m.%Y')
+                        
+                        files.append({
+                            'name': file,
+                            'size': size_str,
+                            'date': date_str
+                        })
+                    except OSError:
+                        continue
+        
+        return jsonify({'success': True, 'files': sorted(files, key=lambda x: x['name'])})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/disk_list', methods=['GET'])
+@admin_required
+@license_required
+def get_disk_list_api():
+    """Disk listesi API endpoint'i - oyun ayarlarında kullanılmak üzere"""
+    try:
+        conn = get_db_connection()
+        
+        # Sistem disklerini al
+        available_drives = get_windows_drives()
+        
+        # Veritabanından özel isimleri al
+        custom_names = {}
+        custom_names_result = conn.execute('SELECT drive_letter, custom_name FROM disk_settings').fetchall()
+        for row in custom_names_result:
+            custom_names[row['drive_letter']] = row['custom_name']
+        
+        # Disk listesini hazırla
+        disk_list = []
+        for drive in available_drives:
+            drive_letter = drive['device_id']
+            display_name = custom_names.get(drive_letter, drive['volume_name'])
+            
+            disk_list.append({
+                'drive_letter': drive_letter,
+                'display_name': f"{display_name} ({drive_letter})",
+                'volume_name': drive['volume_name'],
+                'custom_name': custom_names.get(drive_letter, ''),
+                'available': True
+            })
+        
+        conn.close()
+        return json_response({'success': True, 'disks': disk_list})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Disk listesi alınamadı: {str(e)}'}), 500
 
 @app.route('/api/internal/check_status')
 def check_status_for_client():

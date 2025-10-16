@@ -16,6 +16,15 @@ def init_db():
         ''')
 
         cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admin_users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
         CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
             value TEXT
@@ -140,7 +149,31 @@ def init_db():
             FOREIGN KEY (game_id) REFERENCES games (id)
         )
         ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS disk_settings (
+            drive_letter TEXT PRIMARY KEY,
+            custom_name TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS languages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            code TEXT NOT NULL UNIQUE,
+            is_active INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
         
+        # Admin kullanıcısı oluştur
+        if cursor.execute("SELECT COUNT(*) FROM admin_users").fetchone()[0] == 0:
+            admin_password_hash = generate_password_hash('admin123')
+            cursor.execute('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)', ('admin', admin_password_hash))
+            print("Admin kullanıcısı oluşturuldu: admin / admin123")
+
         if cursor.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
             password_hash = generate_password_hash('12345')
             cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', ('testuser', password_hash))
@@ -159,6 +192,14 @@ def init_db():
                 ('social_facebook', 'https://www.facebook.com'), ('social_youtube', 'https://www.youtube.com'),
             ]
             cursor.executemany('INSERT INTO settings (key, value) VALUES (?, ?)', sample_settings)
+
+        if cursor.execute("SELECT COUNT(*) FROM languages").fetchone()[0] == 0:
+            sample_languages = [
+                ('Türkçe', 'tr'), ('English', 'en'), ('Deutsch', 'de'), ('Français', 'fr'),
+                ('Español', 'es'), ('Italiano', 'it'), ('Português', 'pt'), ('Русский', 'ru'),
+                ('中文', 'zh'), ('日本語', 'ja'), ('한국어', 'ko'), ('العربية', 'ar')
+            ]
+            cursor.executemany('INSERT INTO languages (name, code) VALUES (?, ?)', sample_languages)
             
         if cursor.execute("SELECT COUNT(*) FROM games").fetchone()[0] == 0:
             sample_games = [

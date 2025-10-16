@@ -1,317 +1,752 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geliştirilmiş Medya Yöneticisi</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-
+    <title>Görsel Yönetimi - Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #4f86e4;
-            --danger-color: #e85a5a;
-            --background-color: #121212;
-            --surface-color: #1e1e1e;
-            --text-primary: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --border-color: #333;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-primary);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
+        * {
             margin: 0;
-            padding: 40px;
+            padding: 0;
             box-sizing: border-box;
         }
 
-        .media-manager {
-            width: 100%;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #f1f5f9;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
             max-width: 1200px;
-            background-color: var(--surface-color);
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 16px;
-            border: 1px solid var(--border-color);
-            padding: 24px 32px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #fff; }
-        p { font-size: 16px; margin-bottom: 24px; color: var(--text-secondary); }
-
-        .media-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-        }
-
-        .grid-item {
-            aspect-ratio: 16 / 9;
-            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            position: relative;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
-        
-        .grid-item img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* --- KAPAK RESMİ ALANI --- */
-        .cover-image-slot {
-            grid-column: 1 / span 2;
-            grid-row: 1 / span 2;
-            aspect-ratio: 3 / 4;
-            background-color: #252525;
+
+        .header {
+            background: rgba(229, 9, 20, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header i {
+            color: #e50914;
+            font-size: 32px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .image-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .image-section {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .image-section:hover {
+            border-color: rgba(229, 9, 20, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #e50914, #f6121d);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .section-info h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin: 0 0 5px 0;
+        }
+
+        .section-info p {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .stat-badge {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .gallery-stats {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .upload-zone {
+            border: 3px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 50px 30px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .upload-zone:hover {
+            border-color: #e50914;
+            background: rgba(229, 9, 20, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .upload-zone.hidden {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 56px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        .upload-zone:hover .upload-icon {
+            color: #e50914;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .upload-zone h4 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin: 0 0 12px 0;
+        }
+
+        .upload-zone p {
+            color: #94a3b8;
+            margin: 0 0 20px 0;
+            font-size: 15px;
+        }
+
+        .upload-specs {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .upload-specs span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Kapak görseli için özel stil - tek görsel */
+        .cover-image-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 2px dashed #444;
+            min-height: 200px;
         }
 
-        .cover-image-slot.has-image { border: 2px solid var(--primary-color); }
-        
-        .cover-label {
-            position: absolute; top: 12px; left: 12px;
-            background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-            color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; z-index: 10;
-        }
-        
-        #cover-image {
-            transition: filter 0.3s ease-in-out; /* Kararma efekti için geçiş */
-        }
-        
-        /* YENİ: Resim varken üzerine gelince resmi karart */
-        .cover-image-slot.has-image:hover #cover-image {
-            filter: brightness(0.5);
+        .cover-image-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 300px;
+            max-width: 100%;
         }
 
-        /* Kapak Yükleyici */
-        .cover-uploader {
-            display: flex; flex-direction: column; align-items: center;
-            gap: 12px; cursor: pointer; color: var(--text-secondary);
-            padding: 20px; text-align: center;
+        .cover-image-card:hover {
+            border-color: #e50914;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
-        .cover-uploader svg { width: 40px; height: 40px; }
-        .cover-uploader span { font-weight: 500; font-size: 16px; }
 
-        /* YENİ: Kapak Değiştir Butonunu Ortala */
-        #change-cover-btn {
+        /* Galeri görselleri için grid */
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .image-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .image-card:hover {
+            border-color: #e50914;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .image-card.selected {
+            border-color: #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .selection-checkbox {
             position: absolute;
-            top: 50%; /* Dikey ortala */
-            left: 50%; /* Yatay ortala */
-            transform: translate(-50%, -50%); /* Tam ortala */
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff; padding: 10px 20px; border-radius: 8px;
-            font-weight: 500; cursor: pointer;
-            display: flex; align-items: center; gap: 8px;
-            opacity: 0; 
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .selection-checkbox.checked {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: white;
+        }
+
+        .image-wrapper {
+            position: relative;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+            background: #2a2a2a;
+        }
+
+        .cover-image-wrapper {
+            position: relative;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+            background: #2a2a2a;
+        }
+
+        .image-wrapper img, .cover-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover .image-wrapper img,
+        .cover-image-card:hover .cover-image-wrapper img {
+            transform: scale(1.1);
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.9) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 15px;
+            opacity: 0;
             transition: opacity 0.3s ease;
         }
-        .cover-image-slot:hover #change-cover-btn { opacity: 1; }
-        
-        /* Duruma göre göster/gizle */
-        .cover-image-slot:not(.has-image) #cover-image,
-        .cover-image-slot:not(.has-image) #change-cover-btn { display: none; }
-        
-        .cover-image-slot.has-image .cover-uploader { display: none; }
-        .cover-image-slot.has-image #cover-image,
-        .cover-image-slot.has-image #change-cover-btn { display: flex; }
 
+        .cover-image-card:hover .image-overlay {
+            opacity: 1;
+        }
 
-        /* --- GALERİ RESMİ KUTUSU & SEÇİM --- */
-        .gallery-item {
+        .image-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: #1a1a1a;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
-            border: 2px solid transparent;
-            transition: border-color 0.2s ease, transform 0.2s ease;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .gallery-item.selected {
-            border-color: var(--primary-color); transform: scale(0.95);
-        }
-        .selection-tick {
-            position: absolute; top: 10px; left: 10px; width: 24px; height: 24px;
-            background-color: rgba(255, 255, 255, 0.9); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            transform: scale(0); opacity: 0; transition: transform 0.2s ease, opacity 0.2s ease; z-index: 6;
-        }
-        .gallery-item.selected .selection-tick { transform: scale(1); opacity: 1; }
-        .selection-tick svg { color: var(--primary-color); }
-        
-        /* --- GALERİYE EKLE BUTONU --- */
-        .add-gallery-slot {
-            display: flex; flex-direction: column; justify-content: center;
-            align-items: center; border: 2px dashed #444;
-            background-color: #252525; cursor: pointer;
-            transition: border-color 0.2s ease, background-color 0.2s ease;
-        }
-        .add-gallery-slot:hover { border-color: #777; background-color: #2a2a2a; }
-        .add-gallery-slot svg { width: 28px; height: 28px; color: #777; margin-bottom: 8px; }
-        .add-gallery-slot span { color: var(--text-secondary); font-weight: 500; }
 
-        /* --- SEÇİM EYLEM ÇUBUĞU --- */
-        #selection-bar {
-            position: fixed; bottom: 30px; left: 50%;
-            transform: translate(-50%, 200%);
-            background-color: rgba(40, 40, 40, 0.8);
-            backdrop-filter: blur(10px); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 12px 20px; display: flex;
-            align-items: center; gap: 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+        .action-btn.delete {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
         }
-        #selection-bar.visible { transform: translate(-50%, 0); }
-        .action-button {
-            background-color: var(--danger-color); color: #fff;
-            border: none; padding: 8px 16px; border-radius: 8px;
-            cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
-        .hidden-input { display: none; }
+
+        .image-info {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .image-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin: 0 0 8px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .image-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .demo-notice {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .demo-notice h3 {
+            color: #60a5fa;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .demo-notice p {
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .gallery-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+
+            .upload-zone {
+                padding: 30px 20px;
+            }
+
+            .cover-image-card {
+                width: 250px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <header class="header">
+            <h1>
+                <i class="fas fa-images"></i>
+                Görsel Yönetimi
+            </h1>
+            <button class="btn btn-primary" onclick="refreshImages()">
+                <i class="fas fa-sync-alt"></i>
+                Tümünü Yenile
+            </button>
+        </header>
 
-    <div class="media-manager">
-        <h1>Oyun Medyalarını Yönet</h1>
-        <p>Resim seçmek için tıklayın. Çoklu seçim için Shift veya Ctrl/Cmd tuşlarını kullanın.</p>
-
-        <div class="media-grid">
-            <div id="cover-slot" class="grid-item cover-image-slot">
-                <div class="cover-label">✨ Kapak Resmi</div>
+        <div class="content">
+            <div class="demo-notice">
+                <h3>
                 
-                <label for="cover-input" class="cover-uploader">
-                    <svg xmlns="http://www.w.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                    <span>Kapak Resmi Yükle</span>
-                </label>
-                
-                <img id="cover-image" src="" alt="Kapak Resmi">
-                <label for="cover-input" id="change-cover-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
-                    Değiştir
-                </label>
+                    <i class="fas fa-info-circle"></i>
+                    Demo Görsel Yönetimi Sayfası
+                </h3>
+                <p>Kapak görseli yüklendiğinde upload bölümü gizlenir. Galeri resimlerini tıklayarak seçebilir ve toplu silme yapabilirsiniz.</p>
             </div>
-            <input type="file" id="cover-input" class="hidden-input" accept="image/*">
 
-            <div class="grid-item gallery-item" data-id="1">
-                <div class="selection-tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></div>
-                <img src="https://picsum.photos/id/10/800/450" alt="Galeri Resmi 1">
+            <div class="image-sections">
+                <!-- Kapak Görselleri -->
+                <div class="image-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <div class="section-icon">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <div class="section-info">
+                                <h3>Kapak Görselleri</h3>
+                                <p>Oyun kapak resimleri - tek görsel (static/images/covers)</p>
+                            </div>
+                        </div>
+                        <span class="stat-badge">
+                            <i class="fas fa-image"></i>
+                            <span id="cover-count">1</span> Görsel
+                        </span>
+                    </div>
+
+                    <div class="upload-zone" id="cover-upload-zone" onclick="triggerFileUpload('covers')">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h4>Kapak Görseli Yükle</h4>
+                        <p>Tek bir kapak görseli seçin (eski görsel değiştirilir)</p>
+                        <div class="upload-specs">
+                            <span><i class="fas fa-file-image"></i> PNG, JPG, WEBP</span>
+                            <span><i class="fas fa-expand-arrows-alt"></i> Dikey (2:3)</span>
+                            <span><i class="fas fa-exclamation-triangle"></i> Tek Dosya</span>
+                        </div>
+                    </div>
+
+                    <div class="cover-image-container" id="covers-container">
+                        <!-- Demo kapak görseli buraya gelecek -->
+                    </div>
+                </div>
+
+                <!-- Galeri Görselleri -->
+                <div class="image-section">
+                    <div class="section-header">
+                        <div class="gallery-header">
+                            <div class="section-title">
+                                <div class="section-icon">
+                                    <i class="fas fa-images"></i>
+                                </div>
+                                <div class="section-info">
+                                    <h3>Galeri Görselleri</h3>
+                                    <p>Oyun galeri resimleri - çoklu görsel (static/images/gallery)</p>
+                                </div>
+                            </div>
+                            <div class="gallery-stats">
+                                <span class="stat-badge">
+                                    <i class="fas fa-images"></i>
+                                    <span id="gallery-count">4</span> Görsel
+                                </span>
+                                <button class="btn btn-danger" id="delete-selected-btn" onclick="deleteSelectedImages()" style="display: none;">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Seçilileri Sil (<span id="selected-count">0</span>)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="upload-zone" onclick="triggerFileUpload('gallery')">
+                        <i class="fas fa-camera upload-icon"></i>
+                        <h4>Galeri Görselleri Yükle</h4>
+                        <p>Birden fazla oyun ekran görüntüsü ve tanıtım görseli seçebilirsiniz</p>
+                        <div class="upload-specs">
+                            <span><i class="fas fa-file-image"></i> PNG, JPG, WEBP</span>
+                            <span><i class="fas fa-expand-arrows-alt"></i> Yatay (16:9)</span>
+                            <span><i class="fas fa-layer-group"></i> Çoklu Dosya</span>
+                        </div>
+                    </div>
+
+                    <div class="images-grid" id="gallery-grid">
+                        <!-- Demo galeri görselleri buraya gelecek -->
+                    </div>
+                </div>
             </div>
-            <div class="grid-item gallery-item" data-id="2">
-                 <div class="selection-tick"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></div>
-                <img src="https://picsum.photos/id/20/800/450" alt="Galeri Resmi 2">
-            </div>
-            
-            <label for="gallery-input" class="grid-item add-gallery-slot">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>Resim Ekle</span>
-            </label>
-            <input type="file" id="gallery-input" class="hidden-input" accept="image/*" multiple>
         </div>
     </div>
 
-    <div id="selection-bar">
-        <span id="selection-count"></span>
-        <button id="delete-selected-btn" class="action-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
-            Seçilenleri Sil
-        </button>
-    </div>
-
     <script>
-        const coverInput = document.getElementById('cover-input');
-        const coverSlot = document.getElementById('cover-slot');
-        const coverImage = document.getElementById('cover-image');
+        let selectedImages = new Set();
+        let coverImageExists = false;
 
-        coverInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    coverImage.src = e.target.result;
-                    coverSlot.classList.add('has-image');
-                }
-                reader.readAsDataURL(file);
-            }
-        });
+        // Demo veri ve işlevsellik
+        const demoImages = {
+            cover: {
+                name: 'valorant_cover.webp',
+                size: '256 KB',
+                date: '15.10.2024'
+            },
+            gallery: [
+                { name: 'valorant_gameplay_1.webp', size: '187 KB', date: '15.10.2024' },
+                { name: 'valorant_gameplay_2.webp', size: '203 KB', date: '15.10.2024' },
+                { name: 'valorant_maps.webp', size: '245 KB', date: '14.10.2024' },
+                { name: 'valorant_agents.webp', size: '289 KB', date: '13.10.2024' }
+            ]
+        };
 
-        const mediaGrid = document.querySelector('.media-grid');
-        const selectionBar = document.getElementById('selection-bar');
-        const selectionCount = document.getElementById('selection-count');
-        const deleteSelectedBtn = document.getElementById('delete-selected-btn');
-        
-        let selectedItems = new Set();
-        let lastClickedItem = null;
-
-        mediaGrid.addEventListener('click', (e) => {
-            const targetItem = e.target.closest('.gallery-item');
-            if (!targetItem) return;
-
-            const galleryItems = document.querySelectorAll('.gallery-item');
-            const isShiftPressed = e.shiftKey;
-            const isCtrlPressed = e.ctrlKey || e.metaKey;
-
-            if (isShiftPressed && lastClickedItem) {
-                handleShiftSelection(targetItem, galleryItems);
-            } else if (isCtrlPressed) {
-                toggleSelection(targetItem);
-                lastClickedItem = targetItem;
-            } else {
-                clearSelection();
-                toggleSelection(targetItem);
-                lastClickedItem = targetItem;
-            }
-            updateUI();
-        });
-
-        function toggleSelection(item) {
-            const id = item.dataset.id;
-            if (selectedItems.has(id)) { selectedItems.delete(id); } else { selectedItems.add(id); }
+        function createCoverImageCard(image) {
+            return `
+                <div class="cover-image-card">
+                    <div class="cover-image-wrapper">
+                        <img src="https://via.placeholder.com/300x450/1a1a1a/e50914?text=${encodeURIComponent(image.name)}" alt="${image.name}">
+                        <div class="image-overlay">
+                            <div class="image-actions">
+                                <button class="action-btn delete" onclick="deleteCoverImage('${image.name}')">
+                                    <i class="fas fa-trash"></i> Değiştir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">${image.name}</div>
+                        <div class="image-details">
+                            <span>${image.size}</span>
+                            <span>${image.date}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
-        function handleShiftSelection(currentItem, galleryItems) {
-            const itemsArray = Array.from(galleryItems);
-            const startIndex = itemsArray.indexOf(lastClickedItem);
-            const endIndex = itemsArray.indexOf(currentItem);
-            const [start, end] = [startIndex, endIndex].sort((a, b) => a - b);
+        function createGalleryImageCard(image, index) {
+            return `
+                <div class="image-card" data-image="${image.name}" onclick="toggleImageSelection('${image.name}', ${index})">
+                    <div class="selection-checkbox" id="checkbox-${index}">
+                        <i class="fas fa-check" style="display: none;"></i>
+                    </div>
+                    <div class="image-wrapper">
+                        <img src="https://via.placeholder.com/400x225/1a1a1a/e50914?text=${encodeURIComponent(image.name)}" alt="${image.name}">
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">${image.name}</div>
+                        <div class="image-details">
+                            <span>${image.size}</span>
+                            <span>${image.date}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleImageSelection(imageName, index) {
+            const card = document.querySelector(`[data-image="${imageName}"]`);
+            const checkbox = document.getElementById(`checkbox-${index}`);
+            const checkIcon = checkbox.querySelector('i');
+
+            if (selectedImages.has(imageName)) {
+                selectedImages.delete(imageName);
+                card.classList.remove('selected');
+                checkbox.classList.remove('checked');
+                checkIcon.style.display = 'none';
+            } else {
+                selectedImages.add(imageName);
+                card.classList.add('selected');
+                checkbox.classList.add('checked');
+                checkIcon.style.display = 'block';
+            }
+
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const count = selectedImages.size;
+            const deleteBtn = document.getElementById('delete-selected-btn');
+            const countSpan = document.getElementById('selected-count');
             
-            for (let i = start; i <= end; i++) {
-                selectedItems.add(itemsArray[i].dataset.id);
-            }
-        }
-
-        function clearSelection() { selectedItems.clear(); }
-
-        function updateUI() {
-            const galleryItems = document.querySelectorAll('.gallery-item');
-            galleryItems.forEach(item => {
-                item.classList.toggle('selected', selectedItems.has(item.dataset.id));
-            });
-
-            if (selectedItems.size > 0) {
-                selectionCount.textContent = `${selectedItems.size} resim seçildi`;
-                selectionBar.classList.add('visible');
+            countSpan.textContent = count;
+            
+            if (count > 0) {
+                deleteBtn.style.display = 'flex';
             } else {
-                selectionBar.classList.remove('visible');
+                deleteBtn.style.display = 'none';
             }
         }
 
-        deleteSelectedBtn.addEventListener('click', () => {
-            selectedItems.forEach(id => {
-                const itemToRemove = document.querySelector(`.gallery-item[data-id="${id}"]`);
-                if (itemToRemove) {
-                    itemToRemove.style.transform = 'scale(0)';
-                    setTimeout(() => itemToRemove.remove(), 200);
-                }
-            });
-            clearSelection();
-            updateUI();
-        });
+        function loadImages() {
+            // Kapak görseli yükle
+            const coverContainer = document.getElementById('covers-container');
+            const uploadZone = document.getElementById('cover-upload-zone');
+            
+            if (coverImageExists && coverContainer) {
+                coverContainer.innerHTML = createCoverImageCard(demoImages.cover);
+                uploadZone.classList.add('hidden');
+            } else {
+                coverContainer.innerHTML = '';
+                uploadZone.classList.remove('hidden');
+            }
 
-        updateUI();
+            // Galeri görsellerini yükle
+            const galleryGrid = document.getElementById('gallery-grid');
+            if (galleryGrid) {
+                galleryGrid.innerHTML = demoImages.gallery.map((image, index) => createGalleryImageCard(image, index)).join('');
+            }
+
+            // Sayaçları güncelle
+            updateCounts();
+        }
+
+        function updateCounts() {
+            const coverCount = document.getElementById('cover-count');
+            const galleryCount = document.getElementById('gallery-count');
+            
+            coverCount.textContent = coverImageExists ? '1' : '0';
+            galleryCount.textContent = demoImages.gallery.length;
+        }
+
+        function triggerFileUpload(type) {
+            if (type === 'covers') {
+                alert('Kapak görseli yükleme işlemi başlatılacak.\nTek bir görsel seçin - mevcut görsel değiştirilecek.');
+                // Demo: Kapak görseli yüklenmiş gibi davran
+                coverImageExists = true;
+                loadImages();
+            } else if (type === 'gallery') {
+                alert('Galeri görselleri yükleme işlemi başlatılacak.\nBirden fazla görsel seçebilirsiniz.');
+            }
+        }
+
+        function deleteCoverImage(imageName) {
+            if (confirm(`${imageName} kapak görselini silmek istediğinizden emin misiniz?\nUpload bölümü tekrar görünecek.`)) {
+                coverImageExists = false;
+                loadImages();
+                alert(`${imageName} kapak görseli silindi.`);
+            }
+        }
+
+        function deleteSelectedImages() {
+            if (selectedImages.size === 0) return;
+            
+            const imageNames = Array.from(selectedImages).join(', ');
+            if (confirm(`Seçili ${selectedImages.size} görseli silmek istediğinizden emin misiniz?\n\n${imageNames}`)) {
+                // Demo: Seçili görselleri array'den kaldır
+                demoImages.gallery = demoImages.gallery.filter(image => !selectedImages.has(image.name));
+                selectedImages.clear();
+                loadImages();
+                alert(`${selectedImages.size} görsel silindi.`);
+            }
+        }
+
+        function refreshImages() {
+            alert('Tüm görseller yenileniyor...');
+            selectedImages.clear();
+            loadImages();
+        }
+
+        // Sayfa yüklendiğinde demo görselleri yükle
+        document.addEventListener('DOMContentLoaded', () => {
+            coverImageExists = true; // Demo için kapak görseli var
+            loadImages();
+        });
     </script>
 </body>
 </html>
