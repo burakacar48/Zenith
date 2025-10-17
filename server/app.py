@@ -17,6 +17,12 @@ import subprocess
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bu-cok-gizli-bir-anahtar-kimse-bilmemeli'
+
+# Session ayarları
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=8)  # Varsayılan 8 saat
+app.config['SESSION_COOKIE_SECURE'] = False  # Localhost için False
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # XSS koruması
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF koruması
 app.config['SAVE_FOLDER'] = os.path.join(os.getcwd(), 'user_saves')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.config['UPLOAD_FOLDER_COVERS'] = os.path.join(BASE_DIR, 'static/images/covers')
@@ -227,8 +233,14 @@ def license_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        # Session kontrol et
         if not session.get('admin_logged_in'):
+            flash('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.', 'error')
             return redirect(url_for('admin_login'))
+        
+        # Session'ı yenile (aktif kalması için)
+        session.permanent = True
+        
         return f(*args, **kwargs)
     return decorated
 
@@ -454,9 +466,14 @@ def root():
 # Admin Authentication Routes
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
+    # Eğer zaten giriş yapmışsa direkt admin panele yönlendir
+    if session.get('admin_logged_in'):
+        return redirect(url_for('admin_index'))
+    
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
+        remember_me = request.form.get('remember')  # "Beni hatırla" checkbox'ı
         
         if not username or not password:
             flash('Kullanıcı adı ve şifre gereklidir.', 'error')
@@ -468,9 +485,19 @@ def admin_login():
             admin_user = conn.execute('SELECT * FROM admin_users WHERE username = ?', (username,)).fetchone()
             
             if admin_user and check_password_hash(admin_user['password_hash'], password):
+                # Session ayarları
+                session.permanent = bool(remember_me)  # "Beni hatırla" seçiliyse kalıcı session
+                if remember_me:
+                    # 30 gün hatırla
+                    app.permanent_session_lifetime = timedelta(days=30)
+                else:
+                    # Normal session (tarayıcı kapanınca bitsin)
+                    app.permanent_session_lifetime = timedelta(hours=8)
+                
                 session['admin_logged_in'] = True
                 session['admin_username'] = admin_user['username']
                 session['admin_id'] = admin_user['id']
+                
                 flash('Başarıyla giriş yaptınız!', 'success')
                 return redirect(url_for('admin_index'))
             else:
@@ -483,9 +510,17 @@ def admin_login():
 
 @app.route('/admin/logout')
 def admin_logout():
+    # Session'ı tamamen temizle
     session.clear()
+    
+    # Response oluştur ve cache'i temizle
+    response = redirect(url_for('admin_login'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
     flash('Başarıyla çıkış yaptınız.', 'info')
-    return redirect(url_for('admin_login'))
+    return response
 
 # Admin Panel Routes
 @app.route('/admin')
