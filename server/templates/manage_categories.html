@@ -4,15 +4,18 @@
 
 {% block content %}
     <header class="header">
-        <h1 class="page-title-with-icon">
-            <i class="fas fa-folder-tree"></i>
+        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+            <i class="fas fa-folder-tree" style="color: var(--accent-red);"></i>
             Kategori Yönetimi
         </h1>
     </header>
 
     <div class="card full-width">
         <div class="card-header">
-            <h2>Yeni Kategori Ekle</h2>
+            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+                <i class="fas fa-plus-circle" style="color: var(--accent-red);"></i>
+                Yeni Kategori Ekle
+            </h2>
         </div>
         <div class="card-body">
             <form method="POST">
@@ -36,7 +39,10 @@
 
     <div class="card full-width" style="margin-top: 20px;">
         <div class="card-header">
-            <h2>Mevcut Kategoriler</h2>
+            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+                <i class="fas fa-list" style="color: var(--accent-red);"></i>
+                Mevcut Kategoriler
+            </h2>
         </div>
         <div class="card-body">
             <table>

@@ -5,8 +5,8 @@
 
 {% block content %}
     <header class="header">
-        <h1 class="page-title-with-icon">
-            <i class="fas fa-hdd"></i>
+        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+            <i class="fas fa-hdd" style="color: var(--accent-red);"></i>
             Disk Ayarları
         </h1>
     </header>
@@ -16,7 +16,10 @@
         
         <div class="card full-width">
             <div class="card-header">
-                <h2>Mevcut Diskler</h2>
+                <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+                    <i class="fas fa-hard-drive" style="color: var(--accent-red);"></i>
+                    Mevcut Diskler
+                </h2>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
                     Değişiklikleri Kaydet
@@ -94,8 +97,8 @@
     <!-- Disk Kullanım Durumu Bölümü -->
     <div class="card full-width" style="margin-top: 30px;">
         <div class="card-header">
-            <h2>
-                <i class="fas fa-chart-pie"></i>
+            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+                <i class="fas fa-chart-pie" style="color: var(--accent-red);"></i>
                 Disk Kullanım Durumu
             </h2>
         </div>

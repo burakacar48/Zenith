@@ -4,8 +4,8 @@
 
 {% block content %}
     <header class="header">
-        <h1 class="page-title-with-icon">
-            <i class="fas fa-user-edit"></i>
+        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+            <i class="fas fa-user-edit" style="color: var(--accent-red);"></i>
             Kullanıcı Düzenle
         </h1>
         <div class="header-actions">
@@ -17,7 +17,10 @@
 
     <div class="card full-width">
         <div class="card-header">
-            <h2>"{{ user.username }}" Kullanıcısını Düzenle</h2>
+            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+                <i class="fas fa-user" style="color: var(--accent-red);"></i>
+                "{{ user.username }}" Kullanıcısını Düzenle
+            </h2>
         </div>
         <div class="card-body">
             <form method="POST">

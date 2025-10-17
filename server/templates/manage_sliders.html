@@ -4,8 +4,8 @@
 
 {% block content %}
     <header class="header">
-        <h1 class="page-title-with-icon">
-            <i class="fas fa-sliders-h"></i>
+        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+            <i class="fas fa-sliders-h" style="color: var(--accent-red);"></i>
             Slider Yönetimi
         </h1>
         <div class="header-actions">
@@ -17,7 +17,10 @@
 
     <div class="card full-width">
         <div class="card-header">
-            <h2>Tüm Sliderlar</h2>
+            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
+                <i class="fas fa-images" style="color: var(--accent-red);"></i>
+                Tüm Sliderlar
+            </h2>
         </div>
         <div class="card-body">
             <table>
@@ -45,7 +48,7 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <a href="{{ url_for('edit_slider', slider_id=slider.id) }}" class="btn-icon btn-edit" title="Düzenle"><i class="fas fa-edit"></i></a>
+                                <a href="{{ url_for('edit_slider', slider_id=slider.id) }}" class="btn-icon btn-edit-new" title="Düzenle"><i class="fas fa-edit"></i></a>
                                 <form action="{{ url_for('delete_slider', slider_id=slider.id) }}" method="POST" class="actions-form">
                                     <button type="submit" class="btn-icon btn-delete" onclick="return confirm('Bu slider\'ı silmek istediğinize emin misiniz?');" title="Sil"><i class="fas fa-trash"></i></button>
                                 </form>
