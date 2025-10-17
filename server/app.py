@@ -1669,4 +1669,12 @@ if __name__ == '__main__':
         folder_path = app.config.get(folder_key)
         if folder_path and not os.path.exists(folder_path):
             os.makedirs(folder_path)
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    # Electron uygulamasından çağrıldığını kontrol et
+    is_electron_mode = os.environ.get('FLASK_ENV') == 'production' or os.environ.get('FLASK_DEBUG') == '0'
+    
+    if is_electron_mode:
+        # Electron modunda debug kapalı
+        app.run(debug=False, host='0.0.0.0', port=5001)
+    else:
+        # Manuel başlatmada debug açık
+        app.run(debug=True, host='0.0.0.0', port=5001)
