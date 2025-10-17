@@ -50,8 +50,14 @@
                     {% for game in games %}
                     <tr>
                         <td>{{ game.oyun_adi }}</td>
-                        <td style="text-align: center;">{{ "%.1f"|format(game.average_rating) }} ★</td>
-                        <td style="text-align: center;">{{ game.rating_count }}</td>
+                        <td style="text-align: center;">
+                            {% if game.average_rating is not none %}
+                                {{ "%.1f"|format(game.average_rating) }} ★
+                            {% else %}
+                                0.0 ★
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">{{ game.rating_count if game.rating_count is not none else 0 }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

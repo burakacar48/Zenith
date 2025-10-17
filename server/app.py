@@ -1097,7 +1097,7 @@ def manage_ratings():
     if order not in ['asc', 'desc']: order = 'asc'
     conn = get_db_connection()
     try:
-        games = conn.execute(f"SELECT id, oyun_adi, average_rating, rating_count FROM games ORDER BY {sort_by} {order}").fetchall()
+        games = conn.execute(f"SELECT id, oyun_adi, COALESCE(average_rating, 0.0) as average_rating, COALESCE(rating_count, 0) as rating_count FROM games ORDER BY {sort_by} {order}").fetchall()
         return render_template('manage_ratings.html', games=games, sort_by=sort_by, next_order='desc' if order == 'asc' else 'asc')
     finally:
         if conn:

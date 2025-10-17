@@ -55,13 +55,13 @@
         .section-icon {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #e50914, #f6121d);
+            background: linear-gradient(135deg, #E50914, #B20710);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            color: white;
+            color: #98a3b7;
             box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
         }
 
@@ -99,7 +99,7 @@
 
         .btn-delete-selected {
             background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            color: white;
+            color: #98a3b7;
             border: none;
             padding: 12px 24px;
             border-radius: 8px;
@@ -257,7 +257,7 @@
         .image-card.selected .selection-indicator {
             background: #22c55e;
             border-color: #22c55e;
-            color: white;
+            color: #98a3b7;
             opacity: 1;
             transform: scale(1.1);
         }
@@ -335,7 +335,7 @@
 
         .action-btn.delete {
             background: rgba(239, 68, 68, 0.9);
-            color: white;
+            color: #98a3b7;
         }
 
         .action-btn:hover {
@@ -466,7 +466,7 @@
         
         .pell-button-selected {
             background: var(--accent-red) !important;
-            color: white !important;
+            color: #98a3b7 !important;
         }
         
         /* Form Input Styles - Sidebar Background Color */
@@ -498,7 +498,7 @@
         
         .radio-checkbox-container .category-checkbox-label input[type="radio"]:checked + .category-checkbox-custom {
             background: var(--accent-red);
-            color: white;
+            color: #98a3b7;
             border-color: var(--accent-red-hover);
             font-weight: 600;
         }
@@ -562,14 +562,15 @@
         
         /* EXE Button - Red Theme (Design Colors) */
         .exe-btn.active {
-            background: linear-gradient(135deg, #e50914 0%, #f6121d 100%);
-            border-color: #e50914;
-            color: white;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
+            border-color: #E50914;
+            color: #98a3b7;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .exe-btn.active i {
-            color: white;
+            color: #98a3b7;
         }
         
         .exe-btn:hover:not(.active) {
@@ -730,8 +731,14 @@
         }
 
         .btn-primary-action {
-             background: linear-gradient(135deg, #e50914 0%, #f6121d 100%);
-             color: white;
+             background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
+             color: #98a3b7;
+             box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+        
+        .btn-primary-action:hover {
+             box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+             transform: translateY(-2px);
         }
 
         .btn-secondary-action {
@@ -897,13 +904,13 @@
         .disk-icon {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, #e50914 0%, #f6121d 100%);
+            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16px;
-            color: white;
+            color: #98a3b7;
             box-shadow: 0 3px 10px rgba(229, 9, 20, 0.3);
             transition: all 0.3s ease;
             flex-shrink: 0;
@@ -1053,6 +1060,246 @@
                 font-size: 10px;
             }
         }
+        
+        /* Modern Container ve Tab Tasarımları */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .modern-tab-container {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.15) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .modern-tab-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+            z-index: 1;
+        }
+        
+        .tab-nav {
+            display: flex;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%);
+            padding: 12px;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .tab-nav::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 24px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            position: relative;
+            min-width: 140px;
+        }
+        
+        .tab-nav-item i {
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-nav-item:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #f1f5f9;
+            transform: translateY(-2px);
+        }
+        
+        .tab-nav-item:hover:not(.active) i {
+            color: #e50914;
+            transform: scale(1.1);
+        }
+        
+        .tab-nav-item.active {
+            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
+            border-color: #E50914;
+            color: #98a3b7;
+            transform: translateY(-2px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-nav-item.active i {
+            color: #98a3b7;
+        }
+        
+        .tab-content-wrapper {
+            position: relative;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.12) 100%);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: 400px;
+            animation: fadeIn 0.3s ease-in-out;
+            background: transparent;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-actions {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            position: relative;
+        }
+        
+        .form-actions::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 30px;
+            right: 30px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+        }
+        
+        .form-actions .btn {
+            width: 100%;
+            padding: 16px 30px;
+            font-size: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
+            border: none;
+            border-radius: 12px;
+            color: #98a3b7;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+        
+        .form-actions .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(229, 9, 20, 0.5);
+        }
+        
+        .form-actions .btn i {
+            font-size: 16px;
+        }
+        
+        /* Form Grid Uyumluluğu */
+        .tab-content .form-grid {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .tab-content .form-section-title {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsive Tab Tasarımı */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+            }
+            
+            .tab-nav {
+                padding: 6px;
+                gap: 3px;
+            }
+            
+            .tab-nav-item {
+                padding: 14px 18px;
+                min-width: 120px;
+                font-size: 12px;
+            }
+            
+            .tab-nav-item i {
+                font-size: 14px;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+            
+            .form-actions {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tab-nav {
+                flex-direction: column;
+                gap: 6px;
+            }
+            
+            .tab-nav-item {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            .tab-nav-item span {
+                display: none;
+            }
+            
+            .tab-nav-item {
+                padding: 12px 15px;
+            }
+            
+            .tab-nav-item i {
+                font-size: 18px;
+            }
+        }
     </style>
 {% endblock %}
 
@@ -1069,14 +1316,26 @@
         </div>
     </header>
 
-            <form method="POST" enctype="multipart/form-data">
-                <div class="tab-nav" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 5px; margin-bottom: 20px; display: flex;">
-                    <div class="tab-nav-item active" data-tab="temel-bilgiler">Temel Bilgiler</div>
-                    <div class="tab-nav-item" data-tab="gorsel-yonetim">Görsel Yönetimi</div>
-                    <div class="tab-nav-item" data-tab="calistirma-ayarlari">Çalıştırma Ayarları</div>
+    <div class="main-container">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="modern-tab-container">
+                <div class="tab-nav">
+                    <div class="tab-nav-item active" data-tab="temel-bilgiler">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Temel Bilgiler</span>
+                    </div>
+                    <div class="tab-nav-item" data-tab="gorsel-yonetim">
+                        <i class="fas fa-images"></i>
+                        <span>Görsel Yönetimi</span>
+                    </div>
+                    <div class="tab-nav-item" data-tab="calistirma-ayarlari">
+                        <i class="fas fa-cogs"></i>
+                        <span>Çalıştırma Ayarları</span>
+                    </div>
                 </div>
 
-                <div id="temel-bilgiler" class="tab-content active" style="padding: 15px;">
+                <div class="tab-content-wrapper">
+                    <div id="temel-bilgiler" class="tab-content active">
                         <h2 class="form-section-title">Temel Bilgiler</h2>
                         <div class="form-grid">
                             <div class="form-group full-width">
@@ -1135,16 +1394,16 @@
                                 <textarea name="aciklama" id="aciklama_textarea" rows="4" style="display:none;">{{ game.aciklama or '' }}</textarea>
                                 <div id="aciklama-editor" class="pell"></div>
                             </div>
-                        </div>
+                            </div>
                 </div>
 
-                <div id="gorsel-yonetim" class="tab-content" style="padding: 15px;">
+                    <div id="gorsel-yonetim" class="tab-content">
                         <div style="display: grid; gap: 2rem; padding: 1rem;">
                             <!-- Cover Images Section -->
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
                                     <div style="display: flex; align-items: center; gap: 1rem;">
-                                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #e50914, #f6121d); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white;">
+                                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #E50914 0%, #B20710 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);">
                                             <i class="fas fa-image"></i>
                                         </div>
                                         <div>
@@ -1204,7 +1463,7 @@
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); flex-wrap: wrap; gap: 1rem; width: 100%;">
                                     <div style="display: flex; align-items: center; gap: 1rem;">
-                                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #e50914, #f6121d); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white;">
+                                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #E50914 0%, #B20710 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);">
                                             <i class="fas fa-images"></i>
                                         </div>
                                         <div>
@@ -1238,7 +1497,7 @@
                                 <div class="images-grid" id="gallery-grid">
                                     {% if gallery %}
                                         {% for image in gallery %}
-                                            <div class="image-card" data-file-name="{{ image.image_path }}" data-index="{{ loop.index0 }}" onclick="toggleImageSelection('{{ image.image_path }}', {{ loop.index0 }})">
+                                            <div class="image-card" data-file-name="{{ image.image_path }}" data-index="{{ loop.index0 }}" onclick="toggleImageSelection('{{ image.image_path }}', '{{ loop.index0 }}')">
                                                 <div class="selection-indicator">
                                                     <i class="fas fa-check"></i>
                                                 </div>
@@ -1275,9 +1534,9 @@
                         
                         <!-- Hidden input for selected images to delete -->
                         <input type="hidden" name="delete_gallery_images" id="delete-gallery-input">
-                </div>
+                    </div>
 
-                <div id="calistirma-ayarlari" class="tab-content" style="padding: 15px;">
+                    <div id="calistirma-ayarlari" class="tab-content">
                         <h2 class="form-section-title">Çalıştırma Ayarları</h2>
                         <div class="form-group full-width">
                             <label><i class="fas fa-play-circle" style="color: #e50914; margin-right: 8px;"></i>Çalıştırma Tipi:</label>
@@ -1368,12 +1627,18 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Oyunu Güncelle
+                        </button>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
-                    <i class="fas fa-save"></i>
-                    Oyunu Güncelle
-                </button>
-            </form>
+            </div>
+        </form>
+    </div>
 
 
 {% endblock %}
@@ -1462,8 +1727,8 @@
 
             // Modern Image Manager JavaScript - Enhanced Version
             let selectedImages = new Set();
-            let galleryCount = {{ gallery|length if gallery else 0 }};
-            let coverImageExists = {{ 'true' if game.cover_image else 'false' }};
+            let galleryCount = {% if gallery %}{{ gallery|length }}{% else %}0{% endif %};
+            let coverImageExists = {% if game.cover_image %}true{% else %}false{% endif %};
 
             // Cover Image Handler
             const coverInput = document.getElementById('cover-input');
@@ -1796,10 +2061,13 @@
                     pathDisplay.style.color = '#f59e0b';
                     
                     try {
-                        // Get selected disk
+                        // Get selected disk - using the global variables
                         let selectedDisk = '';
-                        if (allDisks.length > 0 && selectedDiskIndex >= 0) {
-                            selectedDisk = allDisks[selectedDiskIndex].drive_letter;
+                        if (window.allDisks && window.allDisks.length > 0 && window.selectedDiskIndex !== undefined && window.selectedDiskIndex >= 0) {
+                            selectedDisk = window.allDisks[window.selectedDiskIndex].drive_letter;
+                            console.log('Seçilen disk:', selectedDisk, 'Index:', window.selectedDiskIndex);
+                        } else {
+                            console.log('Disk seçimi bulunamadı. allDisks:', window.allDisks?.length, 'selectedIndex:', window.selectedDiskIndex);
                         }
                         
                         // Call API to find the actual file path
@@ -1808,72 +2076,39 @@
                             headers: {
                                 'Content-Type': 'application/json',
                             },
+                            credentials: 'same-origin', // Session cookies'leri dahil et
                             body: JSON.stringify({
                                 filename: fileName,
                                 selected_disk: selectedDisk
                             })
                         });
                         
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                            // File found - use the actual path
-                            pathDisplay.textContent = result.path;
-                            hiddenInput.value = result.path;
-                            pathDisplay.style.color = '#22c55e';
+                        if (response.ok) {
+                            const result = await response.json();
                             
-                            // Auto-select disk based on found path
-                            autoSelectDiskFromPath(result.path);
-                            
-                            // Show success notification
-                            showNotification(`✅ Dosya bulundu: ${result.path}`, 'success');
-                        } else {
-                            // File not found - create smart fallback path
-                            let fallbackPath = '';
-                            
-                            // Try to construct a more intelligent path
-                            if (allDisks.length > 0 && selectedDiskIndex >= 0) {
-                                const selectedDisk = allDisks[selectedDiskIndex];
-                                // Common game directories to try
-                                const commonPaths = [
-                                    `${selectedDisk.drive_letter}\\Games\\${fileName}`,
-                                    `${selectedDisk.drive_letter}\\Program Files\\${fileName}`,
-                                    `${selectedDisk.drive_letter}\\Program Files (x86)\\${fileName}`,
-                                    `${selectedDisk.drive_letter}\\Steam\\steamapps\\common\\${fileName}`,
-                                    `${selectedDisk.drive_letter}\\Epic Games\\${fileName}`,
-                                    `${selectedDisk.drive_letter}\\${fileName}`
-                                ];
-                                fallbackPath = commonPaths[0]; // Use the first one as default
+                            if (result.success) {
+                                // File found - use the actual path
+                                pathDisplay.textContent = result.path;
+                                hiddenInput.value = result.path;
+                                pathDisplay.style.color = '#22c55e';
+                                
+                                // Auto-select disk based on found path
+                                autoSelectDiskFromPath(result.path);
+                                
+                                // Show success notification
+                                showNotification(`✅ Dosya bulundu: ${result.path}`, 'success');
                             } else {
-                                fallbackPath = `C:\\Games\\${fileName}`;
+                                // File not found - create smart fallback path
+                                createSmartFallbackPath(fileName, pathDisplay, hiddenInput, result.error);
                             }
-                            
-                            pathDisplay.textContent = fallbackPath;
-                            hiddenInput.value = fallbackPath;
-                            pathDisplay.style.color = '#f59e0b';
-                            
-                            // Show warning notification
-                            showNotification(`⚠️ Dosya otomatik bulunamadı: ${result.error || 'Bilinmeyen hata'}`, 'warning');
-                            showNotification(`📝 Lütfen dosya yolunu manuel olarak kontrol edin: ${fallbackPath}`, 'info');
+                        } else {
+                            // API error - create fallback path
+                            createSmartFallbackPath(fileName, pathDisplay, hiddenInput, `API Hatası: ${response.status}`);
                         }
                     } catch (error) {
                         console.error('Dosya yolu aranırken hata:', error);
-                        
-                        // Fallback to smart path
-                        let fallbackPath = '';
-                        if (allDisks.length > 0 && selectedDiskIndex >= 0) {
-                            const selectedDisk = allDisks[selectedDiskIndex];
-                            fallbackPath = `${selectedDisk.drive_letter}\\Games\\${fileName}`;
-                        } else {
-                            fallbackPath = `C:\\Games\\${fileName}`;
-                        }
-                        
-                        pathDisplay.textContent = fallbackPath;
-                        hiddenInput.value = fallbackPath;
-                        pathDisplay.style.color = '#f59e0b';
-                        
-                        showNotification('⚠️ Dosya yolu aranırken bağlantı hatası oluştu', 'warning');
-                        showNotification(`📝 Kullanılan yol: ${fallbackPath}`, 'info');
+                        // Network error - create fallback path
+                        createSmartFallbackPath(fileName, pathDisplay, hiddenInput, 'Bağlantı hatası');
                     }
                 }
             });
@@ -1956,7 +2191,7 @@
             
             // Auto-select disk based on path
             function autoSelectDiskFromPath(path) {
-                if (!path || !allDisks.length) return;
+                if (!path || !window.allDisks.length) return;
                 
                 // Extract drive letter from path (e.g., "C:" from "C:\..." or "E:" from "E:\...")
                 const driveMatch = path.match(/^([A-Za-z]):/);
@@ -1964,7 +2199,7 @@
                     const driveLetter = driveMatch[1].toUpperCase() + ':';
                     
                     // Find disk index by drive letter
-                    const diskIndex = allDisks.findIndex(disk => {
+                    const diskIndex = window.allDisks.findIndex(disk => {
                         const diskLetter = disk.drive_letter.trim().toUpperCase();
                         return diskLetter === driveLetter;
                     });
@@ -1972,7 +2207,7 @@
                     console.log(`Dosya yolu: ${path}, Aranan disk: ${driveLetter}, Bulunan index: ${diskIndex}`);
                     
                     if (diskIndex !== -1) {
-                        console.log(`Disk otomatik seçiliyor: ${allDisks[diskIndex].drive_letter}`);
+                        console.log(`Disk otomatik seçiliyor: ${window.allDisks[diskIndex].drive_letter}`);
                         selectDisk(diskIndex);
                         return true;
                     } else {
@@ -2015,16 +2250,45 @@
                 const exePathDisplay = document.getElementById('exe-path-display');
                 const currentPath = exePathDisplay ? exePathDisplay.textContent.trim() : '';
                 
-                if (currentPath && allDisks.length > 0) {
+                if (currentPath && window.allDisks.length > 0) {
                      autoSelectDiskFromPath(currentPath);
                 }
             }
         });
         
-        // Modern Disk Selector Functions
-        let allDisks = [];
-
-        let selectedDiskIndex = 0;
+        // Modern Disk Selector Functions - Global değişkenler
+        window.allDisks = [];
+        window.selectedDiskIndex = 0;
+        
+        // Helper function for smart fallback path creation
+        function createSmartFallbackPath(fileName, pathDisplay, hiddenInput, errorReason) {
+            let fallbackPath = '';
+            
+            // Try to construct a more intelligent path
+            if (window.allDisks.length > 0 && window.selectedDiskIndex >= 0) {
+                const selectedDisk = window.allDisks[window.selectedDiskIndex];
+                // Common game directories to try
+                const commonPaths = [
+                    `${selectedDisk.drive_letter}\\Games\\${fileName}`,
+                    `${selectedDisk.drive_letter}\\Program Files\\${fileName}`,
+                    `${selectedDisk.drive_letter}\\Program Files (x86)\\${fileName}`,
+                    `${selectedDisk.drive_letter}\\Steam\\steamapps\\common\\${fileName}`,
+                    `${selectedDisk.drive_letter}\\Epic Games\\${fileName}`,
+                    `${selectedDisk.drive_letter}\\${fileName}`
+                ];
+                fallbackPath = commonPaths[0]; // Use the first one as default
+            } else {
+                fallbackPath = `C:\\Games\\${fileName}`;
+            }
+            
+            pathDisplay.textContent = fallbackPath;
+            hiddenInput.value = fallbackPath;
+            pathDisplay.style.color = '#f59e0b';
+            
+            // Show warning notifications
+            showNotification(`⚠️ Dosya otomatik bulunamadı: ${errorReason || 'Bilinmeyen hata'}`, 'warning');
+            showNotification(`📝 Öneri yol kullanılıyor: ${fallbackPath}`, 'info');
+        }
 
         async function loadAvailableDisks() {
             const gridContainer = document.getElementById('disks-grid-container');
@@ -2040,11 +2304,13 @@
                 </div>`;
 
             try {
-                const response = await fetch('/api/disk_list');
+                const response = await fetch('/api/disk_list', {
+                    credentials: 'same-origin'
+                });
                 const data = await response.json();
 
                 if (data.success && data.disks && data.disks.length > 0) {
-                    allDisks = data.disks;
+                    window.allDisks = data.disks;
                     displayDisksGrid();
                     // İlk diski seç
                     selectDisk(0);
@@ -2070,7 +2336,7 @@
             const grid = document.createElement('div');
             grid.className = 'disks-grid';
             
-            allDisks.forEach((disk, index) => {
+            window.allDisks.forEach((disk, index) => {
                 const diskCard = createDiskCard(disk, index);
                 grid.appendChild(diskCard);
             });
@@ -2080,8 +2346,8 @@
         }
 
         function selectDisk(index) {
-            selectedDiskIndex = index;
-            const selectedDisk = allDisks[index];
+            window.selectedDiskIndex = index;
+            const selectedDisk = window.allDisks[index];
             
             // Tüm kartlardan selected sınıfını kaldır
             document.querySelectorAll('.disk-card').forEach(card => {

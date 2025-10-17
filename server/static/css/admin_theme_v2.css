@@ -7,7 +7,7 @@
     --bg-dark-secondary: #1E1E1E;
     --bg-dark-tertiary: #2a2a2a;
     --border-color: rgba(255, 255, 255, 0.1);
-    --text-primary: #F1F5F9;
+    --text-primary: #98a3b7;
     --text-secondary: #94A3B8;
     --accent-red: #E50914;
     --accent-red-hover: #F6121D;
@@ -140,7 +140,7 @@ body {
 
 .menu-item:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
+    color: #94A3B8;
 }
 
 .menu-item.active {
@@ -557,7 +557,7 @@ body {
 .btn-icon:hover {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: var(--text-secondary);
-    color: var(--text-primary);
+    color: #94A3B8;
 }
 
 .btn-secondary {
@@ -570,6 +570,34 @@ body {
     background: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+}
+
+.btn-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-danger:hover::before {
+    left: 100%;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4), 0 0 20px rgba(220, 38, 38, 0.3);
+    transform: translateY(-2px);
 }
 
 /* --- KARTLAR & TABLOLAR --- */
@@ -637,6 +665,7 @@ tbody td {
     padding: 15px 20px;
     font-size: 14px;
     vertical-align: middle;
+    color: var(--text-primary);
 }
 
 .game-cell {
@@ -1014,7 +1043,7 @@ tbody td {
 
 .category-checkbox-label:hover .category-checkbox-custom {
     background-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
+    color: #94A3B8;
 }
 
 .category-checkbox-label input[type="checkbox"]:checked + .category-checkbox-custom {
@@ -1112,7 +1141,7 @@ tbody td {
 
 .tab-nav-item:hover {
     background: rgba(255,255,255,0.05);
-    color: var(--text-primary);
+    color: #94A3B8;
 }
 
 .tab-nav-item.active {
@@ -1729,7 +1758,7 @@ tbody td {
 .btn-outline-secondary:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: var(--text-secondary);
-    color: var(--text-primary);
+    color: #94A3B8;
 }
 
 .btn-sm {
@@ -2697,7 +2726,7 @@ tbody td {
 .tip:hover {
     background: rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(148, 163, 184, 0.3);
 }
 
 .tip i {
@@ -3408,7 +3437,7 @@ tbody td {
 .page-size-box:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: var(--text-secondary);
-    color: var(--text-primary);
+    color: #94A3B8;
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
@@ -3538,7 +3567,7 @@ tbody td {
 
 .pagination-number:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
+    color: #94A3B8;
     transform: translateY(-1px);
 }
 
@@ -3757,6 +3786,7 @@ tbody td {
 .page-size-selector-header .page-size-box:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: var(--text-secondary);
+    color: #94A3B8;
     transform: translateY(-1px);
 }
 
@@ -3886,7 +3916,7 @@ tbody td {
 
 .modern-select-option:hover {
     background: rgba(229, 9, 20, 0.15) !important;
-    color: var(--text-primary) !important;
+    color: #94A3B8 !important;
     padding-left: 24px !important;
 }
 
