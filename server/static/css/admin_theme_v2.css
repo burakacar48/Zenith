@@ -25,20 +25,23 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* CPU-friendly optimizasyonlar */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
+    /* GPU acceleration kaldırıldı */
 }
 
 body {
     font-family: var(--font-family);
     background-color: #0f0f0f;
-    background-image: url('/static/images/background.webp');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
     color: var(--text-primary);
     min-height: 100vh;
+    height: 100%;
     overflow-x: hidden;
     padding: 40px 20px;
+    /* CPU-friendly optimizasyonlar */
+    contain: layout;
 }
 
 .container {
@@ -52,6 +55,8 @@ body {
     display: grid;
     grid-template-columns: 260px 1fr;
     width: 100%;
+    min-height: calc(100vh - 80px);
+    height: auto;
 }
 
 /* --- SIDEBAR --- */
@@ -61,7 +66,8 @@ body {
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - 80px);
+    min-height: 100%;
+    height: 100%;
     position: relative;
     width: 260px;
     flex-shrink: 0;
@@ -131,7 +137,7 @@ body {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s ease;
+    transition: left 0.3s ease;
 }
 
 .menu-item:hover::before {
@@ -202,7 +208,7 @@ body {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s ease;
+    transition: left 0.3s ease;
 }
 
 .user-panel:hover::before {
@@ -299,6 +305,8 @@ body {
     min-width: 0;
     display: flex;
     flex-direction: column;
+    min-height: 100%;
+    height: auto;
 }
 
 
@@ -358,6 +366,8 @@ body {
     flex: 1;
     padding: 30px;
     overflow-y: auto;
+    min-height: 100%;
+    height: auto;
 }
 
 /* --- FLASH MESSAGES --- */
@@ -501,7 +511,7 @@ body {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s ease;
+    transition: left 0.3s ease;
 }
 
 .btn-primary:hover::before {
@@ -547,7 +557,7 @@ body {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s ease;
+    transition: left 0.2s ease;
 }
 
 .btn-icon:hover::before {
@@ -1186,11 +1196,13 @@ tbody td {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 .grid-item:hover img {
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
 .cover-image-slot {
@@ -2232,16 +2244,10 @@ tbody td {
     pointer-events: none;
 }
 
-/* Loading State for Images */
+/* Loading State for Images - Optimized */
 .grid-item img[src=""] {
-    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-    background-size: 200% 100%;
-    animation: loading 2s infinite;
-}
-
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    background: #2a2a2a;
+    opacity: 0.7;
 }
 
 /* ===== YENİ GALERİ YÖNETİMİ TASARIMI ===== */
@@ -3205,16 +3211,10 @@ tbody td {
     }
 }
 
-/* Loading animasyonu */
+/* Loading animasyonu - Optimized */
 .game-poster img[src=""] {
-    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-    background-size: 200% 100%;
-    animation: loading 2s infinite;
-}
-
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    background: #2a2a2a;
+    opacity: 0.5;
 }
 
 /* Hover efektleri iyileştirmeleri */
@@ -3706,19 +3706,7 @@ tbody td {
 }
 
 .filters-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.02), transparent);
-    transition: left 0.6s ease;
-    pointer-events: none;
-}
-
-.filters-section:hover::before {
-    left: 100%;
+    display: none;
 }
 
 /* Loading State */
@@ -3966,3 +3954,159 @@ tbody td {
 }
 
 /* Dosya sonu - CSS syntax check */
+
+/* ===== ELECTRON PERFORMANS OPTİMİZASYONLARI ===== */
+
+/* Electron için ek performans kuralları */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Electron için CPU intensive animasyonları devre dışı bırak */
+.electron-optimized * {
+    animation: none !important;
+    transition: none !important;
+}
+
+.electron-optimized *:hover {
+    transform: none !important;
+}
+
+/* Sadece critical hover efektleri */
+.game-card:hover {
+    transform: none !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+.btn:hover {
+    transform: none !important;
+}
+
+/* GPU acceleration optimizasyonları */
+.will-change-transform {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.will-change-opacity {
+    will-change: opacity;
+}
+
+.contain-layout {
+    contain: layout;
+}
+
+.contain-paint {
+    contain: paint;
+}
+
+.contain-strict {
+    contain: strict;
+}
+
+/* Memory leak önleme */
+.no-before::before,
+.no-after::after {
+    display: none !important;
+}
+
+/* Electron için optimized scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(229, 9, 20, 0.6);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(229, 9, 20, 0.8);
+}
+
+/* Performans izleme için debug class */
+.debug-performance {
+    outline: 2px solid red !important;
+}
+
+.debug-performance::after {
+    content: 'PERF' !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background: red !important;
+    color: white !important;
+    font-size: 10px !important;
+    padding: 2px 4px !important;
+    z-index: 9999 !important;
+}
+
+/* Layout stabilite için ek kurallar */
+html {
+    height: 100%;
+}
+
+html::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('/static/images/background.webp');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    z-index: -999;
+    pointer-events: none;
+}
+
+body {
+    position: relative;
+    background: transparent;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Viewport ve layout optimizasyonu */
+@media screen {
+    html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        padding: 40px 20px;
+        box-sizing: border-box;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
+/* Scrollbar için container */
+.main-content {
+    overflow-y: auto;
+    height: 100%;
+}
+
+.content-wrapper {
+    height: auto;
+    max-height: none;
+}

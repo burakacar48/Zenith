@@ -463,6 +463,11 @@ def root():
     else:
         return redirect(url_for('admin_login'))
 
+@app.route('/loading.html')
+def loading_screen():
+    """Tauri loading ekranı için route"""
+    return render_template('loading.html')
+
 # Admin Authentication Routes
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():

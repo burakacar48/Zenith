@@ -24,8 +24,7 @@
 
         .image-section:hover {
             border-color: rgba(229, 9, 20, 0.3);
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            /* GPU-yoğun efektler kaldırıldı */
         }
 
         .section-header {
@@ -114,8 +113,7 @@
         }
 
         .btn-delete-selected:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+            /* GPU-yoğun efektler kaldırıldı */
         }
 
         .upload-zone {
@@ -132,7 +130,7 @@
         .upload-zone:hover {
             border-color: #e50914;
             background: rgba(229, 9, 20, 0.05);
-            transform: translateY(-3px);
+            /* Transform kaldırıldı */
         }
 
         .upload-zone.upload-hidden {
@@ -150,7 +148,7 @@
         .upload-zone:hover .upload-icon {
             color: #e50914;
             opacity: 1;
-            transform: scale(1.1);
+            /* Transform kaldırıldı */
         }
 
         .upload-zone h4 {
@@ -212,8 +210,7 @@
 
         .cover-image-card:hover {
             border-color: #e50914;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            /* Transform ve shadow kaldırıldı */
         }
 
         .image-card {
@@ -228,8 +225,7 @@
 
         .image-card:hover {
             border-color: #e50914;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            /* Transform ve shadow kaldırıldı */
         }
 
         .image-card.selected {
@@ -259,7 +255,7 @@
             border-color: #22c55e;
             color: #98a3b7;
             opacity: 1;
-            transform: scale(1.1);
+            /* Transform kaldırıldı - CPU optimizasyonu */
         }
 
         .image-card:hover .selection-indicator {
@@ -285,12 +281,12 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            /* Transform transition kaldırıldı */
         }
 
         .image-card:hover .image-wrapper img,
         .cover-image-card:hover .cover-image-wrapper img {
-            transform: scale(1.05);
+            /* Scale efekti kaldırıldı */
         }
 
         .image-overlay {
@@ -339,8 +335,7 @@
         }
 
         .action-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            /* Transform efekti kaldırıldı */
         }
 
         .image-info {
@@ -555,7 +550,7 @@
         }
         
         .execution-btn:hover {
-            transform: translateY(-2px);
+            /* Transform kaldırıldı - CPU optimizasyonu */
             border-color: rgba(255, 255, 255, 0.2);
             background: rgba(0, 0, 0, 0.3);
         }
@@ -782,19 +777,19 @@
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.2);
             color: #f1f5f9;
-            transform: translateY(-2px);
+            /* Transform kaldırıldı - CPU optimizasyonu */
         }
         
         .tab-nav-item:hover:not(.active) i {
             color: #e50914;
-            transform: scale(1.1);
+            /* Transform kaldırıldı - CPU optimizasyonu */
         }
         
         .tab-nav-item.active {
             background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
             border-color: #E50914;
             color: #98a3b7;
-            transform: translateY(-2px);
+            /* Transform kaldırıldı - CPU optimizasyonu */
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
@@ -811,7 +806,7 @@
             display: none;
             padding: 30px;
             min-height: 400px;
-            animation: fadeIn 0.3s ease-in-out;
+            /* Animation devre dışı - performans optimizasyonu */
             background: transparent;
         }
         
@@ -819,10 +814,11 @@
             display: block;
         }
         
+        /* FadeIn animasyonu devre dışı - performans optimizasyonu */
         @keyframes fadeIn {
             from {
-                opacity: 0;
-                transform: translateY(15px);
+                opacity: 1;
+                transform: translateY(0);
             }
             to {
                 opacity: 1;
@@ -868,8 +864,8 @@
         }
         
         .form-actions .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(229, 9, 20, 0.5);
+            /* Transform ve yoğun shadow kaldırıldı - CPU optimizasyonu */
+            background: linear-gradient(135deg, #B20710 0%, #E50914 100%);
         }
         
         .form-actions .btn i {
@@ -1077,7 +1073,7 @@
                                     {% if game.cover_image %}
                                         <div class="cover-image-card" data-file-name="{{ game.cover_image }}">
                                             <div class="cover-image-wrapper">
-                                                <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" alt="{{ game.oyun_adi }}">
+                                                <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" alt="{{ game.oyun_adi }}" loading="lazy" decoding="async">
                                                 <div class="image-overlay">
                                                     <div class="image-actions">
                                                         <button class="action-btn delete" type="button" onclick="deleteCoverImage('{{ game.cover_image }}')">
@@ -1147,7 +1143,7 @@
                                                     <i class="fas fa-check"></i>
                                                 </div>
                                                 <div class="image-wrapper">
-                                                    <img src="{{ url_for('static', filename='images/gallery/' + image.image_path) }}" alt="{{ image.image_path }}">
+                                                    <img src="{{ url_for('static', filename='images/gallery/' + image.image_path) }}" alt="{{ image.image_path }}" loading="lazy" decoding="async">
                                                 </div>
                                                 <div class="image-info">
                                                     <div class="image-name">{{ image.image_path }}</div>
@@ -1292,33 +1288,40 @@
     <script src="https://unpkg.com/pell"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Tab functionality with persistent state
+            // Tab functionality with persistent state - OPTIMIZED
             const tabNavItems = document.querySelectorAll('.tab-nav-item');
             const tabContents = document.querySelectorAll('.tab-content');
             
-            // Function to switch tabs
+            // Function to switch tabs - PERFORMANCE OPTIMIZED
             function switchTab(tabId) {
-                tabNavItems.forEach(navItem => navItem.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-                
-                const targetNavItem = document.querySelector(`[data-tab="${tabId}"]`);
-                const targetContent = document.getElementById(tabId);
-                
-                if (targetNavItem && targetContent) {
-                    targetNavItem.classList.add('active');
-                    targetContent.classList.add('active');
+                // Batch DOM operations for performance
+                requestAnimationFrame(() => {
+                    tabNavItems.forEach(navItem => navItem.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
                     
-                    // Save to localStorage and update URL
-                    localStorage.setItem('activeEditTab', tabId);
-                    window.location.hash = `tab-${tabId}`;
-                }
+                    const targetNavItem = document.querySelector(`[data-tab="${tabId}"]`);
+                    const targetContent = document.getElementById(tabId);
+                    
+                    if (targetNavItem && targetContent) {
+                        targetNavItem.classList.add('active');
+                        targetContent.classList.add('active');
+                        
+                        // Save to localStorage - throttled
+                        localStorage.setItem('activeEditTab', tabId);
+                        window.location.hash = `tab-${tabId}`;
+                    }
+                });
             }
             
-            // Add click listeners to tab items
+            // Add click listeners to tab items - DEBOUNCED
             tabNavItems.forEach(item => {
+                let clickTimeout;
                 item.addEventListener('click', () => {
-                    const tabId = item.getAttribute('data-tab');
-                    switchTab(tabId);
+                    clearTimeout(clickTimeout);
+                    clickTimeout = setTimeout(() => {
+                        const tabId = item.getAttribute('data-tab');
+                        switchTab(tabId);
+                    }, 50); // 50ms debounce
                 });
             });
             
@@ -1357,12 +1360,19 @@
                 }
             });
 
-            // Pell editor
+            // Pell editor - PERFORMANCE OPTIMIZED
             var editorEl = document.getElementById('aciklama-editor');
             if (editorEl) {
+              // Throttle onChange for performance
+              let changeTimeout;
               const editorInstance = pell.init({
                 element: editorEl,
-                onChange: html => { document.getElementById('aciklama_textarea').value = html; },
+                onChange: html => {
+                    clearTimeout(changeTimeout);
+                    changeTimeout = setTimeout(() => {
+                        document.getElementById('aciklama_textarea').value = html;
+                    }, 300); // 300ms throttle
+                },
                 defaultParagraphSeparator: 'p',
                 styleWithCSS: false,
                 actions: ['bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link']
@@ -1382,7 +1392,10 @@
             coverInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
-                    handleCoverImageUpload(file);
+                    // Use requestAnimationFrame for smooth UI updates
+                    requestAnimationFrame(() => {
+                        handleCoverImageUpload(file);
+                    });
                 }
             });
 
@@ -1392,7 +1405,10 @@
 
             galleryInput.addEventListener('change', function(e) {
                 const files = Array.from(e.target.files);
-                handleGalleryImagesUpload(files);
+                // Batch process files for performance
+                requestAnimationFrame(() => {
+                    handleGalleryImagesUpload(files);
+                });
             });
 
             // Handle Cover Image Upload
@@ -1409,7 +1425,7 @@
                 reader.readAsDataURL(file);
             }
 
-            // Handle Gallery Images Upload
+            // Handle Gallery Images Upload - PERFORMANCE OPTIMIZED
             function handleGalleryImagesUpload(files) {
                 // Clear empty state if exists
                 const emptyState = galleryGrid.querySelector('.empty-state');
@@ -1417,15 +1433,33 @@
                     emptyState.remove();
                 }
 
-                files.forEach((file, index) => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const imageCard = createGalleryImageCard(file.name, e.target.result, galleryCount + index);
-                        galleryGrid.appendChild(imageCard);
-                    };
-                    reader.readAsDataURL(file);
-                });
+                // Process files in batches to avoid blocking UI
+                let processedCount = 0;
+                function processBatch() {
+                    const batchSize = 3; // Process 3 files at a time
+                    const endIndex = Math.min(processedCount + batchSize, files.length);
+                    
+                    for (let i = processedCount; i < endIndex; i++) {
+                        const file = files[i];
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            requestAnimationFrame(() => {
+                                const imageCard = createGalleryImageCard(file.name, e.target.result, galleryCount + i);
+                                galleryGrid.appendChild(imageCard);
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                    
+                    processedCount = endIndex;
+                    
+                    if (processedCount < files.length) {
+                        // Process next batch after a short delay
+                        setTimeout(processBatch, 100);
+                    }
+                }
                 
+                processBatch();
                 galleryCount += files.length;
                 updateGalleryCount();
             }
@@ -1438,7 +1472,7 @@
                 
                 card.innerHTML = `
                     <div class="cover-image-wrapper">
-                        <img src="${imageSrc}" alt="${fileName}">
+                        <img src="${imageSrc}" alt="${fileName}" loading="lazy" decoding="async">
                         <div class="image-overlay">
                             <div class="image-actions">
                                 <button class="action-btn delete" onclick="deleteCoverImage('${fileName}')">
@@ -1595,28 +1629,33 @@
                 updateCoverUploadZone();
             }
 
-            // Add Drag & Drop functionality
+            // Add Drag & Drop functionality - THROTTLED
             function setupDragAndDrop() {
                 const uploadZones = document.querySelectorAll('.upload-zone:not(.upload-hidden)');
                 
                 uploadZones.forEach(zone => {
                     // Prevent default drag behaviors
                     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                        zone.addEventListener(eventName, preventDefaults, false);
-                        document.body.addEventListener(eventName, preventDefaults, false);
+                        zone.addEventListener(eventName, preventDefaults, { passive: false });
                     });
 
-                    // Highlight drop area when item is dragged over it
+                    // Throttled highlight effects for performance
+                    let highlightTimeout;
                     ['dragenter', 'dragover'].forEach(eventName => {
-                        zone.addEventListener(eventName, highlight, false);
+                        zone.addEventListener(eventName, (e) => {
+                            clearTimeout(highlightTimeout);
+                            highlight(e);
+                        }, { passive: true });
                     });
 
                     ['dragleave', 'drop'].forEach(eventName => {
-                        zone.addEventListener(eventName, unhighlight, false);
+                        zone.addEventListener(eventName, (e) => {
+                            highlightTimeout = setTimeout(() => unhighlight(e), 50);
+                        }, { passive: true });
                     });
 
                     // Handle dropped files
-                    zone.addEventListener('drop', handleDrop, false);
+                    zone.addEventListener('drop', handleDrop, { passive: false });
                 });
 
                 function preventDefaults(e) {
@@ -1688,6 +1727,43 @@
             const currentType = '{{ game.calistirma_tipi or "exe" }}';
             selectExecutionType(currentType);
             
+            // Initialize disk selection on page load
+            function initializeDiskSelection() {
+                const currentExePath = '{{ game.calistirma_verisi_dict.exe_path or "" }}';
+                const selectedDiskInput = document.getElementById('selected-disk-input');
+                
+                if (currentExePath && currentExePath.length >= 2 && currentExePath[1] === ':') {
+                    const detectedDrive = currentExePath.substring(0, 2).toUpperCase();
+                    
+                    // Find and visually select the disk card
+                    const diskCards = document.querySelectorAll('.disk-info-card');
+                    diskCards.forEach(card => {
+                        const onclickAttr = card.getAttribute('onclick');
+                        if (onclickAttr) {
+                            const match = onclickAttr.match(/'([^']+)'/);
+                            if (match && match[1] === detectedDrive) {
+                                // Remove active from all cards first
+                                document.querySelectorAll('.disk-info-card').forEach(c => {
+                                    c.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                                    c.style.boxShadow = 'none';
+                                });
+                                
+                                // Activate this card
+                                card.style.border = '2px solid #E50914';
+                                card.style.boxShadow = '0 4px 15px rgba(229, 9, 20, 0.3)';
+                                
+                                // Update global variables and hidden input
+                                window.selectedDisk = detectedDrive;
+                                selectedDiskInput.value = detectedDrive;
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Call initialization after DOM is ready
+            initializeDiskSelection();
+            
             // Disk selection function
             window.selectDisk = function(diskLetter) {
                 // Remove active class from all disk cards
@@ -1706,8 +1782,22 @@
                 // Update hidden input
                 document.getElementById('selected-disk-input').value = diskLetter;
                 
-                // Show notification
-                showNotification(`${diskLetter} diski seçildi`, 'success');
+                // Update EXE path with new disk letter if path exists
+                const exePathDisplay = document.getElementById('exe-path-display');
+                if (exePathDisplay && exePathDisplay.value) {
+                    const currentPath = exePathDisplay.value;
+                    // Check if current path has a drive letter (format: X:\...)
+                    if (currentPath.length >= 2 && currentPath[1] === ':') {
+                        // Replace the drive letter with the new one
+                        const newPath = diskLetter + currentPath.substring(2);
+                        exePathDisplay.value = newPath;
+                        showNotification(`${diskLetter} diski seçildi - EXE yolu güncellendi: ${newPath}`, 'success');
+                    } else {
+                        showNotification(`${diskLetter} diski seçildi`, 'success');
+                    }
+                } else {
+                    showNotification(`${diskLetter} diski seçildi`, 'success');
+                }
             };
             
             // EXE File Selection Functions

@@ -1,5 +1,5 @@
 window.addEventListener('DOMContentLoaded', () => {
-    const SERVER_URL = 'http://127.0.0.1:5001';
+    const SERVER_URL = 'http://127.0.0.1:5000';
     let authToken = null;
     let currentUser = null;
     let allGames = [];
@@ -486,13 +486,10 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Tauri API kullanarak oyun başlat
-        if (window.__TAURI__) {
-            window.__TAURI__.core.invoke('launch_game', { game: JSON.stringify(game) })
-                .then(result => console.log('Oyun başlatıldı:', result))
-                .catch(error => console.error('Oyun başlatma hatası:', error));
+        if (window.electronAPI) {
+            window.electronAPI.launchGame(game); 
         } else {
-            console.log("Tauri API bulunamadı, oyun başlatılamıyor.");
+            console.log("Electron API bulunamadı, oyun başlatılamıyor.");
         }
     };
 

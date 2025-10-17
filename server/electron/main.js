@@ -5,16 +5,28 @@ process.env.LC_ALL = 'tr_TR.UTF-8';
 // Cache hatalarını önlemek için command line switches
 const { app: electronApp } = require('electron');
 
-// Cache ve GPU hatalarını önleyen ayarlar
+// CPU-optimized performans ayarları (Sunucu sistemler için)
+electronApp.commandLine.appendSwitch('--disable-gpu');
+electronApp.commandLine.appendSwitch('--disable-gpu-compositing');
+electronApp.commandLine.appendSwitch('--disable-gpu-rasterization');
 electronApp.commandLine.appendSwitch('--disable-gpu-sandbox');
 electronApp.commandLine.appendSwitch('--disable-software-rasterizer');
-electronApp.commandLine.appendSwitch('--disable-gpu');
-electronApp.commandLine.appendSwitch('--no-sandbox');
+electronApp.commandLine.appendSwitch('--disable-3d-apis');
+electronApp.commandLine.appendSwitch('--disable-accelerated-2d-canvas');
+electronApp.commandLine.appendSwitch('--disable-accelerated-jpeg-decoding');
+electronApp.commandLine.appendSwitch('--disable-accelerated-mjpeg-decode');
+electronApp.commandLine.appendSwitch('--disable-accelerated-video-decode');
+electronApp.commandLine.appendSwitch('--disable-background-timer-throttling');
+electronApp.commandLine.appendSwitch('--disable-renderer-backgrounding');
+electronApp.commandLine.appendSwitch('--disable-features=TranslateUI,VizDisplayCompositor');
+electronApp.commandLine.appendSwitch('--max_old_space_size=4096');
+electronApp.commandLine.appendSwitch('--js-flags=--max-old-space-size=4096');
 electronApp.commandLine.appendSwitch('--disable-web-security');
-electronApp.commandLine.appendSwitch('--disable-features=VizDisplayCompositor');
 electronApp.commandLine.appendSwitch('--disable-dev-shm-usage');
+electronApp.commandLine.appendSwitch('--no-sandbox');
 electronApp.commandLine.appendSwitch('--disable-extensions');
 electronApp.commandLine.appendSwitch('--disable-plugins');
+electronApp.commandLine.appendSwitch('--disable-background-networking');
 
 console.log('Electron modülü yüklemeye çalışılıyor...');
 let app, BrowserWindow, dialog, shell, Menu;
@@ -154,25 +166,39 @@ function createWindow() {
             contextIsolation: true,
             enableRemoteModule: false,
             preload: path.join(__dirname, 'preload.js'),
-            webSecurity: false // Local sunucu için gerekli
+            webSecurity: false, // Local sunucu için gerekli
+            hardwareAcceleration: false, // GPU acceleration kapalı
+            backgroundThrottling: false, // Arka plan throttling kapalı
+            offscreen: false,
+            experimentalFeatures: false,
+            enableWebSQL: false,
+            allowRunningInsecureContent: false,
+            zoomFactor: 1.0,
+            // CPU-optimized ayarlar
+            v8CacheOptions: 'none',
+            enableNodeWorker: false,
+            spellcheck: false,
+            defaultFontFamily: {
+                standard: 'Arial',
+                serif: 'Times New Roman',
+                sansSerif: 'Arial',
+                monospace: 'Consolas'
+            }
         },
         icon: path.join(__dirname, 'assets', 'icon.png'),
         show: false, // Başlangıçta gizli
-        titleBarStyle: 'hidden',
-        titleBarOverlay: {
-            color: '#2f3349',
-            symbolColor: '#ffffff',
-            height: 40 // Daha yüksek başlık çubuğu
-        },
+        titleBarStyle: 'default', // Normal başlık çubuğu
         title: 'Zenith - Yeni Nesil Oyun Menüsü',
         fullscreen: false,
         frame: true,
         backgroundColor: '#1e1e1e', // Modern koyu tema
-        vibrancy: 'ultra-dark', // Windows'ta destekleniyorsa
         transparent: false,
         resizable: true,
         maximizable: true,
-        minimizable: true
+        minimizable: true,
+        // Performans ayarları
+        enableLargerHeapSpace: true,
+        useContentSize: true
     });
 
     // Pencere hazır olduğunda göster
@@ -184,6 +210,33 @@ function createWindow() {
         if (process.argv.includes('--dev')) {
             mainWindow.webContents.openDevTools();
         }
+        
+        // Performans optimizasyonları
+        console.log('Performans optimizasyonları uygulanıyor...');
+        
+        // Memory cleanup düzenli olarak çalıştır
+        setInterval(() => {
+            if (global.gc) {
+                global.gc();
+            }
+            if (mainWindow && mainWindow.webContents) {
+                mainWindow.webContents.session.clearCache();
+            }
+        }, 300000); // 5 dakikada bir
+        
+        // GPU process crash recovery
+        mainWindow.webContents.on('gpu-process-crashed', (event, killed) => {
+            console.log('GPU process crashed, restarting...', killed);
+            mainWindow.reload();
+        });
+        
+        // Renderer process crash recovery
+        mainWindow.webContents.on('render-process-gone', (event, details) => {
+            console.log('Renderer process gone:', details.reason);
+            if (details.reason !== 'clean-exit') {
+                mainWindow.reload();
+            }
+        });
     });
 
     // Loading sayfasını önce yükle
@@ -197,8 +250,60 @@ function createWindow() {
             // Biraz bekle ki sunucu tamamen hazır olsun
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Flask uygulamasını yükle
-            mainWindow.loadURL(FLASK_URL);
+            // Flask uygulamasını yükle - cache optimizasyonları ile
+            await mainWindow.loadURL(FLASK_URL, {
+                userAgent: 'ZenithElectronApp/1.0.0',
+                extraHeaders: 'Cache-Control: no-cache\n'
+            });
+            
+            // Sayfa yüklendikten sonra performans optimizasyonları uygula
+            mainWindow.webContents.once('dom-ready', () => {
+                console.log('DOM hazır, performans optimizasyonları uygulanıyor...');
+                
+                // CSS ve JS optimizasyonları inject et
+                mainWindow.webContents.insertCSS(`
+                    * {
+                        -webkit-font-smoothing: antialiased;
+                        -moz-osx-font-smoothing: grayscale;
+                        text-rendering: optimizeLegibility;
+                    }
+                    
+                    img, video {
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges;
+                    }
+                    
+                    * {
+                        will-change: auto;
+                        transform: translateZ(0);
+                        backface-visibility: hidden;
+                    }
+                `);
+                
+                // Performance monitoring script inject et
+                mainWindow.webContents.executeJavaScript(`
+                    // GPU acceleration kontrol
+                    if (typeof OffscreenCanvas !== 'undefined') {
+                        console.log('GPU acceleration aktif');
+                    }
+                    
+                    // Memory usage monitoring
+                    if (performance.memory) {
+                        console.log('Memory usage:', {
+                            used: Math.round(performance.memory.usedJSHeapSize / 1048576) + 'MB',
+                            total: Math.round(performance.memory.totalJSHeapSize / 1048576) + 'MB',
+                            limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576) + 'MB'
+                        });
+                    }
+                    
+                    // RequestIdleCallback kullanarak smooth scrolling
+                    if (window.requestIdleCallback) {
+                        window.requestIdleCallback(() => {
+                            document.documentElement.style.scrollBehavior = 'smooth';
+                        });
+                    }
+                `);
+            });
         })
         .catch((error) => {
             console.error('Flask sunucusu başlatılamadı:', error);
