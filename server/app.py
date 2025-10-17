@@ -712,10 +712,24 @@ def add_game():
                 
             if calistirma_tipi == 'exe':
                 exe_path = form_data.get('exe_path', '')
+                selected_disk = form_data.get('selected_disk', '')
+                
+                # Disk harfi ve oyun yolunu ayır
+                disk_letter = ''
+                relative_path = exe_path
+                
+                if exe_path and len(exe_path) >= 2 and exe_path[1] == ':':
+                    disk_letter = exe_path[:2].upper()  # C:, D:, vb.
+                    relative_path = exe_path[2:]  # \Program Files\Game\game.exe
+                elif selected_disk:
+                    disk_letter = selected_disk
+                    
                 calistirma_verisi = json.dumps({
                     'yol': form_data.get('exe_yol', ''),
                     'argumanlar': form_data.get('exe_argumanlar', ''),
-                    'exe_path': exe_path
+                    'exe_path': exe_path,
+                    'disk_letter': disk_letter,
+                    'relative_path': relative_path
                 })
                 
                 # BASIT VARSAYILAN BETİK TANIMI
@@ -773,7 +787,35 @@ start "" "%%EXE_YOLU%%" %%EXE_ARGS%%
             
         categories = conn.execute('SELECT * FROM categories ORDER BY name ASC').fetchall()
         languages = conn.execute('SELECT * FROM languages WHERE is_active = 1 ORDER BY name ASC').fetchall()
-        return render_template('add_game.html', categories=categories, languages=languages)
+        
+        # Disk bilgilerini al
+        available_drives = get_windows_drives()
+        custom_names = {}
+        custom_names_result = conn.execute('SELECT drive_letter, custom_name FROM disk_settings').fetchall()
+        for row in custom_names_result:
+            custom_names[row['drive_letter']] = row['custom_name']
+        
+        # Diskleri hazırla
+        for drive in available_drives:
+            drive_letter = drive['device_id']
+            drive['custom_name'] = custom_names.get(drive_letter, '')
+            
+            # Boyut bilgilerini formatla
+            if drive['size']:
+                drive['size_gb'] = round(drive['size'] / (1024**3), 1)
+                drive['used_gb'] = round((drive['size'] - drive['free_space']) / (1024**3), 1)
+                drive['usage_percent'] = round(((drive['size'] - drive['free_space']) / drive['size']) * 100, 1)
+            else:
+                drive['size_gb'] = 'Bilinmiyor'
+                drive['used_gb'] = 'Bilinmiyor'
+                drive['usage_percent'] = 0
+                
+            if drive['free_space']:
+                drive['free_space_gb'] = round(drive['free_space'] / (1024**3), 1)
+            else:
+                drive['free_space_gb'] = 'Bilinmiyor'
+        
+        return render_template('add_game.html', categories=categories, languages=languages, drives=available_drives)
     finally: # Bağlantı, ne olursa olsun burada kapatılır
         if conn:
             conn.close()
@@ -828,10 +870,24 @@ def edit_game(game_id):
             
             if calistirma_tipi == 'exe':
                 exe_path = form_data.get('exe_path', '')
+                selected_disk = form_data.get('selected_disk', '')
+                
+                # Disk harfi ve oyun yolunu ayır
+                disk_letter = ''
+                relative_path = exe_path
+                
+                if exe_path and len(exe_path) >= 2 and exe_path[1] == ':':
+                    disk_letter = exe_path[:2].upper()  # C:, D:, vb.
+                    relative_path = exe_path[2:]  # \Program Files\Game\game.exe
+                elif selected_disk:
+                    disk_letter = selected_disk
+                    
                 calistirma_verisi = json.dumps({
                     'yol': form_data.get('exe_yol', ''),
                     'argumanlar': form_data.get('exe_argumanlar', ''),
-                    'exe_path': exe_path
+                    'exe_path': exe_path,
+                    'disk_letter': disk_letter,
+                    'relative_path': relative_path
                 })
                 
                 # BASIT VARSAYILAN BETİK TANIMI
@@ -888,7 +944,34 @@ start "" "%%EXE_YOLU%%" %%EXE_ARGS%%
         gallery_images = conn.execute('SELECT * FROM gallery_images WHERE game_id = ?', (game_id,)).fetchall()
         game_category_ids = {row['category_id'] for row in conn.execute('SELECT category_id FROM game_categories WHERE game_id = ?', (game_id,)).fetchall()}
         
-        return render_template('edit_game.html', game=game_data, categories=categories, languages=languages, gallery=gallery_images, game_category_ids=game_category_ids)
+        # Disk bilgilerini al (disk_settings sayfasından)
+        available_drives = get_windows_drives()
+        custom_names = {}
+        custom_names_result = conn.execute('SELECT drive_letter, custom_name FROM disk_settings').fetchall()
+        for row in custom_names_result:
+            custom_names[row['drive_letter']] = row['custom_name']
+        
+        # Diskleri hazırla
+        for drive in available_drives:
+            drive_letter = drive['device_id']
+            drive['custom_name'] = custom_names.get(drive_letter, '')
+            
+            # Boyut bilgilerini formatla
+            if drive['size']:
+                drive['size_gb'] = round(drive['size'] / (1024**3), 1)
+                drive['used_gb'] = round((drive['size'] - drive['free_space']) / (1024**3), 1)
+                drive['usage_percent'] = round(((drive['size'] - drive['free_space']) / drive['size']) * 100, 1)
+            else:
+                drive['size_gb'] = 'Bilinmiyor'
+                drive['used_gb'] = 'Bilinmiyor'
+                drive['usage_percent'] = 0
+                
+            if drive['free_space']:
+                drive['free_space_gb'] = round(drive['free_space'] / (1024**3), 1)
+            else:
+                drive['free_space_gb'] = 'Bilinmiyor'
+        
+        return render_template('edit_game.html', game=game_data, categories=categories, languages=languages, gallery=gallery_images, game_category_ids=game_category_ids, drives=available_drives)
     finally: # Bağlantı, ne olursa olsun burada kapatılır
         if conn:
             conn.close()

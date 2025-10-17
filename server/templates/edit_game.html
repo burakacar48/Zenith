@@ -1202,6 +1202,32 @@
                             </div>
                         </div>
                         
+                        <!-- Disk Bilgileri Grid -->
+                        {% if drives %}
+                        <div class="form-group full-width" style="margin-top: 25px; margin-bottom: 25px;">
+                            <label style="margin-bottom: 15px;"><i class="fas fa-hdd" style="color: #e50914; margin-right: 8px;"></i>Mevcut Diskler:</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                                {% for drive in drives %}
+                                <div class="disk-info-card" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 10px; transition: all 0.3s ease; cursor: pointer; display: flex; align-items: center; gap: 8px; width: fit-content;" onclick="selectDisk('{{ drive.device_id }}')">
+                                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #E50914, #B20710); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">
+                                        <i class="fas fa-hdd"></i>
+                                    </div>
+                                    <div style="white-space: nowrap;">
+                                        <div style="font-size: 13px; font-weight: 600; color: #f1f5f9;">
+                                            {% if drive.custom_name %}
+                                                {{ drive.custom_name }}
+                                            {% else %}
+                                                {{ drive.volume_name }}
+                                            {% endif %}
+                                        </div>
+                                        <div style="font-size: 11px; color: #94a3b8;">{{ drive.device_id }}</div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <!-- EXE Dosya Yolu - Ana bölüm -->
                         <div class="form-group full-width" id="exe-path-section" style="margin-top: 15px;">
                             <label style="margin-bottom: 15px;"><i class="fas fa-file-alt" style="color: #e50914; margin-right: 8px;"></i>EXE Dosya Yolu:</label>
@@ -1228,6 +1254,9 @@
                                accept=".exe"
                                style="display: none;"
                                onchange="handleExeFileSelection(this)">
+                        
+                        <!-- Hidden input for selected disk -->
+                        <input type="hidden" name="selected_disk" id="selected-disk-input" value="">
                         
                         <!-- Steam Game ID Section -->
                         <div class="form-group full-width" id="steam-id-section" style="margin-top: 15px; display: none;">
@@ -1659,6 +1688,28 @@
             const currentType = '{{ game.calistirma_tipi or "exe" }}';
             selectExecutionType(currentType);
             
+            // Disk selection function
+            window.selectDisk = function(diskLetter) {
+                // Remove active class from all disk cards
+                document.querySelectorAll('.disk-info-card').forEach(card => {
+                    card.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                    card.style.boxShadow = 'none';
+                });
+                
+                // Add active styling to selected disk
+                event.currentTarget.style.border = '2px solid #E50914';
+                event.currentTarget.style.boxShadow = '0 4px 15px rgba(229, 9, 20, 0.3)';
+                
+                // Update selected disk for future EXE search
+                window.selectedDisk = diskLetter;
+                
+                // Update hidden input
+                document.getElementById('selected-disk-input').value = diskLetter;
+                
+                // Show notification
+                showNotification(`${diskLetter} diski seçildi`, 'success');
+            };
+            
             // EXE File Selection Functions
             window.selectExeFile = function() {
                 const exeInput = document.getElementById('exe-file-input');
@@ -1673,8 +1724,45 @@
                     const pathDisplay = document.getElementById('exe-path-display');
                     pathDisplay.value = fullPath;
                     
-                    // Show notification
-                    showNotification(`EXE dosyası seçildi: ${file.name}`, 'success');
+                    // Extract drive letter from path (C:\, D:\, etc.)
+                    let detectedDrive = null;
+                    if (fullPath.length >= 2 && fullPath[1] === ':') {
+                        detectedDrive = fullPath.substring(0, 2).toUpperCase(); // C:, D:, etc.
+                    }
+                    
+                    // Auto-select the corresponding disk if found
+                    if (detectedDrive) {
+                        // Find and select the disk card
+                        const diskCards = document.querySelectorAll('.disk-info-card');
+                        diskCards.forEach(card => {
+                            const diskLetter = card.getAttribute('onclick').match(/'([^']+)'/)[1];
+                            if (diskLetter === detectedDrive) {
+                                // Remove active from all cards
+                                document.querySelectorAll('.disk-info-card').forEach(c => {
+                                    c.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                                    c.style.boxShadow = 'none';
+                                });
+                                
+                                // Activate this card
+                                card.style.border = '2px solid #E50914';
+                                card.style.boxShadow = '0 4px 15px rgba(229, 9, 20, 0.3)';
+                                
+                                // Update selected disk
+                                window.selectedDisk = detectedDrive;
+                                
+                                // Update hidden input
+                                document.getElementById('selected-disk-input').value = detectedDrive;
+                                
+                                showNotification(`EXE dosyası seçildi: ${file.name} (${detectedDrive} diski otomatik seçildi)`, 'success');
+                                return;
+                            }
+                        });
+                    }
+                    
+                    // If no drive detected or found, show regular notification
+                    if (!detectedDrive) {
+                        showNotification(`EXE dosyası seçildi: ${file.name}`, 'success');
+                    }
                 }
             };
             

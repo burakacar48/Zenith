@@ -497,6 +497,80 @@
         .radio-checkbox-container .category-checkbox-label input[type="radio"]:checked + .category-checkbox-custom .fas.fa-check {
             opacity: 1;
         }
+        
+        /* Disk Grid Styles */
+        .disk-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .disk-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            min-width: 100px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .disk-card:hover {
+            border-color: rgba(229, 9, 20, 0.5);
+            background: rgba(229, 9, 20, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .disk-card.selected {
+            border-color: #e50914;
+            background: rgba(229, 9, 20, 0.15);
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .disk-icon {
+            font-size: 24px;
+            color: #94a3b8;
+            transition: color 0.3s ease;
+        }
+
+        .disk-card:hover .disk-icon,
+        .disk-card.selected .disk-icon {
+            color: #e50914;
+        }
+
+        .disk-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .disk-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #f1f5f9;
+            line-height: 1.2;
+        }
+
+        .disk-letter {
+            font-size: 14px;
+            font-weight: 700;
+            color: #94a3b8;
+            transition: color 0.3s ease;
+        }
+
+        .disk-card:hover .disk-letter,
+        .disk-card.selected .disk-letter {
+            color: #e50914;
+        }
     </style>
 {% endblock %}
 
@@ -685,15 +759,33 @@
                                     <option value="steam">Steam</option>
                                 </select>
                             </div>
-                            <div class="form-group" style="flex-grow: 1.5;"> <div id="exe_fields" class="calistirma-field-group">
-                                    <label for="exe_yol_input_file"><i class="fas fa-file-code" style="color: #e50914; margin-right: 8px;"></i>EXE Yolu:</label>
-                                    <input type="hidden" name="exe_yol" id="exe_yol_input" value="">
-                                    <div class="custom-file-path-wrapper">
-                                        <input type="file" name="exe_yol_file" id="exe_yol_input_file" class="file-input" accept=".exe">
-                                        <label for="exe_yol_input_file" class="file-path-display" id="exe_yol_display">
-                                            <span class="file-path-placeholder">Dosya seçmek için tıklayın...</span>
+                            <div class="form-group" style="flex-grow: 1.5;">
+                                <div id="exe_fields" class="calistirma-field-group">
+                                    <!-- Disk Grid -->
+                                    <div class="form-group steam-id-help" style="margin-bottom: 20px;">
+                                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                            <i class="fas fa-hdd" style="color: #e50914;"></i>
+                                            Disk Seçimi
                                         </label>
+                                        <div class="disk-grid" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                            {% for drive in drives %}
+                                            <div class="disk-card" data-disk="{{ drive.device_id }}" onclick="selectDisk('{{ drive.device_id }}')">
+                                                <div class="disk-icon">
+                                                    <i class="fas fa-hdd"></i>
+                                                </div>
+                                                <div class="disk-info">
+                                                    <div class="disk-name">{{ drive.custom_name or drive.volume_name }}</div>
+                                                    <div class="disk-letter">{{ drive.device_id }}</div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        <input type="hidden" name="selected_disk" id="selected_disk" value="">
                                     </div>
+                                    
+                                    <label for="exe_path_input"><i class="fas fa-file-code" style="color: #e50914; margin-right: 8px;"></i>EXE Dosya Yolu:</label>
+                                    <input type="text" name="exe_path" id="exe_path_input" placeholder="D:\Games\Example\game.exe" onchange="handleExeFileSelection()">
+                                    <input type="hidden" name="exe_yol" id="exe_yol_input" value="">
                                 </div>
                                 <div id="steam_fields" class="hidden calistirma-field-group">
                                     <label for="steam_app_id_input"><i class="fab fa-steam" style="color: #e50914; margin-right: 8px;"></i>Steam App ID:</label>
@@ -1082,5 +1174,65 @@
             // Initialize on page load
             initializeImageManager();
         });
+
+        // Disk Selection Functions
+        function selectDisk(diskLetter) {
+            // Remove previous selection
+            document.querySelectorAll('.disk-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select current disk
+            const selectedCard = document.querySelector(`[data-disk="${diskLetter}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            // Update hidden input
+            document.getElementById('selected_disk').value = diskLetter;
+        }
+
+        // Handle EXE file selection and automatic disk detection
+        function handleExeFileSelection() {
+            const exePath = document.getElementById('exe_path_input').value.trim();
+            if (!exePath) return;
+            
+            // Extract drive letter from path
+            const driveMatch = exePath.match(/^([A-Za-z]):/);
+            if (driveMatch) {
+                const driveLetter = driveMatch[1].toUpperCase() + ':';
+                
+                // Auto-select disk
+                selectDisk(driveLetter);
+                
+                // Extract relative path
+                const relativePath = exePath.substring(2); // Remove "C:" part
+                
+                // Update hidden exe_yol input with JSON data
+                const calistirmaData = {
+                    disk_letter: driveLetter,
+                    relative_path: relativePath
+                };
+                document.getElementById('exe_yol_input').value = JSON.stringify(calistirmaData);
+            }
+        }
+
+        // Update execution inputs based on type
+        function updateCalistirmaInputs() {
+            const calistirmaTipi = document.getElementById('calistirma_tipi').value;
+            const exeFields = document.getElementById('exe_fields');
+            const steamFields = document.getElementById('steam_fields');
+            const exeExtraFields = document.getElementById('exe_extra_fields');
+            
+            if (calistirmaTipi === 'exe') {
+                exeFields.classList.remove('hidden');
+                steamFields.classList.add('hidden');
+                exeExtraFields.style.display = 'block';
+            } else if (calistirmaTipi === 'steam') {
+                exeFields.classList.add('hidden');
+                steamFields.classList.remove('hidden');
+                exeExtraFields.style.display = 'none';
+            }
+        }
     </script>
 {% endblock %}
