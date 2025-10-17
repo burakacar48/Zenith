@@ -711,7 +711,12 @@ def add_game():
                 file.save(os.path.join(app.config['UPLOAD_FOLDER_100_SAVES'], yuzde_yuz_save_filename))
                 
             if calistirma_tipi == 'exe':
-                calistirma_verisi = json.dumps({'yol': form_data.get('exe_yol'), 'argumanlar': form_data.get('exe_argumanlar', '')})
+                exe_path = form_data.get('exe_path', '')
+                calistirma_verisi = json.dumps({
+                    'yol': form_data.get('exe_yol', ''),
+                    'argumanlar': form_data.get('exe_argumanlar', ''),
+                    'exe_path': exe_path
+                })
                 
                 # BASIT VARSAYILAN BETİK TANIMI
                 DEFAULT_LAUNCH_SCRIPT_CLEAN = """@echo off
@@ -822,7 +827,12 @@ def edit_game(game_id):
                         conn.execute('INSERT INTO gallery_images (game_id, image_path) VALUES (?, ?)', (game_id, path))
             
             if calistirma_tipi == 'exe':
-                calistirma_verisi = json.dumps({'yol': form_data.get('exe_yol'), 'argumanlar': form_data.get('exe_argumanlar', '')})
+                exe_path = form_data.get('exe_path', '')
+                calistirma_verisi = json.dumps({
+                    'yol': form_data.get('exe_yol', ''),
+                    'argumanlar': form_data.get('exe_argumanlar', ''),
+                    'exe_path': exe_path
+                })
                 
                 # BASIT VARSAYILAN BETİK TANIMI
                 DEFAULT_LAUNCH_SCRIPT_CLEAN = """@echo off

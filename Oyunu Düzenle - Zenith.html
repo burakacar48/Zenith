@@ -1,10 +1,17 @@
-
-{% extends 'base_admin.html' %}
-
-{% block title %}Oyunu Düzenle{% endblock %}
-
-{% block head %}
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/pell/dist/pell.min.css">
+<!DOCTYPE html>
+<!-- saved from url=(0059)http://127.0.0.1:5001/admin/edit/13#tab-calistirma-ayarlari -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oyunu Düzenle - Zenith</title>
+    <link href="./Oyunu Düzenle - Zenith_files/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="./Oyunu Düzenle - Zenith_files/css2" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./Oyunu Düzenle - Zenith_files/admin_theme_v2.css">
+    
+    <link rel="stylesheet" type="text/css" href="./Oyunu Düzenle - Zenith_files/pell.min.css">
     <style>
         .modern-image-manager {
             display: grid;
@@ -946,16 +953,169 @@
             }
         }
     </style>
-{% endblock %}
 
-{% block content %}
+    <style>
+        .page-title-with-icon {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .page-title-with-icon i {
+            font-size: 1em; /* İkon boyutu başlık fontu ile aynı */
+            color: var(--accent-red, #e50914);
+        }
+    </style>
+<style>
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            </style><style type="text/css" id="mytempCss">._8mqQwQ { display: none; } ._1TWLMK.icF5zO { opacity: 0.01; }</style></head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <a href="http://127.0.0.1:5001/admin/" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center;">
+                    <img src="./Oyunu Düzenle - Zenith_files/PanelLogo.png" alt="Panel Logosu">
+                    <span class="slogan">Yeni Nesil Oyun Menüsü</span>
+                </a>
+            </div>
+
+            <nav class="menu">
+                <div class="menu-section">
+                    <a href="http://127.0.0.1:5001/admin/" class="menu-item ">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Gösterge Paneli</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-title">OYUN YÖNETİMİ</div>
+                    
+                    <a href="http://127.0.0.1:5001/admin/games" class="menu-item active">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Oyun Listesi</span>
+                    </a>
+                    <a href="http://127.0.0.1:5001/admin/add" class="menu-item ">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Oyun Ekle</span>
+                    </a>
+                    <a href="http://127.0.0.1:5001/admin/categories" class="menu-item ">
+                        <i class="fas fa-folder-tree"></i>
+                        <span>Kategoriler</span>
+                    </a>
+                    <a href="http://127.0.0.1:5001/admin/languages" class="menu-item ">
+                        <i class="fas fa-globe"></i>
+                        <span>Dil Seçenekleri</span>
+                    </a>
+                    <a href="http://127.0.0.1:5001/admin/download_games" class="menu-item ">
+                        <i class="fas fa-download"></i>
+                        <span>Oyun İndir</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-title">GÖRSEL YÖNETİMİ</div>
+                    
+                    <a href="http://127.0.0.1:5001/admin/sliders" class="menu-item ">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Slider Yönetimi</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-title">İSTATİSTİK &amp; KULLANICI</div>
+                    <a href="http://127.0.0.1:5001/admin/ratings" class="menu-item ">
+                        <i class="fas fa-trophy"></i>
+                        <span>Puan Yönetimi</span>
+                    </a>
+                    <a href="http://127.0.0.1:5001/admin/statistics" class="menu-item ">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Oyun İstatistikleri</span>
+                    </a>
+                    
+                    <a href="http://127.0.0.1:5001/admin/users" class="menu-item ">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Kullanıcı Yönetimi</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-title">SİSTEM AYARLARI</div>
+                    <a href="http://127.0.0.1:5001/admin/settings" class="menu-item ">
+                        <i class="fas fa-cogs"></i>
+                        <span>Genel Ayarlar</span>
+                    </a>
+                    <a href="http://127.0.0.1:5001/admin/social_media" class="menu-item ">
+                        <i class="fas fa-share-alt"></i>
+                        <span>Sosyal Medya</span>
+                    </a>
+                    <a href="http://127.0.0.1:5001/admin/disk_settings" class="menu-item ">
+                        <i class="fas fa-hdd"></i>
+                        <span>Disk Yönetimi</span>
+                    </a>
+                    <a href="http://127.0.0.1:5001/admin/license_management" class="menu-item ">
+                        <i class="fas fa-key"></i>
+                        <span>Lisans Yönetimi</span>
+                    </a>
+                </div>
+            </nav>
+
+            
+            <div class="user-panel-container">
+                <div class="user-panel">
+                    <div class="user-avatar">
+                        <img src="./Oyunu Düzenle - Zenith_files/profil.jpg" alt="Profil Fotoğrafı">
+                    </div>
+                    <div class="user-details">
+                        <div class="username">admin</div>
+                    </div>
+                    <a href="http://127.0.0.1:5001/admin/logout" class="logout-btn" onclick="return confirm(&#39;Çıkış yapmak istediğinize emin misiniz?&#39;)" title="Çıkış Yap">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+            
+
+            <div class="sidebar-footer">
+                <div class="copyright">
+                    <p>© 2024 Zenith Panel</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+                
+                    
+                
+                
+                
     <header class="header">
         <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
             <i class="fas fa-edit" style="color: var(--accent-red);"></i>
-            Oyunu Düzenle: {{ game.oyun_adi }}
+            Oyunu Düzenle: Sons Of The Forest
         </h1>
         <div class="header-actions">
-            <a href="{{ url_for('list_games') }}" class="btn btn-secondary">
+            <a href="http://127.0.0.1:5001/admin/games" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Geri Dön
             </a>
         </div>
@@ -965,7 +1125,7 @@
         <form method="POST" enctype="multipart/form-data">
             <div class="modern-tab-container">
                 <div class="tab-nav">
-                    <div class="tab-nav-item active" data-tab="temel-bilgiler">
+                    <div class="tab-nav-item" data-tab="temel-bilgiler">
                         <i class="fas fa-gamepad"></i>
                         <span>Temel Bilgiler</span>
                     </div>
@@ -973,71 +1133,156 @@
                         <i class="fas fa-images"></i>
                         <span>Görsel Yönetimi</span>
                     </div>
-                    <div class="tab-nav-item" data-tab="calistirma-ayarlari">
+                    <div class="tab-nav-item active" data-tab="calistirma-ayarlari">
                         <i class="fas fa-cogs"></i>
                         <span>Çalıştırma Ayarları</span>
                     </div>
                 </div>
 
                 <div class="tab-content-wrapper">
-                    <div id="temel-bilgiler" class="tab-content active">
+                    <div id="temel-bilgiler" class="tab-content">
                         <h2 class="form-section-title">Temel Bilgiler</h2>
                         <div class="form-grid">
                             <div class="form-group full-width">
                                 <label for="oyun_adi_input"><i class="fas fa-gamepad" style="color: #e50914; margin-right: 8px;"></i>Oyun Adı:</label>
-                                <input type="text" name="oyun_adi" id="oyun_adi_input" value="{{ game.oyun_adi }}" required>
+                                <input type="text" name="oyun_adi" id="oyun_adi_input" value="Sons Of The Forest" required="">
                             </div>
                             
                             <div class="form-group full-width">
                                 <label><i class="fas fa-tags" style="color: #e50914; margin-right: 8px;"></i>Kategoriler:</label>
                                 <div class="category-checkbox-container">
-                                    {% for category in categories %}
+                                    
                                         <label class="category-checkbox-label">
-                                            <input type="checkbox" name="category_ids" value="{{ category.id }}"
-                                                {% if category.id in game_category_ids %}checked{% endif %}>
+                                            <input type="checkbox" name="category_ids" value="5" checked="">
                                             <span class="category-checkbox-custom">
                                                 <i class="fas fa-check"></i>
-                                                {{ category.icon }} {{ category.name }}
+                                                🎯 Aksiyon
                                             </span>
                                         </label>
-                                    {% endfor %}
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="12">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                🧩 Eğlencelik  
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="14" checked="">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                💀 Korku
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="13" checked="">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                🔗 Multiplayer
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="6">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                🌐 Online Oyunlar
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="8">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                🎖️ Savaş
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="11">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                ⚙️ Simülasyon  
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="9">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                🏆 Spor
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="10">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                🧠 Strateji  
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="checkbox" name="category_ids" value="7">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                🏁 Yarış  
+                                            </span>
+                                        </label>
+                                    
                                 </div>
                             </div>
                             
                             <div class="form-group">
                                 <label for="youtube_id_input"><i class="fab fa-youtube" style="color: #e50914; margin-right: 8px;"></i>YouTube Fragman ID:</label>
-                                <input type="text" name="youtube_id" id="youtube_id_input" value="{{ game.youtube_id or '' }}" placeholder="video_id">
+                                <input type="text" name="youtube_id" id="youtube_id_input" value="8sghWJKPWno" placeholder="video_id">
                             </div>
                             <div class="form-group">
                                 <label for="cikis_yili_input"><i class="fas fa-calendar-alt" style="color: #e50914; margin-right: 8px;"></i>Çıkış Yılı:</label>
-                                <input type="text" name="cikis_yili" id="cikis_yili_input" value="{{ game.cikis_yili or '' }}" placeholder="2023">
+                                <input type="text" name="cikis_yili" id="cikis_yili_input" value="2023" placeholder="2023">
                             </div>
                             <div class="form-group">
                                 <label for="pegi_input"><i class="fas fa-shield-alt" style="color: #e50914; margin-right: 8px;"></i>PEGI Rating:</label>
-                                <input type="text" name="pegi" id="pegi_input" value="{{ game.pegi or '' }}" placeholder="PEGI 18">
+                                <input type="text" name="pegi" id="pegi_input" value="" placeholder="PEGI 18">
                             </div>
                             
                             <div class="form-group full-width">
                                 <label><i class="fas fa-globe" style="color: #e50914; margin-right: 8px;"></i>Oyun Dili:</label>
                                 <div class="category-checkbox-container radio-checkbox-container">
-                                    {% for language in languages %}
+                                    
                                         <label class="category-checkbox-label">
-                                            <input type="radio" name="oyun_dili" value="{{ language.name }}"
-                                                {% if game.oyun_dili == language.name %}checked
-                                                {% elif not game.oyun_dili and loop.first %}checked{% endif %}>
+                                            <input type="radio" name="oyun_dili" value="Deutsch" checked="">
                                             <span class="category-checkbox-custom">
                                                 <i class="fas fa-check"></i>
-                                                {{ language.name }}
+                                                Deutsch
                                             </span>
                                         </label>
-                                    {% endfor %}
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="radio" name="oyun_dili" value="Türkçe">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                Türkçe
+                                            </span>
+                                        </label>
+                                    
+                                        <label class="category-checkbox-label">
+                                            <input type="radio" name="oyun_dili" value="Русский">
+                                            <span class="category-checkbox-custom">
+                                                <i class="fas fa-check"></i>
+                                                Русский
+                                            </span>
+                                        </label>
+                                    
                                 </div>
                             </div>
                             
                             <div class="form-group full-width">
                                 <label for="aciklama_textarea"><i class="fas fa-align-left" style="color: #e50914; margin-right: 8px;"></i>Açıklama:</label>
-                                <textarea name="aciklama" id="aciklama_textarea" rows="4" style="display:none;">{{ game.aciklama or '' }}</textarea>
-                                <div id="aciklama-editor" class="pell"></div>
+                                <textarea name="aciklama" id="aciklama_textarea" rows="4" style="display:none;"></textarea>
+                                <div id="aciklama-editor" class="pell"><div class="pell-actionbar"><button class="pell-button" title="Bold" type="button"><b>B</b></button><button class="pell-button" title="Italic" type="button"><i>I</i></button><button class="pell-button" title="Underline" type="button"><u>U</u></button><button class="pell-button" title="Strike-through" type="button"><strike>S</strike></button><button class="pell-button" title="Ordered List" type="button">#</button><button class="pell-button" title="Unordered List" type="button">•</button><button class="pell-button" title="Link" type="button">🔗</button></div><div contenteditable="true" class="pell-content"></div></div>
                             </div>
                             </div>
                 </div>
@@ -1058,11 +1303,11 @@
                                     </div>
                                     <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                                         <i class="fas fa-image"></i>
-                                        <span id="cover-count">{% if game.cover_image %}1{% else %}0{% endif %}</span> Görsel
+                                        <span id="cover-count">1</span> Görsel
                                     </span>
                                 </div>
 
-                                <div class="upload-zone{% if game.cover_image %} upload-hidden{% endif %}" id="cover-upload-zone" onclick="triggerFileUpload('covers')">
+                                <div class="upload-zone upload-hidden" id="cover-upload-zone" onclick="triggerFileUpload(&#39;covers&#39;)">
                                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
                                     <h4>Kapak Görseli Yükle</h4>
                                     <p>Tek bir kapak görseli seçin (eski görsel değiştirilir)</p>
@@ -1074,33 +1319,27 @@
                                 </div>
 
                                 <div class="cover-images-grid" id="covers-container">
-                                    {% if game.cover_image %}
-                                        <div class="cover-image-card" data-file-name="{{ game.cover_image }}">
+                                    
+                                        <div class="cover-image-card" data-file-name="The_Forest_upscayl_1920px_upscayl-standard-4x.webp">
                                             <div class="cover-image-wrapper">
-                                                <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" alt="{{ game.oyun_adi }}">
+                                                <img src="./Oyunu Düzenle - Zenith_files/The_Forest_upscayl_1920px_upscayl-standard-4x.webp" alt="Sons Of The Forest">
                                                 <div class="image-overlay">
                                                     <div class="image-actions">
-                                                        <button class="action-btn delete" type="button" onclick="deleteCoverImage('{{ game.cover_image }}')">
+                                                        <button class="action-btn delete" type="button" onclick="deleteCoverImage(&#39;The_Forest_upscayl_1920px_upscayl-standard-4x.webp&#39;)">
                                                             <i class="fas fa-trash"></i> Değiştir
                                                         </button>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="image-info">
-                                                <div class="image-name">{{ game.cover_image }}</div>
+                                                <div class="image-name">The_Forest_upscayl_1920px_upscayl-standard-4x.webp</div>
                                                 <div class="image-details">
                                                     <span>Kapak</span>
                                                     <span>Mevcut</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    {% else %}
-                                        <div class="empty-state">
-                                            <i class="fas fa-image"></i>
-                                            <h4>Henüz kapak görseli yok</h4>
-                                            <p>Yukarıdaki upload alanını kullanarak kapak görseli yükleyebilirsiniz</p>
-                                        </div>
-                                    {% endif %}
+                                    
                                 </div>
                             </div>
 
@@ -1119,7 +1358,7 @@
                                     <div style="display: flex; align-items: center; gap: 1rem;">
                                         <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                                             <i class="fas fa-images"></i>
-                                            <span id="gallery-count">{{ gallery|length }}</span> Görsel
+                                            <span id="gallery-count">3</span> Görsel
                                         </span>
                                         <div id="selected-info" style="display: none; background: rgba(220, 38, 38, 0.15); color: #fca5a5; border: 1px solid rgba(220, 38, 38, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; align-items: center; gap: 8px;">
                                             <i class="fas fa-info-circle"></i>
@@ -1128,7 +1367,7 @@
                                     </div>
                                 </div>
 
-                                <div class="upload-zone" onclick="triggerFileUpload('gallery')">
+                                <div class="upload-zone" onclick="triggerFileUpload(&#39;gallery&#39;)">
                                     <i class="fas fa-camera upload-icon"></i>
                                     <h4>Galeri Görselleri Yükle</h4>
                                     <p>Birden fazla oyun ekran görüntüsü ve tanıtım görseli seçebilirsiniz</p>
@@ -1140,48 +1379,74 @@
                                 </div>
 
                                 <div class="images-grid" id="gallery-grid">
-                                    {% if gallery %}
-                                        {% for image in gallery %}
-                                            <div class="image-card" data-file-name="{{ image.image_path }}" data-index="{{ loop.index0 }}" onclick="toggleImageSelection('{{ image.image_path }}', '{{ loop.index0 }}')">
+                                    
+                                        
+                                            <div class="image-card" data-file-name="SonsOfTheForest/1.webp" data-index="0" onclick="toggleImageSelection(&#39;SonsOfTheForest/1.webp&#39;, &#39;0&#39;)">
                                                 <div class="selection-indicator">
                                                     <i class="fas fa-check"></i>
                                                 </div>
                                                 <div class="image-wrapper">
-                                                    <img src="{{ url_for('static', filename='images/gallery/' + image.image_path) }}" alt="{{ image.image_path }}">
+                                                    <img src="./Oyunu Düzenle - Zenith_files/1.webp" alt="SonsOfTheForest/1.webp">
                                                 </div>
                                                 <div class="image-info">
-                                                    <div class="image-name">{{ image.image_path }}</div>
+                                                    <div class="image-name">SonsOfTheForest/1.webp</div>
                                                     <div class="image-details">
                                                         <span>Galeri</span>
                                                         <span>Mevcut</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <div class="empty-state">
-                                            <i class="fas fa-images"></i>
-                                            <h4>Henüz galeri görseli yok</h4>
-                                            <p>Yukarıdaki upload alanını kullanarak galeri görselleri yükleyebilirsiniz</p>
-                                        </div>
-                                    {% endif %}
+                                        
+                                            <div class="image-card" data-file-name="SonsOfTheForest/2.webp" data-index="1" onclick="toggleImageSelection(&#39;SonsOfTheForest/2.webp&#39;, &#39;1&#39;)">
+                                                <div class="selection-indicator">
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                                <div class="image-wrapper">
+                                                    <img src="./Oyunu Düzenle - Zenith_files/2.webp" alt="SonsOfTheForest/2.webp">
+                                                </div>
+                                                <div class="image-info">
+                                                    <div class="image-name">SonsOfTheForest/2.webp</div>
+                                                    <div class="image-details">
+                                                        <span>Galeri</span>
+                                                        <span>Mevcut</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        
+                                            <div class="image-card" data-file-name="SonsOfTheForest/3.webp" data-index="2" onclick="toggleImageSelection(&#39;SonsOfTheForest/3.webp&#39;, &#39;2&#39;)">
+                                                <div class="selection-indicator">
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                                <div class="image-wrapper">
+                                                    <img src="./Oyunu Düzenle - Zenith_files/3.webp" alt="SonsOfTheForest/3.webp">
+                                                </div>
+                                                <div class="image-info">
+                                                    <div class="image-name">SonsOfTheForest/3.webp</div>
+                                                    <div class="image-details">
+                                                        <span>Galeri</span>
+                                                        <span>Mevcut</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        
+                                    
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Hidden file inputs -->
                         <input type="file" name="cover_image" id="cover-input" accept="image/*" style="display: none;">
-                        <input type="file" name="gallery_images" id="gallery-input" accept="image/*" multiple style="display: none;">
+                        <input type="file" name="gallery_images" id="gallery-input" accept="image/*" multiple="" style="display: none;">
                         
                         <!-- Hidden inputs for backend compatibility -->
-                        <input type="hidden" name="current_cover_image" value="{{ game.cover_image or '' }}">
-                        <input type="hidden" name="current_yuzde_yuz_save_file" value="{{ game.yuzde_yuz_save_path or '' }}">
+                        <input type="hidden" name="current_cover_image" value="The_Forest_upscayl_1920px_upscayl-standard-4x.webp">
+                        <input type="hidden" name="current_yuzde_yuz_save_file" value="">
                         
                         <!-- Hidden input for selected images to delete -->
                         <input type="hidden" name="delete_gallery_images" id="delete-gallery-input">
                     </div>
 
-                    <div id="calistirma-ayarlari" class="tab-content">
+                    <div id="calistirma-ayarlari" class="tab-content active">
                         <h2 class="form-section-title">Çalıştırma Ayarları</h2>
                         
                         <!-- Çalıştırma Tipi Seçimi -->
@@ -1189,54 +1454,37 @@
                             <label><i class="fas fa-play-circle" style="color: #e50914; margin-right: 8px;"></i>Çalıştırma Tipi:</label>
                             <div class="execution-type-container">
                                 <div class="execution-type-buttons">
-                                    <button type="button" class="execution-btn exe-btn active" data-type="exe" onclick="selectExecutionType('exe')">
+                                    <button type="button" class="execution-btn exe-btn" data-type="exe" onclick="selectExecutionType(&#39;exe&#39;)">
                                         <i class="fas fa-desktop"></i>
                                         <span>EXE</span>
                                     </button>
-                                    <button type="button" class="execution-btn steam-btn" data-type="steam" onclick="selectExecutionType('steam')">
+                                    <button type="button" class="execution-btn steam-btn active" data-type="steam" onclick="selectExecutionType(&#39;steam&#39;)">
                                         <i class="fab fa-steam"></i>
                                         <span>Steam</span>
                                     </button>
                                 </div>
-                                <input type="hidden" name="calistirma_tipi" id="calistirma_tipi" value="{{ game.calistirma_tipi or 'exe' }}">
+                                <input type="hidden" name="calistirma_tipi" id="calistirma_tipi" value="steam">
                             </div>
                         </div>
                         
                         <!-- EXE Dosya Yolu - Ana bölüm -->
-                        <div class="form-group full-width" id="exe-path-section" style="margin-top: 15px;">
+                        <div class="form-group full-width" id="exe-path-section" style="margin-top: 15px; display: none;">
                             <label style="margin-bottom: 15px;"><i class="fas fa-file-alt" style="color: #e50914; margin-right: 8px;"></i>EXE Dosya Yolu:</label>
-                            <div class="steam-id-input-container">
-                                <input type="text"
-                                       name="exe_path"
-                                       id="exe-path-display"
-                                       value="{{ game.calistirma_verisi_dict.exe_path or '' }}"
-                                       placeholder="EXE dosyasını seçmek için tıklayın..."
-                                       readonly
-                                       onclick="selectExeFile()"
-                                       class="steam-id-input"
-                                       style="cursor: pointer;">
-                                <div class="steam-id-help">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>Oyunun ana exe dosyasını seçin. Dosya yolu otomatik olarak gösterilecektir.</span>
-                                </div>
+                            <input type="text" name="exe_path" id="exe-path-display" value="E:\test\setup.exe" placeholder="EXE dosyasını seçmek için tıklayın..." readonly="" onclick="selectExeFile()" style="cursor: pointer;">
+                            <div class="steam-id-help">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Oyunun ana exe dosyasını seçin. Dosya yolu otomatik olarak gösterilecektir.</span>
                             </div>
                         </div>
                         
                         <!-- Hidden file input for EXE selection -->
-                        <input type="file"
-                               id="exe-file-input"
-                               accept=".exe"
-                               style="display: none;"
-                               onchange="handleExeFileSelection(this)">
+                        <input type="file" id="exe-file-input" accept=".exe" style="display: none;" onchange="handleExeFileSelection(this)">
                         
                         <!-- Steam Game ID Section -->
-                        <div class="form-group full-width" id="steam-id-section" style="margin-top: 15px; display: none;">
+                        <div class="form-group full-width" id="steam-id-section" style="margin-top: 15px; display: block;">
                             <label><i class="fab fa-steam" style="color: #e50914; margin-right: 8px;"></i>Steam Game ID:</label>
                             <div class="steam-id-input-container">
-                                <input type="text" name="steam_app_id" id="steam-app-id"
-                                       value="{{ game.calistirma_verisi_dict.app_id or '' }}"
-                                       placeholder="Örn: 271590 (GTA V), 730 (CS:GO), 440 (TF2)"
-                                       class="steam-id-input">
+                                <input type="text" name="steam_app_id" id="steam-app-id" value="" placeholder="Örn: 271590 (GTA V), 730 (CS:GO), 440 (TF2)" class="steam-id-input">
                                 <div class="steam-id-help">
                                     <i class="fas fa-info-circle"></i>
                                     <span>Steam oyun sayfasındaki sayısal ID'yi girin</span>
@@ -1257,10 +1505,13 @@
     </div>
 
 
-{% endblock %}
 
-{% block scripts %}
-    <script src="https://unpkg.com/pell"></script>
+            </div>
+        </main>
+    </div>
+    
+    
+    <script src="./Oyunu Düzenle - Zenith_files/pell"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Tab functionality with persistent state
@@ -1343,8 +1594,8 @@
 
             // Modern Image Manager JavaScript - Enhanced Version
             let selectedImages = new Set();
-            let galleryCount = {% if gallery %}{{ gallery|length }}{% else %}0{% endif %};
-            let coverImageExists = {% if game.cover_image %}true{% else %}false{% endif %};
+            let galleryCount = 3;
+            let coverImageExists = true;
 
             // Cover Image Handler
             const coverInput = document.getElementById('cover-input');
@@ -1656,7 +1907,7 @@
             };
 
             // Initialize execution type display
-            const currentType = '{{ game.calistirma_tipi or "exe" }}';
+            const currentType = 'exe';
             selectExecutionType(currentType);
             
             // EXE File Selection Functions
@@ -1779,4 +2030,6 @@
         });
         
     </script>
-{% endblock %}
+
+
+</body></html>
