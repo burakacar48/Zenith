@@ -400,7 +400,13 @@ body {
 .thumbnail-item.active { border-color: var(--primary-start); }
 .thumbnail-item img, .thumbnail-item .video-thumb { width: 100px; height: 56px; object-fit: cover; display: block; border-radius: 2px; }
 
-.info-column { font-size: 1rem; line-height: 1.6; color: #aaa; display: flex; flex-direction: column; }
+.info-column {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #aaa;
+    display: flex; /* KESİN ÇÖZÜM: Konteyneri dikey flex yapısına döndürüyoruz. */
+    flex-direction: column;
+}
 .info-column h2 { display: none; }
 #detail-meta { background-color: rgba(15, 15, 15, 0.6); padding: 15px; border-radius: 8px; font-size: 0.9rem; }
 .meta-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #2a2a2a; }
@@ -420,12 +426,59 @@ body {
 .favorite-button:hover { background-color: rgba(239, 68, 68, 0.2); }
 .favorite-button.is-favorite { background-color: var(--primary-start); }
 .favorite-button.is-favorite i { color: #fff; transform: scale(1.2); }
-#play-button-area { width: 100%; margin-top: auto; }
-#play-button-area .hero-btn { width: 100%; padding: 12px; }
 .full-width-section { grid-column: 1 / -1; margin-top: 20px; }
 .description-section h2 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #2a2a2a; padding-bottom: 10px; font-size: 1.2rem; }
 #detail-description { 
     color: #aaa; 
+    line-height: 1.7; 
+    white-space: pre-wrap; 
+}
+
+/* --- YENİ: ANA AKSİYON BUTONLARI (Şimdi Oyna, %100 Save) --- */
+.primary-actions-container {
+    grid-column: 1 / -1; /* Grid yapısında tam genişlik kapla */
+    display: flex;
+    justify-content: center; /* Butonları ortala */
+    gap: 15px; /* Butonlar arası boşluk */
+    padding: 25px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.primary-actions-container .hero-btn {
+    margin: 0; /* Ekstra margin'leri sıfırla */
+    flex-grow: 1; /* Alanı doldurmak için büyü */
+    max-width: 300px; /* Butonların aşırı büyümesini engelle */
+}
+
+/* --- YENİ: BULUT KAYIT BUTONLARI (Yedekle, Geri Yükle) --- */
+.cloud-actions-container {
+    margin-top: auto; /* Konteyneri dikeyde en alta iter. */
+    padding-top: 20px; /* Üstündeki elemanla arasına boşluk ekler. */
+}
+
+.save-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.save-status { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #94a3b8; }
+.save-status i { font-size: 1.2rem; }
+
+.save-button-group { 
+    display: flex; 
+    gap: 10px; 
+}
+
+.save-btn { 
+    flex: 1; /* Butonların eşit genişlikte olmasını sağla */
+    font-size: 0.9rem !important; 
+    padding: 12px !important;
+}
+.save-btn:disabled { background-color: rgba(100, 116, 139, 0.2) !important; color: #64748b !important; cursor: not-allowed; border-color: transparent !important; }
+
+#detail-description { color: #aaa; 
     line-height: 1.7; 
     white-space: pre-wrap; 
 }

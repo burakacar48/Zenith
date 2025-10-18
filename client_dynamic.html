@@ -1,0 +1,1029 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenka Internet Cafe - Dinamik</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 15, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #2a2a2a;
+            border-top: 4px solid #ef4444;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .loading-text {
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Sol Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            border-right: 1px solid #2a2a2a;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #ef4444;
+            border-radius: 3px;
+        }
+
+        .logo-section {
+            padding: 30px 20px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ef4444, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .tagline {
+            color: #666;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-section {
+            padding: 20px 0;
+            flex: 1;
+        }
+
+        .nav-title {
+            padding: 10px 20px;
+            color: #666;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 15px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fff;
+            border-left-color: #ef4444;
+        }
+
+        .nav-item.active {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-left-color: #ef4444;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.3rem;
+            margin-right: 15px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .user-section {
+            padding: 20px;
+            border-top: 1px solid #2a2a2a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+        }
+
+        .user-status {
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        /* Ana İçerik */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        /* Üst Bar */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #2a2a2a;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #ef4444;
+            background: #0f0f0f;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .action-btn:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #ef4444;
+            color: #fff;
+        }
+
+        /* Hero Bölümü */
+        .hero-section {
+            position: relative;
+            height: 450px;
+            margin: 0 40px 40px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(15,15,15,0.95) 0%, transparent 70%);
+        }
+
+        .hero-content {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 50px;
+            max-width: 600px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            border-radius: 20px;
+            color: #ef4444;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: fit-content;
+            margin-bottom: 20px;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+            line-height: 1.1;
+        }
+
+        .hero-description {
+            color: #aaa;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .hero-btn {
+            padding: 15px 35px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .hero-btn.primary {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+        }
+
+        .hero-btn.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .hero-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Oyun Grid */
+        .content-section {
+            padding: 0 40px 40px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .view-all {
+            color: #ef4444;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-all:hover {
+            text-decoration: underline;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #2a2a2a;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            border-color: #ef4444;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            overflow: hidden;
+        }
+
+        .game-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .game-card:hover .game-image {
+            transform: scale(1.1);
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.9) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-card:hover .game-overlay {
+            opacity: 1;
+        }
+
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover .play-btn {
+            transform: scale(1);
+        }
+
+        .game-info {
+            padding: 15px;
+        }
+
+        .game-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .game-category {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        /* Error State */
+        .error-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+
+        .error-state h3 {
+            margin-bottom: 10px;
+            color: #ef4444;
+        }
+
+        /* Mobil Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                
+
+                padding: 15px 20px;
+            }
+
+            .content-section {
+                padding: 0 20px 40px;
+            }
+
+            .hero-section {
+                margin: 0 20px 30px;
+                height: 350px;
+            }
+
+            .hero-content {
+                padding: 30px;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .top-actions {
+                display: none;
+            }
+        }
+
+        /* Hamburger Menu Button */
+        .menu-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        @media (max-width: 1024px) {
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Oyunlar yükleniyor...</div>
+        </div>
+    </div>
+
+    <!-- Sol Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-section">
+            <div class="logo" id="cafeTitle">ZENKA</div>
+            <div class="tagline" id="cafeSlogan">Internet Cafe</div>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-title">Menü</div>
+            <div class="nav-item active" data-category="all">
+                <span class="nav-icon">🏠</span>
+                Ana Sayfa
+            </div>
+            <div class="nav-item" data-category="favorites">
+                <span class="nav-icon">❤️</span>
+                Favorilerim
+            </div>
+            <div class="nav-item" data-category="recent">
+                <span class="nav-icon">🕐</span>
+                Son Oynananlar
+            </div>
+
+            <div class="nav-title">Kategoriler</div>
+            <div id="dynamicCategories"></div>
+
+            <div class="nav-title">Diğer</div>
+            <div class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                Ayarlar
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">💬</span>
+                Destek
+            </div>
+        </nav>
+
+        <div class="user-section">
+            <div class="user-avatar">K</div>
+            <div class="user-info">
+                <div class="user-name">Kullanıcı</div>
+                <div class="user-status">🟢 Çevrimiçi</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Ana İçerik -->
+    <main class="main-content">
+        <!-- Üst Bar -->
+        <div class="top-bar">
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="search-box">
+                <input type="text" placeholder="Oyun ara..." id="searchInput">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="top-actions">
+                <button class="action-btn">Kayıtlı Oyunlar</button>
+                <button class="action-btn primary">Çıkış Yap</button>
+            </div>
+        </div>
+
+        <!-- Hero Bölümü -->
+        <div class="hero-section" id="heroSection">
+            <img src="" class="hero-bg" alt="Featured" id="heroBg">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="hero-badge" id="heroBadge">🔥 Popüler</div>
+                <h1 class="hero-title" id="heroTitle">Yükleniyor...</h1>
+                <p class="hero-description" id="heroDescription">Hero içerik yükleniyor...</p>
+                <div class="hero-actions">
+                    <button class="hero-btn primary" onclick="playFeaturedGame()">▶ Şimdi Oyna</button>
+                    <button class="hero-btn secondary">ℹ️ Detaylar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Oyunlar -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title" id="sectionTitle">Tüm Oyunlar</h2>
+                <span class="view-all">Tümünü Gör →</span>
+            </div>
+            <div class="games-grid" id="gamesGrid">
+                <!-- Oyunlar buraya dinamik olarak yüklenecek -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Server URL
+        const SERVER_URL = 'http://127.0.0.1:5001';
+        
+        // Global değişkenler
+        let allGames = [];
+        let allCategories = [];
+        let sliderData = [];
+        let settings = {};
+        let currentFilter = 'all';
+        let currentUser = null;
+
+        // API çağırı fonksiyonu
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${SERVER_URL}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error(`API çağrısı başarısız (${endpoint}):`, error);
+                throw error;
+            }
+        }
+
+        // Oyunları yükle
+        async function loadGames() {
+            try {
+                const data = await apiCall('/api/games');
+                allGames = data || [];
+                console.log('Oyunlar yüklendi:', allGames.length);
+                return allGames;
+            } catch (error) {
+                console.error('Oyunlar yüklenemedi:', error);
+                showError('Oyunlar yüklenirken hata oluştu');
+                return [];
+            }
+        }
+
+        // Kategorileri yükle
+        async function loadCategories() {
+            try {
+                const data = await apiCall('/api/categories');
+                allCategories = data || [];
+                console.log('Kategoriler yüklendi:', allCategories.length);
+                renderCategories();
+                return allCategories;
+            } catch (error) {
+                console.error('Kategoriler yüklenemedi:', error);
+                return [];
+            }
+        }
+
+        // Slider verilerini yükle
+        async function loadSlider() {
+            try {
+                const data = await apiCall('/api/slider');
+                sliderData = data || [];
+                console.log('Slider verileri yüklendi:', sliderData.length);
+                renderHero();
+                return sliderData;
+            } catch (error) {
+                console.error('Slider verileri yüklenemedi:', error);
+                return [];
+            }
+        }
+
+        // Ayarları yükle
+        async function loadSettings() {
+            try {
+                const data = await apiCall('/api/settings');
+                settings = data || {};
+                console.log('Ayarlar yüklendi:', settings);
+                applySettings();
+                return settings;
+            } catch (error) {
+                console.error('Ayarlar yüklenemedi:', error);
+                return {};
+            }
+        }
+
+        // Kategorileri render et
+        function renderCategories() {
+            const container = document.getElementById('dynamicCategories');
+            if (!container || !allCategories.length) return;
+
+            const categoryIcons = {
+                'Aksiyon': '⚔️',
+                'Multiplayer': '👥', 
+                'Spor': '⚽',
+                'Strateji': '🎯',
+                'Simülasyon': '🎮',
+                'Eğlencelik': '🎪',
+                'Yarış': '🏎️',
+                'RPG': '🗡️',
+                'FPS': '🎯',
+                'MMORPG': '🏰'
+            };
+
+            container.innerHTML = allCategories.map(category => `
+                <div class="nav-item" data-category="${category.name || category}">
+                    <span class="nav-icon">${categoryIcons[category.name || category] || '🎮'}</span>
+                    ${category.name || category}
+                </div>
+            `).join('');
+
+            // Event listener'ları ekle
+            container.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.category;
+                    renderGames(currentFilter);
+                });
+            });
+        }
+
+        // Hero bölümünü render et
+        function renderHero() {
+            if (!sliderData.length) return;
+
+            const hero = sliderData[0];
+            
+            const heroBg = document.getElementById('heroBg');
+            const heroTitle = document.getElementById('heroTitle');
+            const heroDescription = document.getElementById('heroDescription');
+            
+            if (hero.image_path) {
+                heroBg.src = `${SERVER_URL}/static/images/slider/${hero.image_path}`;
+                heroBg.style.display = 'block';
+            }
+            
+            heroTitle.textContent = hero.title || 'Featured Game';
+            heroDescription.textContent = hero.description || 'Bu oyunu keşfedin ve eğlenceye katılın!';
+        }
+
+        // Oyunları render et
+        function renderGames(filter = 'all', searchTerm = '') {
+            const container = document.getElementById('gamesGrid');
+            if (!container) return;
+
+            let filtered = [...allGames];
+
+            if (filter !== 'all' && filter !== 'favorites' && filter !== 'recent') {
+                filtered = filtered.filter(game => {
+                    const categories = game.categories || game.category_names || '';
+                    return categories.toLowerCase().includes(filter.toLowerCase());
+                });
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(game => 
+                    (game.oyun_adi || game.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <h3>Oyun Bulunamadı</h3>
+                        <p>Bu kriterlere uygun oyun bulunamadı.</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = filtered.map(game => `
+                    <div class="game-card" onclick="playGame(${game.id})">
+                        <div class="game-image-wrapper">
+                            <img src="${getGameImage(game)}" 
+                                 alt="${game.oyun_adi || game.name}" 
+                                 class="game-image" 
+                                 onerror="this.src='https://via.placeholder.com/400x500/1a1a1a/ef4444?text=${encodeURIComponent(game.oyun_adi || game.name)}'">
+                            <div class="game-overlay">
+                                <div class="play-btn">▶</div>
+                            </div>
+                        </div>
+                        <div class="game-info">
+                            <div class="game-title">${game.oyun_adi || game.name}</div>
+                            <div class="game-category">${getGameCategories(game)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateSectionTitle(filter);
+        }
+
+        function getGameImage(game) {
+            if (game.cover_image) {
+                return `${SERVER_URL}/static/images/covers/${game.cover_image}`;
+            }
+            return 'https://via.placeholder.com/400x500/1a1a1a/ef4444?text=No+Image';
+        }
+
+        function getGameCategories(game) {
+            const categories = game.categories || game.category_names || '';
+            if (categories) {
+                const categoryList = categories.split(',').map(cat => cat.trim()).slice(0, 2);
+                return categoryList.join(', ');
+            }
+            return 'Kategorisiz';
+        }
+
+        function updateSectionTitle(filter) {
+            const titles = {
+                'all': 'Tüm Oyunlar',
+                'favorites': 'Favori Oyunlarım',
+                'recent': 'Son Oynanan Oyunlar',
+                'Aksiyon': 'Aksiyon Oyunları',
+                'Multiplayer': 'Çok Oyunculu Oyunlar',
+                'Spor': 'Spor Oyunları',
+                'Strateji': 'Strateji Oyunları',
+                'Simülasyon': 'Simülasyon Oyunları',
+                'Eğlencelik': 'Eğlence Oyunları',
+                'Yarış': 'Yarış Oyunları',
+                'RPG': 'RPG Oyunları'
+            };
+            
+            const titleElement = document.getElementById('sectionTitle');
+            if (titleElement) {
+                titleElement.textContent = titles[filter] || `${filter} Oyunları`;
+            }
+        }
+
+        function applySettings() {
+            if (settings.cafe_name) {
+                document.getElementById('cafeTitle').textContent = settings.cafe_name;
+                document.title = `${settings.cafe_name} - Internet Cafe`;
+            }
+            
+            if (settings.slogan) {
+                document.getElementById('cafeSlogan').textContent = settings.slogan;
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('gamesGrid');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <h3>Hata</h3>
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function playGame(gameId) {
+            console.log('Oyun başlatılıyor:', gameId);
+            alert(`Oyun ${gameId} başlatılıyor...`);
+        }
+
+        function playFeaturedGame() {
+            if (sliderData.length > 0 && sliderData[0].game_id) {
+                playGame(sliderData[0].game_id);
+            } else {
+                alert('Featured oyun bulunamadı');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loading
+loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        function showLoading(text = 'Yükleniyor...') {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.querySelector('.loading-text');
+            if (loadingOverlay && loadingText) {
+                loadingText.textContent = text;
+                loadingOverlay.classList.remove('hidden');
+            }
+        }
+
+        async function initializeApp() {
+            try {
+                showLoading('Uygulama başlatılıyor...');
+
+                const promises = [
+                    loadSettings(),
+                    loadCategories(),
+                    loadSlider(),
+                    loadGames()
+                ];
+
+                await Promise.all(promises);
+                renderGames();
+                setupEventListeners();
+                hideLoading();
+                console.log('Uygulama başarıyla başlatıldı');
+
+            } catch (error) {
+                console.error('Uygulama başlatılırken hata:', error);
+                hideLoading();
+                showError('Uygulama başlatılırken hata oluştu. Lütfen sayfayı yenileyin.');
+            }
+        }
+
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    renderGames(currentFilter, e.target.value);
+                });
+            }
+
+            document.querySelectorAll('.nav-item[data-category]').forEach(item => {
+                if (!item.closest('#dynamicCategories')) {
+                    item.addEventListener('click', function() {
+                        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                        currentFilter = this.dataset.category;
+                        renderGames(currentFilter);
+                    });
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                setTimeout(() => {
+                    loadGames().then(() => renderGames(currentFilter));
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

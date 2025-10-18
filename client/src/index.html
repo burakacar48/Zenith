@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zenka Internet Cafe</title>
-    <link rel="stylesheet" href="./css/styles.css?v=1.1">
+    <link rel="stylesheet" href="/static/css/styles.css?v=1.4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -44,6 +44,10 @@
                 <span class="nav-icon">🏠</span>
                 Ana Sayfa
             </div>
+            <div class="nav-item" data-category="newest">
+                <span class="nav-icon">✨</span>
+                Yeni Oyunlar
+            </div>
             <div class="nav-item" data-category="favorites">
                 <span class="nav-icon">❤️</span>
                 Favorilerim
@@ -70,15 +74,17 @@
 
         <div class="content-section">
             <div class="section-header">
-                <h2 class="section-title" id="sectionTitle">Son Eklenen Oyunlar</h2>
-                <span class="view-all">Tümünü Gör </div>
+                <h2 class="section-title" id="sectionTitle">Öne Çıkan Oyunlar</h2>
+                <span class="view-all">Tümünü Gör →</span>
+            </div>
             <div class="games-grid" id="gamesGrid">
             </div>
         </div>
     </main>
     
     <div id="login-modal" class="modal">
-        <div <span class="close-button">×</span>
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
             <h1 id="modal-title">Giriş Yap</h1>
             <form id="login-form" data-mode="login">
                 <input type="text" id="username" placeholder="Kullanıcı Adı" required>
@@ -95,15 +101,18 @@
     
     <div id="game-detail-modal" class="modal detail-modal">
         <div class="modal-content detail-modal-content">
-            <span class="close-button">×</span>
+            <span class="close-button">&times;</span>
             <h1 id="detail-title">Oyun Adı</h1>
             <div class="detail-container">
-                <div <div id="detail-main-media">
+                <div class="media-column">
+                    <div id="detail-main-media">
                         <div class="media-nav prev" id="media-prev"><i class="fas fa-chevron-left"></i></div>
-                        <div class="media-nav next" id="media-next"><i class="fas </div>
+                        <div class="media-nav next" id="media-next"><i class="fas fa-chevron-right"></i></div>
+                    </div>
                     <div id="detail-thumbnail-strip"></div>
                 </div>
-                <div <h2>Oyun Bilgileri</h2>
+                <div class="info-column">
+                    <h2>Oyun Bilgileri</h2>
                     <div id="detail-meta"></div>
                     <div class="interactive-section">
                         <div class="rating-container">
@@ -118,14 +127,20 @@
                         </div>
                     </div>
                     <div class="rating-summary" id="average-rating-summary"></div>
-                    <div class="hero-actions" id="play-button-area" style="margin-top: 20px; flex-direction: column;">
-                    </div>
+                    <!-- YENİ: Bulut kayıt butonları için konteyner -->
+                    <div class="cloud-actions-container" id="cloud-actions-container"></div>
                 </div>
             </div>
+            <!-- YENİ: Ana aksiyon butonları için konteyner -->
+            <div class="primary-actions-container" id="primary-actions-container"></div>
             <div class="full-width-section">
-                <div <p </div>
+                <div class="description-section">
+                    <h2>Açıklama</h2>
+                    <p id="detail-description"></p>
+                </div>
                 <div class="similar-games-section hidden">
-                    <h2>Benzer <div class="games-grid" id="similar-games-grid"></div>
+                    <h2>Benzer Oyunlar</h2>
+                    <div class="games-grid" id="similar-games-grid"></div>
                 </div>
             </div>
         </div>
@@ -133,9 +148,9 @@
 
     <div id="welcome-modal" class="modal">
         <div class="modal-content welcome-modal-content">
-            <span class="close-button welcome-close">×</span>
+            <span class="close-button welcome-close">&times;</span>
             <h1>Hoş Geldin!</h1>
-            <p ilerlemeni kaydetmek, oyunları favorilerine eklemek ve puanlamak için hemen üye girişi yap veya kayıt ol.</p>
+            <p id="welcome-text">Oyun ilerlemeni kaydetmek, oyunları favorilerine eklemek ve puanlamak için hemen üye girişi yap veya kayıt ol.</p>
             <div class="welcome-actions">
                 <button class="action-btn" id="welcome-register-btn">Kayıt Ol</button>
                 <button class="action-btn primary" id="welcome-login-btn">Giriş Yap</button>
@@ -143,6 +158,6 @@
         </div>
     </div>
 
-    <script src="./js/renderer.js?v=1.1"></script>
+    <script src="/static/js/renderer.js?v=1.4"></script>
 </body>
 </html>

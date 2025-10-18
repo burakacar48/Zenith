@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Zenith Cafe Manager - Combined",
+  "version": "1.0.0",
+  "identifier": "com.zenith.cafe-manager.combined",
+  "build": {
+    "frontendDist": "../server/templates",
+    "devUrl": "http://127.0.0.1:5001",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "admin",
+        "title": "Zenith - Admin Panel",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1200,
+        "minHeight": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "maximized": false,
+        "center": true,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "visible": true,
+        "url": "http://127.0.0.1:5001",
+        "x": 100,
+        "y": 100
+      },
+      {
+        "label": "client",
+        "title": "Zenith - Oyun Menüsü",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1200,
+        "minHeight": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "maximized": true,
+        "center": false,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "visible": true,
+        "url": "http://127.0.0.1:5001/client",
+        "x": 200,
+        "y": 150
+      }
+    ],
+    "security": {
+      "csp": null,
+      "freezePrototype": false
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "Zenith Team",
+    "copyright": "© 2025 Zenith Team",
+    "category": "Entertainment",
+    "shortDescription": "Zenith Internet Cafe Manager - Admin & Client Combined",
+    "longDescription": "Zenith Internet Cafe Manager birleşik versiyonu. Hem admin paneli hem de client oyun menüsü aynı anda açılır."
+  },
+  "plugins": {}
+}

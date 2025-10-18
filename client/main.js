@@ -11,7 +11,7 @@ const fetch = require('electron-fetch').default; // electron-fetch kütüphanesi
 // Kafe sunucunuzun yerel ağdaki IP adresini buraya girin.
 // Test için aynı bilgisayardaysa '127.0.0.1' kalabilir.
 const SERVER_IP = '127.0.0.1'; 
-const SERVER_URL = `http://${SERVER_IP}:5000`;
+const SERVER_URL = `http://${SERVER_IP}:5000`; // BU SATIRIN DOĞRU OLDUĞUNDAN EMİN OLUN
 
 // DÜZELTME: getPublicIP fonksiyonu artık client'ta kullanılmıyor. Kaldırılabilir veya boş bırakılabilir.
 
@@ -93,8 +93,12 @@ async function createWindow() { // Fonksiyonu async olarak güncelledik
     console.log('Önbellek temizlendi.');
   });
 
-  win.loadFile('src/index.html');
+  // DÜZELTME: Uygulamanın dosyaları diskten değil, çalışan Flask sunucusundan yüklemesini sağlıyoruz.
+  // Bu, tüm dosya yollarının (CSS, JS, resimler) doğru çalışmasını ve önbellek sorunlarının çözülmesini sağlar.
+  win.loadURL(`${SERVER_URL}/client`);
+
   win.maximize();
+  // win.webContents.openDevTools(); // Hata ayıklama için geliştirici araçlarını açmak isterseniz bu satırı aktif edebilirsiniz.
 }
 
 app.whenReady().then(() => {
@@ -187,20 +191,4 @@ ipcMain.on('launch-game', async (event, game) => {
     } else if (game.calistirma_tipi === 'steam') {
         shell.openExternal(`steam://run/${data.app_id}`);
     }
-});
-
-// YENİ: Arayüzden gelen dosya seçme isteğini işlemek için IPC dinleyicisi
-ipcMain.handle('select-exe-file', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    title: 'Oyunun .exe Dosyasını Seçin',
-    buttonLabel: 'Uygulamayı Seç',
-    properties: ['openFile'],
-    filters: [
-      { name: 'Uygulamalar', extensions: ['exe'] },
-      { name: 'Tüm Dosyalar', extensions: ['*'] }
-    ]
-  });
-
-  if (canceled || filePaths.length === 0) return null;
-  return filePaths[0]; // Seçilen dosyanın tam yolunu döndür
 });

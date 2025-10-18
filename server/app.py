@@ -18,6 +18,9 @@ import subprocess
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bu-cok-gizli-bir-anahtar-kimse-bilmemeli'
 
+# CORS ayarı
+CORS(app, origins=['*'], allow_headers=['*'], methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+
 # Session ayarları
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=8)  # Varsayılan 8 saat
 app.config['SESSION_COOKIE_SECURE'] = False  # Localhost için False
@@ -248,34 +251,39 @@ def admin_required(f):
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
-    if not data or not data.get('username') or not data.get('password'): 
-        return jsonify({"mesaj": "Kullanıcı adı veya şifre eksik"}), 400
-    if len(data['username']) < 3: 
-        return jsonify({"mesaj": "Kullanıcı adı en az 3 karakter olmalıdır."}), 400
-    if len(data['password']) < 5: 
-        return jsonify({"mesaj": "Şifre en az 5 karakter olmalıdır."}), 400
+    if not data or not data.get('username') or not data.get('password'):
+        return jsonify({"success": False, "message": "Kullanıcı adı veya şifre eksik"}), 400
+    if len(data['username']) < 3:
+        return jsonify({"success": False, "message": "Kullanıcı adı en az 3 karakter olmalıdır."}), 400
+    if len(data['password']) < 5:
+        return jsonify({"success": False, "message": "Şifre en az 5 karakter olmalıdır."}), 400
     
     conn = get_db_connection()
     if conn.execute('SELECT * FROM users WHERE username = ?', (data['username'],)).fetchone():
         conn.close()
-        return jsonify({"mesaj": "Bu kullanıcı adı zaten alınmış."}), 409
+        return jsonify({"success": False, "message": "Bu kullanıcı adı zaten alınmış."}), 409
     
     conn.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', (data['username'], generate_password_hash(data['password'])))
     conn.commit()
     conn.close()
-    return jsonify({"mesaj": "Kullanıcı başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz."}), 201
+    return jsonify({"success": True, "message": "Kullanıcı başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz."}), 201
 
 @app.route('/api/login', methods=['POST'])
 def login():
     auth_data = request.get_json()
+    
+    if not auth_data or not auth_data.get('username') or not auth_data.get('password'):
+        return jsonify({"success": False, "message": "Kullanıcı adı ve şifre gereklidir"}), 400
+    
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE username = ?', (auth_data['username'],)).fetchone()
     conn.close()
-    if not user or not check_password_hash(user['password_hash'], auth_data['password']): 
-        return jsonify({"mesaj": "Hatalı kullanıcı adı veya şifre"}), 401
+    
+    if not user or not check_password_hash(user['password_hash'], auth_data['password']):
+        return jsonify({"success": False, "message": "Hatalı kullanıcı adı veya şifre"}), 401
     
     token = jwt.encode({'user_id': user['id'], 'exp': datetime.utcnow() + timedelta(hours=8)}, app.config['SECRET_KEY'], algorithm="HS256")
-    return jsonify({'token': token})
+    return jsonify({"success": True, "token": token, "message": "Giriş başarılı"})
     
 @app.route('/api/games', methods=['GET'])
 def get_games():
@@ -467,6 +475,11 @@ def root():
 def loading_screen():
     """Tauri loading ekranı için route"""
     return render_template('loading.html')
+
+@app.route('/client')
+def client_view():
+    """İstemci ana menü arayüzü"""
+    return render_template('game_menu.html')
 
 # Admin Authentication Routes
 @app.route('/admin/login', methods=['GET', 'POST'])
