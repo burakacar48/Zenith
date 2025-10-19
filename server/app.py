@@ -74,28 +74,100 @@ def set_setting(key, value):
     conn.commit()
     conn.close()
 
-def convert_to_webp(file, upload_folder, sub_folder=None):
+def convert_to_webp(file, upload_folder, sub_folder=None, game_id=None, gallery_number=None, game_name=None):
     upload_folder = os.path.normpath(upload_folder)
     filename = secure_filename(file.filename)
     base, ext = os.path.splitext(filename)
-    webp_filename = f"{base}.webp"
     
-    if sub_folder and upload_folder == os.path.normpath(app.config['UPLOAD_FOLDER_GALLERY']):
+    # For gallery images with game_id and gallery_number, use sequential naming
+    if sub_folder and upload_folder == os.path.normpath(app.config['UPLOAD_FOLDER_GALLERY']) and game_id is not None and gallery_number is not None:
+        webp_filename = f"gallery-{gallery_number}.webp"
         final_dir = os.path.join(upload_folder, sub_folder)
         if not os.path.exists(final_dir):
             os.makedirs(final_dir)
         file_path = os.path.join(final_dir, webp_filename)
         stored_path = os.path.join(sub_folder, webp_filename).replace('\\', '/')
-    else:
+    # For cover images with game_id and game_name, use {id}-{name} format
+    elif upload_folder == os.path.normpath(app.config['UPLOAD_FOLDER_COVERS']) and game_id is not None and game_name is not None:
+        clean_name = get_gallery_folder_name(game_name)  # Reuse the cleaning function
+        webp_filename = f"{game_id}-{clean_name}.webp"
         file_path = os.path.join(upload_folder, webp_filename)
         stored_path = webp_filename
+    else:
+        # Default naming for non-gallery images
+        webp_filename = f"{base}.webp"
+        if sub_folder and upload_folder == os.path.normpath(app.config['UPLOAD_FOLDER_GALLERY']):
+            final_dir = os.path.join(upload_folder, sub_folder)
+            if not os.path.exists(final_dir):
+                os.makedirs(final_dir)
+            file_path = os.path.join(final_dir, webp_filename)
+            stored_path = os.path.join(sub_folder, webp_filename).replace('\\', '/')
+        else:
+            file_path = os.path.join(upload_folder, webp_filename)
+            stored_path = webp_filename
         
     image = Image.open(file.stream)
-    image.save(file_path, 'webp', quality=85)
+    
+    # Optimize image based on its size and type
+    width, height = image.size
+    file_size_kb = len(file.read()) / 1024
+    file.seek(0)  # Reset file pointer
+    
+    # Determine optimal settings based on image characteristics
+    if upload_folder == os.path.normpath(app.config['UPLOAD_FOLDER_GALLERY']):
+        # Gallery images: more aggressive optimization for smaller file sizes
+        if width > 1920 or height > 1080:
+            # Resize large gallery images to max 1920x1080
+            image.thumbnail((1920, 1080), Image.Resampling.LANCZOS)
+            quality = 75
+            method = 6  # Maximum compression
+        elif width > 1280 or height > 720:
+            # Medium gallery images
+            image.thumbnail((1280, 720), Image.Resampling.LANCZOS)
+            quality = 80
+            method = 6
+        else:
+            # Small gallery images
+            quality = 85
+            method = 6
+            
+    elif upload_folder == os.path.normpath(app.config['UPLOAD_FOLDER_COVERS']):
+        # Cover images: balance between quality and size
+        if max(width, height) > 800:
+            image.thumbnail((800, 1200), Image.Resampling.LANCZOS)
+        quality = 82
+        method = 6
+        
+    elif upload_folder == os.path.normpath(app.config['UPLOAD_FOLDER_SLIDER']):
+        # Slider images: prioritize quality but reasonable size
+        if max(width, height) > 1920:
+            image.thumbnail((1920, 1080), Image.Resampling.LANCZOS)
+        quality = 88
+        method = 4
+        
+    else:
+        # Other images: balanced optimization
+        if max(width, height) > 1200:
+            image.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+        quality = 85
+        method = 4
+    
+    # Convert to RGB if necessary (WebP doesn't support RGBA with lossy compression)
+    if image.mode in ('RGBA', 'LA', 'P'):
+        # Create white background for transparency
+        background = Image.new('RGB', image.size, (255, 255, 255))
+        if image.mode == 'P':
+            image = image.convert('RGBA')
+        background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
+        image = background
+    
+    # Save with optimized settings
+    image.save(file_path, 'webp', quality=quality, method=method, optimize=True)
     
     return stored_path
 
-def get_gallery_folder_name(game_name):
+def get_gallery_folder_name(game_name, game_id=None):
+    """Generate gallery folder name in {id}-{name} format if game_id is provided"""
     char_map = {
         'ğ': 'g', 'ı': 'i', 'ş': 's', 'ç': 'c', 'ö': 'o', 'ü': 'u',
         'Ğ': 'G', 'İ': 'I', 'Ş': 'S', 'Ç': 'C', 'Ö': 'O', 'Ü': 'U',
@@ -103,7 +175,42 @@ def get_gallery_folder_name(game_name):
     cleaned_name = "".join(char_map.get(char, char) for char in game_name)
     illegal_chars = ' <>:"/\\|?*'
     final_name = "".join(c for c in cleaned_name if c not in illegal_chars)
-    return final_name.strip()
+    final_name = final_name.strip()
+    
+    # If game_id is provided, use {id}-{name} format
+    if game_id is not None:
+        return f"{game_id}-{final_name}"
+    
+    return final_name
+
+def get_next_gallery_number(game_id, conn):
+    """Get the next available gallery image number for a game"""
+    # Get existing gallery images for this game with sequential naming
+    existing_images = conn.execute(
+        'SELECT image_path FROM gallery_images WHERE game_id = ? AND image_path LIKE "gallery-%.webp"', 
+        (game_id,)
+    ).fetchall()
+    
+    # Extract numbers from existing gallery-X.webp files
+    numbers = []
+    for image_row in existing_images:
+        image_path = image_row['image_path']
+        # Extract the folder and filename
+        if '/' in image_path:
+            filename = image_path.split('/')[-1]
+        else:
+            filename = image_path
+        
+        # Check if it matches the pattern gallery-X.webp
+        if filename.startswith('gallery-') and filename.endswith('.webp'):
+            try:
+                number = int(filename[8:-5])  # Extract number between 'gallery-' and '.webp'
+                numbers.append(number)
+            except ValueError:
+                continue
+    
+    # Return next number (1 if no existing images, else max + 1)
+    return max(numbers) + 1 if numbers else 1
 
 # --- LİSANS YÖNETİMİ BÖLÜMÜ ---
 license_status_cache = {"status": None, "reason": "Henüz kontrol edilmedi", "last_checked": None}
@@ -718,9 +825,21 @@ def add_game():
                 (form_data.get(k) for k in ['oyun_adi', 'aciklama', 'youtube_id', 'save_yolu', 'calistirma_tipi', 'cikis_yili', 'pegi', 'oyun_dili', 'launch_script'])
             category_ids = request.form.getlist('category_ids')
             
+            # First insert the game to get the ID
+            cursor = conn.cursor()
+            cursor.execute(''' INSERT INTO games(oyun_adi, aciklama, cover_image, youtube_id, save_yolu, calistirma_tipi, calistirma_verisi, cikis_yili, pegi, oyun_dili, launch_script, yuzde_yuz_save_path) 
+                               VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ''', 
+                           (oyun_adi, aciklama, '', youtube_id, save_yolu, calistirma_tipi, calistirma_verisi, cikis_yili, pegi, oyun_dili, launch_script, yuzde_yuz_save_filename))
+            new_game_id = cursor.lastrowid
+            
+            # Now handle cover image if provided
             cover_image_filename = ''
             if 'cover_image' in request.files and request.files['cover_image'].filename:
-                cover_image_filename = convert_to_webp(request.files['cover_image'], app.config['UPLOAD_FOLDER_COVERS'])
+                # Convert cover image with game_id and game_name for {id}-{name} format
+                cover_image_filename = convert_to_webp(request.files['cover_image'], app.config['UPLOAD_FOLDER_COVERS'], game_id=new_game_id, game_name=oyun_adi)
+                
+                # Update the game with the cover image filename
+                conn.execute('UPDATE games SET cover_image = ? WHERE id = ?', (cover_image_filename, new_game_id))
                 
             yuzde_yuz_save_filename = ''
             if 'yuzde_yuz_save_file' in request.files and request.files['yuzde_yuz_save_file'].filename:
@@ -781,11 +900,6 @@ start "" "%%EXE_YOLU%%" %%EXE_ARGS%%
             else: # steam
                 calistirma_verisi, launch_script = json.dumps({'app_id': form_data.get('steam_app_id')}), None
                 
-            cursor = conn.cursor()
-            cursor.execute(''' INSERT INTO games(oyun_adi, aciklama, cover_image, youtube_id, save_yolu, calistirma_tipi, calistirma_verisi, cikis_yili, pegi, oyun_dili, launch_script, yuzde_yuz_save_path) 
-                               VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ''', 
-                           (oyun_adi, aciklama, cover_image_filename, youtube_id, save_yolu, calistirma_tipi, calistirma_verisi, cikis_yili, pegi, oyun_dili, launch_script, yuzde_yuz_save_filename))
-            new_game_id = cursor.lastrowid
             
             # HATA DÜZELTME: category_ids listesindeki tekrar eden ID'leri kaldır ve int'e çevir
             if category_ids:
@@ -794,11 +908,14 @@ start "" "%%EXE_YOLU%%" %%EXE_ARGS%%
                 conn.executemany('INSERT INTO game_categories (game_id, category_id) VALUES (?, ?)', [(new_game_id, cat_id) for cat_id in unique_category_ids])
             
             if 'gallery_images' in request.files:
-                folder_name = get_gallery_folder_name(oyun_adi)
+                folder_name = get_gallery_folder_name(oyun_adi, new_game_id)
+                # Get starting number once before the loop
+                next_number = get_next_gallery_number(new_game_id, conn)
                 for file in request.files.getlist('gallery_images'):
                     if file and file.filename:
-                        path = convert_to_webp(file, app.config['UPLOAD_FOLDER_GALLERY'], sub_folder=folder_name)
+                        path = convert_to_webp(file, app.config['UPLOAD_FOLDER_GALLERY'], sub_folder=folder_name, game_id=new_game_id, gallery_number=next_number)
                         conn.execute('INSERT INTO gallery_images (game_id, image_path) VALUES (?, ?)', (new_game_id, path))
+                        next_number += 1  # Increment for next image
             
             conn.commit()
             return redirect(url_for('list_games'))
@@ -852,7 +969,8 @@ def edit_game(game_id):
             
             cover_image_filename = form_data['current_cover_image']
             if 'cover_image' in request.files and request.files['cover_image'].filename:
-                cover_image_filename = convert_to_webp(request.files['cover_image'], app.config['UPLOAD_FOLDER_COVERS'])
+                # Convert cover image with game_id and game_name for {id}-{name} format
+                cover_image_filename = convert_to_webp(request.files['cover_image'], app.config['UPLOAD_FOLDER_COVERS'], game_id=game_id, game_name=oyun_adi)
                 
             yuzde_yuz_save_filename = form_data['current_yuzde_yuz_save_file']
             if 'yuzde_yuz_save_file' in request.files and request.files['yuzde_yuz_save_file'].filename:
@@ -881,10 +999,14 @@ def edit_game(game_id):
                     except OSError as e: print(f"Dosya silinemedi: {e}")
                     
             if 'gallery_images' in request.files:
+                folder_name = get_gallery_folder_name(oyun_adi, game_id)
+                # Get starting number once before the loop
+                next_number = get_next_gallery_number(game_id, conn)
                 for file in request.files.getlist('gallery_images'):
                     if file and file.filename:
-                        path = convert_to_webp(file, app.config['UPLOAD_FOLDER_GALLERY'], sub_folder=folder_name)
+                        path = convert_to_webp(file, app.config['UPLOAD_FOLDER_GALLERY'], sub_folder=folder_name, game_id=game_id, gallery_number=next_number)
                         conn.execute('INSERT INTO gallery_images (game_id, image_path) VALUES (?, ?)', (game_id, path))
+                        next_number += 1  # Increment for next image
             
             if calistirma_tipi == 'exe':
                 exe_path = form_data.get('exe_path', '')

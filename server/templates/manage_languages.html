@@ -3,286 +3,467 @@
 {% block title %}Dil Seçenekleri{% endblock %}
 
 {% block content %}
-<div class="manage-languages">
-<div class="page-header">
-    <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-        <i class="fas fa-globe" style="color: var(--accent-red);"></i>
-        Dil Seçenekleri
-    </h1>
-</div>
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-language"></i>
+            Dil Seçenekleri
+        </h1>
+        <p class="page-description">Oyun dillerini yönetin ve düzenleyin</p>
+    </div>
 
-<div class="content-spacing">
-    <div class="cards-grid">
-    <!-- Yeni Dil Ekleme Kartı -->
-    <div class="card">
-        <div class="card-header">
-            <h3 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-                <i class="fas fa-plus-circle" style="color: var(--accent-red);"></i>
+    <!-- Yeni Dil Ekle -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header-modern">
+            <h3>
+                <i class="fas fa-plus-circle"></i>
                 Yeni Dil Ekle
             </h3>
         </div>
-        <div class="card-body">
-            <form method="POST" class="form-horizontal">
+        <div class="card-body-modern">
+            <form method="POST" class="language-form">
                 <input type="hidden" name="action" value="add">
                 
-                <div class="form-group">
-                    <label for="name" class="form-label">Dil Adı</label>
-                    <input type="text" id="name" name="name" class="form-control" placeholder="Örn: Türkçe" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="code" class="form-label">Dil Kodu</label>
-                    <input type="text" id="code" name="code" class="form-control" placeholder="Örn: tr" maxlength="5" required>
-                    <small class="form-text text-muted">2-5 karakter arası ISO dil kodu</small>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label-modern">
+                            <i class="fas fa-flag"></i>
+                            <span>Dil Adı</span>
+                        </label>
+                        <input type="text" name="name" required class="form-input-modern" placeholder="Örn: Türkçe, English, Español...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label-modern">
+                            <i class="fas fa-code"></i>
+                            <span>Dil Kodu</span>
+                        </label>
+                        <input type="text" name="code" required class="form-input-modern" placeholder="tr, en, es..." maxlength="5">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit-modern">
                         <i class="fas fa-plus"></i>
-                        Dil Ekle
+                        <span>Ekle</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Mevcut Diller Listesi -->
+    <!-- Mevcut Diller -->
     <div class="card">
-        <div class="card-header">
-            <h3 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-                <i class="fas fa-list" style="color: var(--accent-red);"></i>
-                Mevcut Diller ({{ languages|length }})
+        <div class="card-header-modern">
+            <h3>
+                <i class="fas fa-list"></i>
+                Mevcut Diller
+                <span class="count-badge">{{ languages|length }}</span>
             </h3>
         </div>
-        <div class="card-body">
+        <div class="card-body-modern">
             {% if languages %}
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Dil Adı</th>
-                                <th>Kod</th>
-                                <th>Durum</th>
-                                <th>Ekleme Tarihi</th>
-                                <th class="text-center">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for language in languages %}
-                            <tr>
-                                <td>
-                                    <strong>{{ language.name }}</strong>
-                                </td>
-                                <td>
-                                    <span class="badge badge-secondary">{{ language.code.upper() }}</span>
-                                </td>
-                                <td>
+                <div class="languages-table">
+                    {% for language in languages %}
+                    <div class="language-row {% if not language.is_active %}inactive{% endif %}">
+                        <div class="language-info-section">
+                            <div class="language-flag">
+                                <i class="fas fa-flag"></i>
+                            </div>
+                            <div class="language-details">
+                                <div class="language-name">{{ language.name }}</div>
+                                <div class="language-code-small">{{ language.code.upper() }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="language-status-section">
+                            {% if language.is_active %}
+                                <span class="status-badge active">
+                                    <i class="fas fa-check-circle"></i>
+                                    Aktif
+                                </span>
+                            {% else %}
+                                <span class="status-badge inactive">
+                                    <i class="fas fa-times-circle"></i>
+                                    Pasif
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="language-actions-section">
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="action" value="toggle_status">
+                                <input type="hidden" name="language_id" value="{{ language.id }}">
+                                <button type="submit" class="action-btn-modern toggle" title="{% if language.is_active %}Pasif Yap{% else %}Aktif Yap{% endif %}">
                                     {% if language.is_active %}
-                                        <span class="status-badge status-active">
-                                            <i class="fas fa-check-circle"></i>
-                                            Aktif
-                                        </span>
+                                        <i class="fas fa-eye-slash"></i>
                                     {% else %}
-                                        <span class="status-badge status-inactive">
-                                            <i class="fas fa-times-circle"></i>
-                                            Pasif
-                                        </span>
+                                        <i class="fas fa-eye"></i>
                                     {% endif %}
-                                </td>
-                                <td>
-                                    {% if language.created_at %}
-                                        {{ language.created_at[:10] }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    <div class="btn-group" role="group">
-                                        <!-- Durum Değiştir -->
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="action" value="toggle_status">
-                                            <input type="hidden" name="language_id" value="{{ language.id }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Durumu Değiştir">
-                                                {% if language.is_active %}
-                                                    <i class="fas fa-eye-slash"></i>
-                                                {% else %}
-                                                    <i class="fas fa-eye"></i>
-                                                {% endif %}
-                                            </button>
-                                        </form>
-                                        
-                                        <!-- Sil -->
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('{{ language.name }} dilini silmek istediğinize emin misiniz?');">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="language_id" value="{{ language.id }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                </button>
+                            </form>
+                            <form method="POST" style="display: inline;" onsubmit="return confirm('{{ language.name }} dilini silmek istediğinizden emin misiniz?');">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="language_id" value="{{ language.id }}">
+                                <button type="submit" class="action-btn-modern delete" title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-globe fa-3x"></i>
-                    <h4>Henüz dil eklenmemiş</h4>
-                    <p>Yukarıdaki formu kullanarak yeni dil ekleyebilirsiniz.</p>
+                <div class="empty-state-modern">
+                    <div class="empty-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h3>Henüz dil eklenmemiş</h3>
+                    <p>Yukarıdaki formu kullanarak yeni dil ekleyebilirsiniz</p>
                 </div>
             {% endif %}
         </div>
     </div>
-    </div>
-</div>
-</div>
+{% endblock %}
 
+{% block head %}
 <style>
-.content-spacing {
-    margin-top: 2rem;
-}
-.cards-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-label {
-    margin-bottom: 0.75rem;
-}
-
-.form-text {
-    margin-top: 0.5rem;
-}
-
-@media (max-width: 768px) {
-    .cards-grid {
-        grid-template-columns: 1fr;
+    /* Page Header */
+    .page-header {
+        margin-bottom: 2rem;
     }
-}
 
-.badge {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 0.375rem;
-}
+    .page-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 0 0 0.5rem 0;
+    }
 
-.badge-secondary {
-    background-color: var(--accent-red);
-    color: white;
-}
+    .page-title i {
+        color: var(--primary);
+        font-size: 2rem;
+    }
 
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
+    .page-description {
+        color: var(--muted-foreground);
+        font-size: 1rem;
+        margin: 0;
+    }
 
-.status-active {
-    background-color: #d1fae5;
-    color: #065f46;
-}
+    /* Modern Card Styling */
+    .card-header-modern {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
 
-.status-inactive {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
+    .card-header-modern h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
 
-.btn-group {
-    display: flex;
-    gap: 0.25rem;
-}
+    .card-header-modern h3 i {
+        color: var(--primary);
+        font-size: 1.5rem;
+    }
 
-.btn-sm {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-    border-radius: 0.375rem;
-}
+    .count-badge {
+        margin-left: auto;
+        background: linear-gradient(135deg, var(--primary), #b91c1c);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
 
-.btn-outline-secondary {
-    border: 1px solid #6c757d;
-    color: #6c757d;
-}
+    .card-body-modern {
+        padding: 2rem;
+    }
 
-.btn-outline-secondary:hover {
-    background-color: #6c757d;
-    color: white;
-}
+    /* Form Styling */
+    .language-form {
+        width: 100%;
+    }
 
-.btn-outline-danger {
-    border: 1px solid var(--accent-red);
-    color: var(--accent-red);
-}
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 200px auto;
+        gap: 1.5rem;
+        align-items: end;
+    }
 
-.btn-outline-danger:hover {
-    background-color: var(--accent-red);
-    color: white;
-}
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
 
-.empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: #6c757d;
-}
+    .form-label-modern {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--foreground);
+    }
 
-.empty-state i {
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
+    .form-label-modern i {
+        color: var(--primary);
+        font-size: 1rem;
+    }
 
-.empty-state h4 {
-    margin-bottom: 0.5rem;
-    color: #495057;
-}
+    .form-input-modern {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        color: var(--foreground);
+        font-size: 0.9375rem;
+        transition: all 0.3s;
+        font-family: 'Poppins', sans-serif;
+    }
 
-.form-text.text-muted {
-    font-size: 0.875rem;
-    color: #6c757d;
-    margin-top: 0.5rem;
-}
+    .form-input-modern:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
 
-.text-muted {
-    color: #6c757d;
-}
+    .form-input-modern::placeholder {
+        color: var(--muted-foreground);
+        opacity: 0.6;
+    }
 
-.table th {
-    background-color: #181818 !important;
-    border-top: none !important;
-    font-weight: 600;
-    color: #ffffff;
-    border-bottom: 2px solid #333333 !important;
-}
+    .btn-submit-modern {
+        padding: 0.875rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary) 0%, #b91c1c 100%);
+        border: none;
+        border-radius: 0.5rem;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+        white-space: nowrap;
+        height: fit-content;
+    }
 
-.table thead th {
-    background-color: #181818 !important;
-    color: #ffffff !important;
-}
+    .btn-submit-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+    }
 
-.manage-languages .table th {
-    background-color: #181818 !important;
-    color: #ffffff !important;
-}
+    .btn-submit-modern i {
+        font-size: 1.125rem;
+    }
 
-.manage-languages .table thead tr th {
-    background-color: #181818 !important;
-    color: #ffffff !important;
-    font-weight: 700 !important;
-}
+    /* Languages Table */
+    .languages-table {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
 
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0,0,0,0.02);
-}
+    .language-row {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.5rem;
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        gap: 2rem;
+        transition: all 0.3s;
+    }
+
+    .language-row:hover {
+        border-color: var(--primary);
+        background: rgba(220, 38, 38, 0.05);
+        transform: translateX(4px);
+    }
+
+    .language-row.inactive {
+        opacity: 0.6;
+    }
+
+    .language-info-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .language-flag {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary), #b91c1c);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .language-flag i {
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .language-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .language-name {
+        font-weight: 600;
+        font-size: 1.125rem;
+        color: var(--foreground);
+    }
+
+    .language-code-small {
+        font-size: 0.875rem;
+        color: var(--muted-foreground);
+        font-family: 'Courier New', monospace;
+        text-transform: uppercase;
+    }
+
+    .language-status-section {
+        display: flex;
+        align-items: center;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .status-badge.active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-badge.inactive {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .language-actions-section {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn-modern {
+        width: 40px;
+        height: 40px;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--foreground);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        font-size: 1rem;
+    }
+
+    .action-btn-modern.toggle:hover {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-color: #3b82f6;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .action-btn-modern.delete:hover {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-color: #ef4444;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-state-modern {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--muted-foreground);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .empty-icon i {
+        background: linear-gradient(135deg, var(--primary), #b91c1c);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .empty-state-modern h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--foreground);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .empty-state-modern p {
+        color: var(--muted-foreground);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-submit-modern {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .language-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .language-actions-section {
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .language-info-section {
+            flex-direction: row;
+        }
+
+        .language-row {
+            padding: 1rem;
+        }
+    }
 </style>
 {% endblock %}

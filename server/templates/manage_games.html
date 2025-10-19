@@ -4,40 +4,18 @@
 {% block title %}Oyun Yönetimi{% endblock %}
 
 {% block content %}
-    <!-- Sayfa Başlığı ve Kontroller -->
-    <header class="header">
-        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-            <i class="fas fa-gamepad" style="color: var(--accent-red);"></i>
-            Oyun Yönetimi
-        </h1>
-        <div class="header-controls">
-            <a href="{{ url_for('add_game') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Yeni Oyun Ekle
-            </a>
-            <!-- Gelecek Aktif/Pasif Buton Alanı -->
-            <div class="future-toggle-area">
-                <!-- Bu alan gelecekte toggle butonu için rezerve edildi -->
-            </div>
-        </div>
-    </header>
-
+    <div class="page-header">
+        <h1 class="page-title">Oyun Yönetimi</h1>
+        <p class="page-description">Tüm oyunlarınızı burada yönetebilirsiniz</p>
+    </div>
 
     <!-- Filtre Bölümü -->
-    <div class="card" style="margin-bottom: 30px;">
-        <div class="card-header">
-            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-                <i class="fas fa-filter" style="color: var(--accent-red);"></i>
-                Filtreler
-            </h2>
-        </div>
-        <div class="card-body">
+    <div class="filters-section">
             <form method="GET" action="{{ url_for('list_games') }}" class="filters-form" id="filtersForm">
                 <div class="filters-grid">
                     <!-- Oyun Adı Arama -->
                     <div class="filter-group">
-                        <label for="search">
-                            <i class="fas fa-search"></i> Oyun Adı
-                        </label>
+                        <label for="search" class="filter-label">Oyun Adı</label>
                         <input type="text"
                                id="search"
                                name="q"
@@ -48,171 +26,105 @@
 
                     <!-- Kategori Filtresi -->
                     <div class="filter-group">
-                        <label for="category">
-                            <i class="fas fa-folder"></i> Kategori
-                        </label>
-                        <div class="modern-select">
-                            <div class="modern-select-trigger" data-target="category">
-                                <span class="modern-select-text">{% if category_filter %}{% for cat in categories %}{% if cat.id|string == category_filter|string %}{{ cat.name }}{% endif %}{% endfor %}{% else %}Tüm Kategoriler{% endif %}</span>
-                                <div class="modern-select-arrow"></div>
-                            </div>
-                            <div class="modern-select-options">
-                                <div class="modern-select-option {% if not category_filter %}selected{% endif %}" data-value="">Tüm Kategoriler</div>
-                                {% for cat in categories %}
-                                    <div class="modern-select-option {% if category_filter|string == cat.id|string %}selected{% endif %}" data-value="{{ cat.id }}">{{ cat.name }}</div>
-                                {% endfor %}
-                            </div>
-                            <select id="category" name="category" class="modern-select-native">
-                                <option value="">Tüm Kategoriler</option>
-                                {% for cat in categories %}
-                                    <option value="{{ cat.id }}" {% if category_filter|string == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                        <label for="category" class="filter-label">Kategori</label>
+                        <select id="category" name="category" class="filter-select">
+                            <option value="">Tüm Kategoriler</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if category_filter|string == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
 
                     <!-- Çıkış Yılı Filtresi -->
                     <div class="filter-group">
-                        <label for="year">
-                            <i class="fas fa-calendar"></i> Çıkış Yılı
-                        </label>
-                        <div class="modern-select">
-                            <div class="modern-select-trigger" data-target="year">
-                                <span class="modern-select-text">{% if year_filter %}{{ year_filter }}{% else %}Tüm Yıllar{% endif %}</span>
-                                <div class="modern-select-arrow"></div>
-                            </div>
-                            <div class="modern-select-options">
-                                <div class="modern-select-option {% if not year_filter %}selected{% endif %}" data-value="">Tüm Yıllar</div>
-                                {% for year in years %}
-                                    {% if year.cikis_yili %}
-                                        <div class="modern-select-option {% if year_filter == year.cikis_yili %}selected{% endif %}" data-value="{{ year.cikis_yili }}">{{ year.cikis_yili }}</div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                            <select id="year" name="year" class="modern-select-native">
-                                <option value="">Tüm Yıllar</option>
-                                {% for year in years %}
-                                    {% if year.cikis_yili %}
-                                        <option value="{{ year.cikis_yili }}" {% if year_filter == year.cikis_yili %}selected{% endif %}>{{ year.cikis_yili }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
+                        <label for="year" class="filter-label">Çıkış Yılı</label>
+                        <select id="year" name="year" class="filter-select">
+                            <option value="">Tüm Yıllar</option>
+                            {% for year in years %}
+                                {% if year.cikis_yili %}
+                                    <option value="{{ year.cikis_yili }}" {% if year_filter == year.cikis_yili %}selected{% endif %}>{{ year.cikis_yili }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
                     </div>
 
                     <!-- Dil Filtresi -->
                     <div class="filter-group">
-                        <label for="language">
-                            <i class="fas fa-globe"></i> Dil
-                        </label>
-                        <div class="modern-select">
-                            <div class="modern-select-trigger" data-target="language">
-                                <span class="modern-select-text">{% if language_filter %}{{ language_filter }}{% else %}Tüm Diller{% endif %}</span>
-                                <div class="modern-select-arrow"></div>
-                            </div>
-                            <div class="modern-select-options">
-                                <div class="modern-select-option {% if not language_filter %}selected{% endif %}" data-value="">Tüm Diller</div>
-                                {% for lang in languages %}
-                                    {% if lang.oyun_dili %}
-                                        <div class="modern-select-option {% if language_filter == lang.oyun_dili %}selected{% endif %}" data-value="{{ lang.oyun_dili }}">{{ lang.oyun_dili }}</div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                            <select id="language" name="language" class="modern-select-native">
-                                <option value="">Tüm Diller</option>
-                                {% for lang in languages %}
-                                    {% if lang.oyun_dili %}
-                                        <option value="{{ lang.oyun_dili }}" {% if language_filter == lang.oyun_dili %}selected{% endif %}>{{ lang.oyun_dili }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
+                        <label for="language" class="filter-label">Dil</label>
+                        <select id="language" name="language" class="filter-select">
+                            <option value="">Tüm Diller</option>
+                            {% for lang in languages %}
+                                {% if lang.oyun_dili %}
+                                    <option value="{{ lang.oyun_dili }}" {% if language_filter == lang.oyun_dili %}selected{% endif %}>{{ lang.oyun_dili }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 
-                <!-- Filtre Sonuçları ve Temizle Butonu -->
-                <div class="filter-results">
+                <!-- Filtre Butonları -->
+                <div class="filter-actions">
                     {% if search_query or category_filter or year_filter or language_filter %}
-                        <button type="button" class="btn-clear-filters" onclick="clearAllFilters()">
+                        <button type="button" class="filter-btn filter-btn-secondary" onclick="clearAllFilters()">
                             <i class="fas fa-times"></i> Filtreleri Temizle
                         </button>
                     {% endif %}
+                    <button type="submit" class="filter-btn filter-btn-primary">
+                        <i class="fas fa-search"></i> Filtrele
+                    </button>
                 </div>
 
                 <!-- Gizli alanlar -->
                 <input type="hidden" name="page" value="1">
                 <input type="hidden" name="per_page" value="{{ per_page }}">
             </form>
-        </div>
     </div>
 
     <!-- Oyun Grid Listesi -->
     {% if games %}
-    <div class="card" style="margin-bottom: 30px;">
-        <div class="card-header">
-            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-                <i class="fas fa-gamepad" style="color: var(--accent-red);"></i>
-                Tüm Oyunlar
-            </h2>
-        </div>
-        <div class="card-body">
-            <div class="games-grid">
-                {% for game in games %}
-                <div class="game-card">
-                    <div class="game-poster">
-                        {% if game.cover_image %}
-                            <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}"
-                                 alt="{{ game.oyun_adi }}"
-                                 onerror="this.src='{{ url_for('static', filename='images/covers/default-cover.jpg') }}'">
-                        {% else %}
-                            <div class="no-poster">
-                                <i class="fas fa-gamepad"></i>
-                                <span>Poster Yok</span>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Hover Actions -->
-                        <div class="game-actions">
-                            {% if game.id %}
-                            <a href="{{ url_for('edit_game', game_id=game.id) }}" class="action-btn btn-icon btn-edit-new" title="Düzenle">
-                                <i class="fas fa-pencil-alt"></i>
-                            </a>
-                            <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" class="delete-form"
-                                  onsubmit="return confirm('{{ game.oyun_adi }} oyununu silmek istediğine emin misin?');">
-                                <button type="submit" class="action-btn btn-icon btn-delete" title="Sil">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                            {% else %}
-                            <span class="action-btn disabled" title="ID eksik">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </span>
-                            {% endif %}
-                        </div>
-
-                        <!-- Oyun Bilgi Overlay -->
-                        <div class="game-info-overlay">
-                            <div class="game-categories">
-                                {% if game.category_names %}
-                                    {% for category in game.category_names.split(',')[:2] %}
-                                        <span class="category-tag">{{ category.strip() }}</span>
-                                    {% endfor %}
-                                    {% if game.category_names.split(',')|length > 2 %}
-                                        <span class="category-tag more">+{{ game.category_names.split(',')|length - 2 }}</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="category-tag no-category">Kategorisiz</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="game-title" style="text-align: center;">
-                        <h3 style="color: var(--text-secondary);">{{ game.oyun_adi }}</h3>
-                    </div>
-                </div>
-                {% endfor %}
+    <div class="section">
+        <div class="games-grid">
+        {% for game in games %}
+        <div class="game-card">
+            <div class="game-card-actions">
+                {% if game.id %}
+                <a href="{{ url_for('edit_game', game_id=game.id) }}" class="game-card-action-btn edit" title="Düzenle">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+                <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" style="display: inline;"
+                      onsubmit="return confirm('{{ game.oyun_adi }} oyununu silmek istediğinize emin misiniz?');">
+                    <button type="submit" class="game-card-action-btn delete" title="Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+                {% endif %}
             </div>
+            {% if game.cover_image %}
+                <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}"
+                     alt="{{ game.oyun_adi }}"
+                     class="game-card-cover"
+                     onerror="this.src='{{ url_for('static', filename='images/covers/default-cover.jpg') }}'">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/covers/default-cover.jpg') }}"
+                     alt="{{ game.oyun_adi }}"
+                     class="game-card-cover">
+            {% endif %}
+            <div class="game-card-content">
+                <div class="game-card-title">{{ game.oyun_adi }}</div>
+                <div class="game-card-category">
+                    {% if game.category_names %}
+                        {{ game.category_names.split(',')[0].strip() }}
+                    {% else %}
+                        Kategorisiz
+                    {% endif %}
+                </div>
+                <div class="game-card-stats">
+                    <span class="badge active">Aktif</span>
+                    <span class="game-card-clicks">0 kez oynandı</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
         </div>
     </div>
 

@@ -3,209 +3,239 @@
 {% block title %}Gösterge Paneli{% endblock %}
 
 {% block content %}
-    <header class="header">
-        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-            <i class="fas fa-chart-pie" style="color: var(--accent-red);"></i>
-            Gösterge Paneli
-        </h1>
-    </header>
+    <div class="page-header">
+        <h1 class="page-title">Gösterge Paneli</h1>
+        <p class="page-description">Oyun yönetim sisteminize hoş geldiniz</p>
+    </div>
 
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon" style="--icon-color: #e879f9;">
-                <i class="fas fa-gamepad"></i>
-            </div>
-            <div class="stat-info">
-                <div class="stat-value">{{ stats.game_count }}</div>
-                <div class="stat-label">Toplam Oyun</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="--icon-color: #38bdf8;">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-info">
-                <div class="stat-value">{{ stats.user_count }}</div>
-                <div class="stat-label">Kayıtlı Kullanıcı</div>
+            <div class="stat-content">
+                <div class="stat-icon purple">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Toplam Oyun</div>
+                    <div class="stat-value">{{ stats.game_count }}</div>
+                </div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon" style="--icon-color: #34d399;">
-                <i class="fas fa-folder"></i>
-            </div>
-            <div class="stat-info">
-                <div class="stat-value">{{ stats.category_count }}</div>
-                <div class="stat-label">Kategori</div>
+            <div class="stat-content">
+                <div class="stat-icon blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Kayıtlı Kullanıcı</div>
+                    <div class="stat-value">{{ stats.user_count }}</div>
+                </div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon" style="--icon-color: #fbbf24;">
-                <i class="fas fa-eye"></i>
+            <div class="stat-content">
+                <div class="stat-icon green">
+                    <i class="fas fa-folder"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Kategori</div>
+                    <div class="stat-value">{{ stats.category_count }}</div>
+                </div>
             </div>
-            <div class="stat-info">
-                <div class="stat-value">{{ total_clicks or 0 }}</div>
-                <div class="stat-label">Toplam Tıklanma</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon amber">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Toplam Oturum</div>
+                    <div class="stat-value">{{ total_clicks or 0 }}</div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Son Eklenen Oyunlar Bölümü -->
-    <div class="card" style="margin-bottom: 30px;">
-        <div class="card-header">
-            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-                <i class="fas fa-gamepad" style="color: var(--accent-red);"></i>
-                Son Eklenen Oyunlar
-            </h2>
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">Son Eklenen Oyunlar</h2>
+            <a href="{{ url_for('list_games') }}" class="section-link">
+                Tümünü Gör
+                <i class="fas fa-chevron-right"></i>
+            </a>
         </div>
-        <div class="card-body">
         
         {% if recent_games %}
-        <div class="games-grid" style="grid-template-columns: repeat(5, 1fr); gap: 20px;">
+        <div class="games-grid">
             {% for game in recent_games %}
             <div class="game-card">
-                <div class="game-poster">
-                    {% if game.cover_image %}
-                        <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}"
-                             alt="{{ game.oyun_adi }}"
-                             onerror="this.src='{{ url_for('static', filename='images/covers/default-cover.jpg') }}'">
-                    {% else %}
-                        <div class="no-poster">
-                            <i class="fas fa-gamepad"></i>
-                            <span>Poster Yok</span>
-                        </div>
+                <div class="game-card-actions">
+                    {% if game.id %}
+                    <a href="{{ url_for('edit_game', game_id=game.id) }}" class="game-card-action-btn edit" title="Düzenle">
+                        <i class="fas fa-pencil-alt"></i>
+                    </a>
+                    <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" style="display: inline;"
+                          onsubmit="return confirm('{{ game.oyun_adi }} oyununu silmek istediğinize emin misiniz?');">
+                        <button type="submit" class="game-card-action-btn delete" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
                     {% endif %}
-                    
-                    <!-- Hover Actions -->
-                    <div class="game-actions">
-                        {% if game.id %}
-                        <a href="{{ url_for('edit_game', game_id=game.id) }}" class="action-btn btn-icon btn-edit-new" title="Düzenle">
-                            <i class="fas fa-pencil-alt"></i>
-                        </a>
-                        <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" class="delete-form"
-                              onsubmit="return confirm('{{ game.oyun_adi }} oyununu silmek istediğine emin misin?');">
-                            <button type="submit" class="action-btn btn-icon btn-delete" title="Sil">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
+                </div>
+                {% if game.cover_image %}
+                    <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}"
+                         alt="{{ game.oyun_adi }}"
+                         class="game-card-cover"
+                         onerror="this.src='{{ url_for('static', filename='images/covers/default-cover.jpg') }}'">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/covers/default-cover.jpg') }}"
+                         alt="{{ game.oyun_adi }}"
+                         class="game-card-cover">
+                {% endif %}
+                <div class="game-card-content">
+                    <div class="game-card-title">{{ game.oyun_adi }}</div>
+                    <div class="game-card-category">
+                        {% if game.category_names %}
+                            {{ game.category_names.split(',')[0].strip() }}
                         {% else %}
-                        <span class="action-btn disabled" title="ID eksik" style="background: rgba(156, 163, 175, 0.9); backdrop-filter: none;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </span>
+                            Kategorisiz
                         {% endif %}
                     </div>
-
-                    <!-- Oyun Bilgi Overlay -->
-                    <div class="game-info-overlay">
-                        <div class="game-categories">
-                            {% if game.category_names %}
-                                {% for category in game.category_names.split(',')[:2] %}
-                                    <span class="category-tag">{{ category.strip() }}</span>
-                                {% endfor %}
-                                {% if game.category_names.split(',')|length > 2 %}
-                                    <span class="category-tag more">+{{ game.category_names.split(',')|length - 2 }}</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="category-tag no-category">Kategorisiz</span>
-                            {% endif %}
-                        </div>
+                    <div class="game-card-stats">
+                        <span class="badge active">Aktif</span>
+                        <span class="game-card-clicks">0 kez oynandı</span>
                     </div>
-                </div>
-                
-                <div class="game-title" style="text-align: center;">
-                    <h3 style="color: var(--text-secondary);">{{ game.oyun_adi }}</h3>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div class="empty-state">
-            <i class="fas fa-gamepad"></i>
-            <h3>Oyun Bulunamadı</h3>
-            <p>Henüz hiç oyun eklenmemiş.</p>
-            <a href="{{ url_for('add_game') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> İlk Oyunu Ekle
-            </a>
+        <div class="card">
+            <p style="text-align: center; padding: 2rem; color: var(--muted-foreground);">Henüz hiç oyun eklenmemiş.</p>
         </div>
         {% endif %}
+    </div>
+
+    <!-- En Çok Oynanan Oyunlar Bölümü -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">En Çok Oynanan Oyunlar</h2>
+            <a href="{{ url_for('list_games') }}" class="section-link">
+                Tümünü Gör
+                <i class="fas fa-chevron-right"></i>
+            </a>
         </div>
+        
+        {% if most_played_games %}
+        <div class="games-grid">
+            {% for game in most_played_games %}
+            <div class="game-card">
+                <div class="game-card-actions">
+                    {% if game.id %}
+                    <a href="{{ url_for('edit_game', game_id=game.id) }}" class="game-card-action-btn edit" title="Düzenle">
+                        <i class="fas fa-pencil-alt"></i>
+                    </a>
+                    <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" style="display: inline;"
+                          onsubmit="return confirm('{{ game.oyun_adi }} oyununu silmek istediğinize emin misiniz?');">
+                        <button type="submit" class="game-card-action-btn delete" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% if game.cover_image %}
+                    <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}"
+                         alt="{{ game.oyun_adi }}"
+                         class="game-card-cover"
+                         onerror="this.src='{{ url_for('static', filename='images/covers/default-cover.jpg') }}'">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/covers/default-cover.jpg') }}"
+                         alt="{{ game.oyun_adi }}"
+                         class="game-card-cover">
+                {% endif %}
+                <div class="game-card-content">
+                    <div class="game-card-title">{{ game.oyun_adi }}</div>
+                    <div class="game-card-category">
+                        {% if game.category_names %}
+                            {{ game.category_names.split(',')[0].strip() }}
+                        {% else %}
+                            Kategorisiz
+                        {% endif %}
+                    </div>
+                    <div class="game-card-stats">
+                        <span class="badge active">Aktif</span>
+                        <span class="game-card-clicks">{{ game.play_count or 0 }} kez oynandı</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <p style="text-align: center; padding: 2rem; color: var(--muted-foreground);">Henüz oyun oynama verisi yok.</p>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Disk Kullanım Durumu Bölümü -->
-    <div class="card" style="margin-bottom: 30px;">
-        <div class="card-header">
-            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-                <i class="fas fa-hdd" style="color: var(--accent-red);"></i>
-                Disk Kullanım Durumu
-            </h2>
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">Disk Kullanımı</h2>
         </div>
-        <div class="card-body">
         
         {% if drives %}
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+        <div class="disk-grid">
             {% for drive in drives %}
-            <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; transition: all 0.3s ease;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--accent-red), #F6121D); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">
-                            {{ drive.device_id.replace(':', '') }}
-                        </div>
-                        <div>
-                            <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">
-                                {% if drive.custom_name %}
-                                    {{ drive.custom_name }}
-                                {% else %}
-                                    {{ drive.volume_name }}
-                                {% endif %}
-                            </h3>
-                            <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">{{ drive.device_id }}</p>
-                        </div>
+            <div class="disk-card">
+                <div class="disk-header">
+                    <div class="disk-icon {% if drive.usage_percent <= 60 %}disk-green{% elif drive.usage_percent <= 80 %}disk-amber{% else %}disk-red{% endif %}">
+                        <i class="fas fa-hdd"></i>
                     </div>
-                    {% if drive.usage_percent > 0 %}
-                    <div style="text-align: right;">
-                        <div style="font-size: 24px; font-weight: 700; color: var(--text-primary);">{{ drive.usage_percent }}%</div>
-                        <div style="font-size: 12px; color: var(--text-secondary);">Kullanılıyor</div>
+                    <div class="disk-info">
+                        <div class="disk-name">
+                            {% if drive.custom_name %}
+                                {{ drive.custom_name }}
+                            {% else %}
+                                {{ drive.volume_name }}
+                            {% endif %}
+                        </div>
+                        <div class="disk-drive">{{ drive.device_id }}</div>
                     </div>
-                    {% endif %}
                 </div>
-                
-                {% if drive.size_gb != 'Bilinmiyor' and drive.usage_percent > 0 %}
-                <!-- Progress Bar -->
-                <div style="background: var(--bg-dark-primary); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 15px;">
-                    <div style="height: 100%; background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #ef4444 90%); width: {{ drive.usage_percent }}%; transition: width 0.3s ease; border-radius: 10px;"></div>
-                </div>
-                {% endif %}
-                
-                <!-- Disk Bilgileri -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
-                    <div>
-                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
-                            {% if drive.used_gb != 'Bilinmiyor' %}{{ drive.used_gb }} GB{% else %}{{ drive.used_gb }}{% endif %}
-                        </div>
-                        <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Kullanılan</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
-                            {% if drive.free_space_gb != 'Bilinmiyor' %}{{ drive.free_space_gb }} GB{% else %}{{ drive.free_space_gb }}{% endif %}
-                        </div>
-                        <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Boş</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                <div class="disk-stats">
+                    <div class="disk-stat-row">
+                        <span>Kapasite</span>
+                        <span class="disk-stat-value">
                             {% if drive.size_gb != 'Bilinmiyor' %}{{ drive.size_gb }} GB{% else %}{{ drive.size_gb }}{% endif %}
-                        </div>
-                        <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Toplam</div>
+                        </span>
+                    </div>
+                    <div class="disk-stat-row">
+                        <span>Kullanılan</span>
+                        <span class="disk-stat-value">
+                            {% if drive.used_gb != 'Bilinmiyor' %}{{ drive.used_gb }} GB{% else %}{{ drive.used_gb }}{% endif %}
+                        </span>
+                    </div>
+                    <div class="disk-stat-row">
+                        <span>Boş Alan</span>
+                        <span class="disk-stat-value">
+                            {% if drive.free_space_gb != 'Bilinmiyor' %}{{ drive.free_space_gb }} GB{% else %}{{ drive.free_space_gb }}{% endif %}
+                        </span>
                     </div>
                 </div>
+                {% if drive.size_gb != 'Bilinmiyor' and drive.usage_percent > 0 %}
+                <div class="disk-progress-container">
+                    <div class="disk-progress-bar {% if drive.usage_percent <= 60 %}disk-progress-green{% elif drive.usage_percent <= 80 %}disk-progress-amber{% else %}disk-progress-red{% endif %}" 
+                         style="width: {{ drive.usage_percent }}%"></div>
+                </div>
+                <div class="disk-usage-text">{{ drive.usage_percent }}% Kullanımda</div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div class="empty-state" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 40px;">
-            <i class="fas fa-hdd" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-            <h3>Disk Bulunamadı</h3>
-            <p>C: diski dışında hiçbir disk bulunamadı veya disk listesi alınamadı.</p>
+        <div class="card">
+            <p style="text-align: center; padding: 2rem; color: var(--muted-foreground);">C: diski dışında hiçbir disk bulunamadı veya disk listesi alınamadı.</p>
         </div>
         {% endif %}
-        </div>
     </div>
 {% endblock %}

@@ -7,136 +7,170 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_theme_v2.css', v='3.1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/server_style.css') }}">
     {% block head %}{% endblock %}
-    <style>
-        .page-title-with-icon {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .page-title-with-icon i {
-            font-size: 1em; /* İkon boyutu başlık fontu ile aynı */
-            color: var(--accent-red, #e50914);
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <aside class="sidebar">
-            <div class="logo">
-                <a href="{{ url_for('admin_index') }}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center;">
-                    <img src="{{ url_for('static', filename='images/PanelLogo.png') }}" alt="Panel Logosu">
-                    <span class="slogan">Yeni Nesil Oyun Menüsü</span>
-                </a>
+    <div class="app-container">
+        <!-- Menu Toggle -->
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-section">
+                <div class="logo-content">
+                    <div class="logo-icon">
+                        <img src="{{ url_for('static', filename='images/PanelLogo.png') }}" alt="Zenith Logo">
+                    </div>
+                    <div class="logo-subtitle">Yeni Nesil Oyun Menüsü</div>
+                </div>
             </div>
 
-            <nav class="menu">
-                <div class="menu-section">
-                    <a href="{{ url_for('admin_index') }}" class="menu-item {% if request.endpoint == 'admin_index' %}active{% endif %}">
-                        <i class="fas fa-chart-pie"></i>
+            <nav class="nav">
+                <div class="nav-group">
+                    <a href="{{ url_for('admin_index') }}" class="nav-item {% if request.endpoint == 'admin_index' %}active{% endif %}">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        </span>
                         <span>Gösterge Paneli</span>
                     </a>
                 </div>
 
-                <div class="menu-section">
-                    <div class="menu-title">OYUN YÖNETİMİ</div>
-                    {% set game_endpoints = ['list_games', 'edit_game'] %}
-                    <a href="{{ url_for('list_games') }}" class="menu-item {% if request.endpoint in game_endpoints %}active{% endif %}">
-                        <i class="fas fa-gamepad"></i>
-                        <span>Oyun Listesi</span>
-                    </a>
-                    <a href="{{ url_for('add_game') }}" class="menu-item {% if request.endpoint == 'add_game' %}active{% endif %}">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Oyun Ekle</span>
-                    </a>
-                    <a href="{{ url_for('manage_categories') }}" class="menu-item {% if 'category' in request.endpoint %}active{% endif %}">
-                        <i class="fas fa-folder-tree"></i>
-                        <span>Kategoriler</span>
-                    </a>
-                    <a href="{{ url_for('manage_languages') }}" class="menu-item {% if request.endpoint == 'manage_languages' %}active{% endif %}">
-                        <i class="fas fa-globe"></i>
-                        <span>Dil Seçenekleri</span>
-                    </a>
-                    <a href="{{ url_for('download_games') }}" class="menu-item {% if request.endpoint == 'download_games' %}active{% endif %}">
-                        <i class="fas fa-download"></i>
-                        <span>Oyun İndir</span>
-                    </a>
+                <div class="nav-group">
+                    <div class="nav-group-title" onclick="toggleCategory(this)">
+                        <span>Oyun Yönetimi</span>
+                        <span class="nav-group-toggle">−</span>
+                    </div>
+                    <div class="nav-group-items">
+                        <a href="{{ url_for('list_games') }}" class="nav-item {% if request.endpoint in ['list_games', 'edit_game'] %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            </span>
+                            <span>Oyun Listesi</span>
+                        </a>
+                        <a href="{{ url_for('add_game') }}" class="nav-item {% if request.endpoint == 'add_game' %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </span>
+                            <span>Oyun Ekle</span>
+                        </a>
+                        <a href="{{ url_for('manage_categories') }}" class="nav-item {% if 'category' in request.endpoint %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                            </span>
+                            <span>Kategoriler</span>
+                        </a>
+                        <a href="{{ url_for('manage_languages') }}" class="nav-item {% if request.endpoint == 'manage_languages' %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            </span>
+                            <span>Dil Seçenekleri</span>
+                        </a>
+                        <a href="{{ url_for('download_games') }}" class="nav-item {% if request.endpoint == 'download_games' %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            </span>
+                            <span>Oyun İndir</span>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="menu-section">
-                    <div class="menu-title">GÖRSEL YÖNETİMİ</div>
-                    {% set slider_endpoints = ['manage_sliders', 'add_slider', 'edit_slider'] %}
-                    <a href="{{ url_for('manage_sliders') }}" class="menu-item {% if request.endpoint in slider_endpoints %}active{% endif %}">
-                        <i class="fas fa-sliders-h"></i>
-                        <span>Slider Yönetimi</span>
-                    </a>
+                <div class="nav-group">
+                    <div class="nav-group-title" onclick="toggleCategory(this)">
+                        <span>Görsel Yönetimi</span>
+                        <span class="nav-group-toggle">−</span>
+                    </div>
+                    <div class="nav-group-items">
+                        <a href="{{ url_for('manage_sliders') }}" class="nav-item {% if request.endpoint in ['manage_sliders', 'add_slider', 'edit_slider'] %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            </span>
+                            <span>Slider Yönetimi</span>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="menu-section">
-                    <div class="menu-title">İSTATİSTİK & KULLANICI</div>
-                    <a href="{{ url_for('manage_ratings') }}" class="menu-item {% if 'rating' in request.endpoint %}active{% endif %}">
-                        <i class="fas fa-trophy"></i>
-                        <span>Puan Yönetimi</span>
-                    </a>
-                    <a href="{{ url_for('manage_statistics') }}" class="menu-item {% if 'statistic' in request.endpoint %}active{% endif %}">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Oyun İstatistikleri</span>
-                    </a>
-                    {% set user_endpoints = ['manage_users', 'edit_user'] %}
-                    <a href="{{ url_for('manage_users') }}" class="menu-item {% if request.endpoint in user_endpoints %}active{% endif %}">
-                        <i class="fas fa-users-cog"></i>
-                        <span>Kullanıcı Yönetimi</span>
-                    </a>
+                <div class="nav-group">
+                    <div class="nav-group-title" onclick="toggleCategory(this)">
+                        <span>İstatistik & Kullanıcı</span>
+                        <span class="nav-group-toggle">−</span>
+                    </div>
+                    <div class="nav-group-items">
+                        <a href="{{ url_for('manage_ratings') }}" class="nav-item {% if 'rating' in request.endpoint %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+                            </span>
+                            <span>Puan Yönetimi</span>
+                        </a>
+                        <a href="{{ url_for('manage_statistics') }}" class="nav-item {% if 'statistic' in request.endpoint %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            </span>
+                            <span>Oyun İstatistikleri</span>
+                        </a>
+                        <a href="{{ url_for('manage_users') }}" class="nav-item {% if request.endpoint in ['manage_users', 'edit_user'] %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </span>
+                            <span>Kullanıcı Yönetimi</span>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="menu-section">
-                    <div class="menu-title">SİSTEM AYARLARI</div>
-                    <a href="{{ url_for('general_settings') }}" class="menu-item {% if request.endpoint == 'general_settings' %}active{% endif %}">
-                        <i class="fas fa-cogs"></i>
-                        <span>Genel Ayarlar</span>
-                    </a>
-                    <a href="{{ url_for('social_media_settings') }}" class="menu-item {% if request.endpoint == 'social_media_settings' %}active{% endif %}">
-                        <i class="fas fa-share-alt"></i>
-                        <span>Sosyal Medya</span>
-                    </a>
-                    <a href="{{ url_for('disk_settings') }}" class="menu-item {% if request.endpoint == 'disk_settings' %}active{% endif %}">
-                        <i class="fas fa-hdd"></i>
-                        <span>Disk Yönetimi</span>
-                    </a>
-                    <a href="{{ url_for('license_management') }}" class="menu-item {% if request.endpoint == 'license_management' %}active{% endif %}">
-                        <i class="fas fa-key"></i>
-                        <span>Lisans Yönetimi</span>
-                    </a>
+                <div class="nav-group">
+                    <div class="nav-group-title" onclick="toggleCategory(this)">
+                        <span>Sistem Ayarları</span>
+                        <span class="nav-group-toggle">−</span>
+                    </div>
+                    <div class="nav-group-items">
+                        <a href="{{ url_for('general_settings') }}" class="nav-item {% if request.endpoint == 'general_settings' %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m5.2-13.2-4.2 4.2m0 6 4.2 4.2M1 12h6m6 0h6m-13.2-5.2 4.2 4.2m0 6-4.2 4.2"/></svg>
+                            </span>
+                            <span>Genel Ayarlar</span>
+                        </a>
+                        <a href="{{ url_for('social_media_settings') }}" class="nav-item {% if request.endpoint == 'social_media_settings' %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                            </span>
+                            <span>Sosyal Medya</span>
+                        </a>
+                        <a href="{{ url_for('disk_settings') }}" class="nav-item {% if request.endpoint == 'disk_settings' %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                            </span>
+                            <span>Disk Yönetimi</span>
+                        </a>
+                        <a href="{{ url_for('license_management') }}" class="nav-item {% if request.endpoint == 'license_management' %}active{% endif %}">
+                            <span class="nav-item-icon">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </span>
+                            <span>Lisans Yönetimi</span>
+                        </a>
+                    </div>
                 </div>
             </nav>
 
-            {% if session.admin_logged_in %}
-            <div class="user-panel-container">
-                <div class="user-panel">
+            <div class="user-profile">
+                <div class="user-content">
                     <div class="user-avatar">
-                        <img src="{{ url_for('static', filename='images/profil.jpg') }}" alt="Profil Fotoğrafı">
+                        {% if session.admin_username %}
+                            {{ session.admin_username[:2].upper() }}
+                        {% else %}
+                            AD
+                        {% endif %}
                     </div>
-                    <div class="user-details">
-                        <div class="username">{{ session.admin_username }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ session.admin_username or 'Admin' }}</div>
+                        <div class="user-email">admin@zenith.com</div>
                     </div>
-                    <a href="{{ url_for('admin_logout') }}" class="logout-btn" onclick="return confirm('Çıkış yapmak istediğinize emin misiniz?')" title="Çıkış Yap">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </a>
-                </div>
-            </div>
-            {% endif %}
-
-            <div class="sidebar-footer">
-                <div class="copyright">
-                    <p>&copy; 2024 Zenith Panel</p>
                 </div>
             </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
             <div class="content-wrapper">
                 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -159,6 +193,58 @@
             </div>
         </main>
     </div>
+    
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        function toggleCategory(element) {
+            const items = element.nextElementSibling;
+            const toggle = element.querySelector('.nav-group-toggle');
+            
+            items.classList.toggle('collapsed');
+            toggle.textContent = items.classList.contains('collapsed') ? '+' : '−';
+        }
+
+        function editGame(event, gameName) {
+            event.stopPropagation();
+            console.log('Editing game:', gameName);
+            // Düzenleme işlevi buraya eklenecek
+            alert('Oyun düzenleme: ' + gameName);
+        }
+
+        function deleteGame(event, gameName) {
+            event.stopPropagation();
+            if (confirm('Bu oyunu silmek istediğinizden emin misiniz?\n' + gameName)) {
+                console.log('Deleting game:', gameName);
+                // Silme işlevi buraya eklenecek
+                alert('Oyun silindi: ' + gameName);
+            }
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            
+            if (window.innerWidth <= 1024 && 
+                !sidebar.contains(event.target) && 
+                !menuToggle.contains(event.target) &&
+                sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        // Handle nav item clicks
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
     
     {% block scripts %}{% endblock %}
 </body>

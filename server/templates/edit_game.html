@@ -1,247 +1,1220 @@
-
 {% extends 'base_admin.html' %}
 
 {% block title %}Oyunu Düzenle{% endblock %}
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="https://unpkg.com/pell/dist/pell.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/tomorrow-night-eighties.min.css">
+{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1 class="page-title">Oyunu Düzenle: <span style="font-weight: 400;">{{ game.oyun_adi }}</span></h1>
+        <p class="page-description">Oyun bilgilerini düzenleyin ve güncelleyin</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        <!-- Tab Navigation -->
+        <div class="section">
+            <div class="tabs">
+                <button type="button" class="tab-btn active" onclick="switchTab('temel')">
+                    <i class="fas fa-info-circle"></i>
+                    Temel Bilgiler
+                </button>
+                <button type="button" class="tab-btn" onclick="switchTab('gorsel')">
+                    <i class="fas fa-images"></i>
+                    Görsel Yönetimi
+                </button>
+                <button type="button" class="tab-btn" onclick="switchTab('calistirma')">
+                    <i class="fas fa-cog"></i>
+                    Çalıştırma Ayarları
+                </button>
+            </div>
+        </div>
+
+        <!-- Temel Bilgiler Tab -->
+        <div id="temel-tab" class="tab-content active">
+            <div class="card" style="padding: 2rem;">
+                <div class="form-grid">
+                    <!-- Oyun Adı - Full Width -->
+                    <div class="form-group full-width">
+                        <label class="form-label">
+                            <i class="fas fa-gamepad"></i>
+                            <span>Oyun Adı</span>
+                        </label>
+                        <input type="text" name="oyun_adi" value="{{ game.oyun_adi }}" required class="form-input">
+                    </div>
+                    
+                    <!-- YouTube & PEGI - Side by Side -->
+                    <!-- YouTube Fragman ID - Full Width -->
+                    <div class="form-group full-width">
+                        <label class="form-label">
+                            <i class="fab fa-youtube"></i>
+                            <span>YouTube Fragman ID</span>
+                        </label>
+                        <input type="text" name="youtube_id" id="youtube_id" value="{{ game.youtube_id or '' }}" placeholder="gmA6MrX81z4" class="form-input">
+                        <div class="input-hint">
+                            <span style="font-style: italic; opacity: 0.8;">https://www.youtube.com/watch?v=</span><strong style="color: var(--primary);">gmA6MrX81z4</strong>
+                            <span style="margin-left: 0.5rem; opacity: 0.7;">— YouTube linkini veya video ID'sini yapıştırabilirsiniz</span>
+                        </div>
+                    </div>
+
+                    <!-- Çıkış Yılı & PEGI Rating - Side by Side -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Çıkış Yılı</span>
+                        </label>
+                        <input type="text" name="cikis_yili" value="{{ game.cikis_yili or '' }}" placeholder="2023" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>PEGI Rating</span>
+                        </label>
+                        <input type="text" name="pegi" value="{{ game.pegi or '' }}" placeholder="PEGI 18" class="form-input">
+                    </div>
+                    
+                    <!-- Kategoriler - Full Width -->
+                    <div class="form-group full-width">
+                        <label class="form-label">
+                            <i class="fas fa-tags"></i>
+                            <span>Kategoriler</span>
+                        </label>
+                        <div class="badge-grid">
+                            {% for category in categories %}
+                                <label style="cursor: pointer;">
+                                    <input type="checkbox" name="category_ids" value="{{ category.id }}" {% if category.id in game_category_ids %}checked{% endif %} style="display: none;">
+                                    <span class="category-badge">{{ category.icon }} {{ category.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Oyun Dili - Full Width -->
+                    <div class="form-group full-width">
+                        <label class="form-label">
+                            <i class="fas fa-language"></i>
+                            <span>Oyun Dili</span>
+                        </label>
+                        <div class="badge-grid">
+                            {% for language in languages %}
+                                <label style="cursor: pointer;" class="language-option">
+                                    <input type="checkbox" name="language_ids" value="{{ language.name }}" {% if game.oyun_dili and language.name in game.oyun_dili %}checked{% endif %} style="display: none;">
+                                    <span class="category-badge language-badge">{{ language.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Açıklama - Full Width -->
+                    <div class="form-group full-width">
+                        <label class="form-label">
+                            <i class="fas fa-align-left"></i>
+                            <span>Açıklama</span>
+                        </label>
+                        <textarea name="aciklama" id="aciklama_textarea" rows="4" style="display:none;">{{ game.aciklama or '' }}</textarea>
+                        <div id="aciklama-editor"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Görsel Yönetimi Tab -->
+        <div id="gorsel-tab" class="tab-content">
+            <div class="card" style="padding: 1.5rem;">
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">
+                    <i class="fas fa-image" style="margin-right: 0.5rem; color: var(--primary);"></i>
+                    Kapak Görseli
+                </h3>
+                
+                <div class="upload-zone{% if game.cover_image %} upload-hidden{% endif %}" id="cover-upload-zone" onclick="triggerFileInput('cover_image')">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h4>Kapak Görseli Yükle</h4>
+                    <p>2:3 oranında görsel yükleyin (örn: 600x900px)</p>
+                    <button type="button" class="btn btn-secondary">Dosya Seç</button>
+                </div>
+                
+                {% if game.cover_image %}
+                <div class="cover-images-grid">
+                    <div class="cover-image-card">
+                        <div class="cover-image-wrapper">
+                            <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" alt="Mevcut Kapak">
+                            <div class="image-overlay">
+                                <div class="image-actions">
+                                    <button type="button" class="action-btn" onclick="changeCoverImage()">Değiştir</button>
+                                    <button type="button" class="action-btn delete" onclick="removeCoverImage()">Kaldır</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="image-info">
+                            <div class="image-name">{{ game.cover_image }}</div>
+                            <div class="image-details">
+                                <span>Kapak</span>
+                                <span>Seçili</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <input type="file" id="cover_image" name="cover_image" accept="image/*" style="display: none;" onchange="handleCoverImageSelect(this)">
+                
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">
+                        <i class="fas fa-images" style="margin-right: 0.5rem; color: var(--primary);"></i>
+                        Galeri Görselleri
+                    </h3>
+                    <div id="delete-warning" class="delete-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="delete-count">0</span> adet görsel silinmek üzere işaretlenmiştir
+                    </div>
+                </div>
+                
+                <div class="upload-zone" id="gallery-upload-zone" onclick="triggerFileInput('gallery_images')">
+                    <div class="upload-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <h4>Galeri Görselleri Yükle</h4>
+                    <p>16:9 oranında birden fazla görsel yükleyin (örn: 1920x1080px)</p>
+                    <button type="button" class="btn btn-secondary">Görselleri Seç</button>
+                </div>
+                
+                <input type="file" id="gallery_images" name="gallery_images" accept="image/*" multiple style="display: none;" onchange="handleGalleryImagesSelect(this)">
+                
+                {% if gallery %}
+                <div class="images-grid" id="gallery-images-grid">
+                    {% for image_row in gallery %}
+                    <div class="image-card" data-image="{{ image_row.image_path }}">
+                        <div class="selection-indicator">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="{{ url_for('static', filename='images/gallery/' + image_row.image_path) }}" alt="Galeri {{ loop.index }}">
+                        </div>
+                        <div class="image-info">
+                            <div class="image-name">{{ image_row.image_path.split('/')[-1] }}</div>
+                            <div class="image-details">
+                                <span>Galeri</span>
+                                <button type="button" class="action-btn delete" onclick="removeGalleryImage('{{ image_row.image_path }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Çalıştırma Ayarları Tab -->
+        <div id="calistirma-tab" class="tab-content">
+            <div class="card" style="padding: 1.5rem;">
+                <div>
+                    <label class="form-label">
+                        <i class="fas fa-play-circle"></i>
+                        <span>Çalıştırma Tipi</span>
+                    </label>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem; max-width: 400px;">
+                        <button type="button" id="exe-btn" class="execution-btn" onclick="selectExecutionType('exe')">
+                            <i class="fas fa-desktop"></i>
+                            <span>EXE</span>
+                        </button>
+                        <button type="button" id="steam-btn" class="execution-btn execution-btn-steam" onclick="selectExecutionType('steam')">
+                            <i class="fab fa-steam"></i>
+                            <span>Steam</span>
+                        </button>
+                    </div>
+                    <input type="hidden" name="calistirma_tipi" id="calistirma_tipi" value="{{ game.calistirma_tipi or 'exe' }}">
+                </div>
+                
+                <div id="exe-section" style="margin-top: 1.5rem;">
+                    <div class="form-grid" style="gap: 1.5rem;">
+                        <!-- Disk Seçimi -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-hdd"></i>
+                                <span>Mevcut Diskler</span>
+                            </label>
+                            {% if drives %}
+                                <div class="disk-selection-grid">
+                                    {% for drive in drives %}
+                                    <div class="disk-card" onclick="selectDisk('{{ drive.device_id }}')" data-disk="{{ drive.device_id }}">
+                                        <div class="disk-icon">
+                                            <i class="fas fa-hard-drive"></i>
+                                        </div>
+                                        <div class="disk-info">
+                                            <div class="disk-name">
+                                                {% if drive.custom_name %}
+                                                    {{ drive.custom_name }}
+                                                {% else %}
+                                                    {{ drive.volume_name }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="disk-letter">{{ drive.device_id }}</div>
+                                            {% if drive.free_space_gb != 'Bilinmiyor' %}
+                                            <div class="disk-space">
+                                                <span class="free-space">{{ drive.free_space_gb }} GB Boş</span>
+                                                <div class="space-bar">
+                                                    <div class="space-used" style="width: {{ drive.usage_percent }}%"></div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="no-disks">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Mevcut disk bulunamadı. Disk Ayarları sayfasından diskleri kontrol edin.</span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- EXE Dosya Yolu -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-file-code"></i>
+                                <span>EXE Dosya Yolu</span>
+                            </label>
+                            <input type="text" name="exe_path" value="{{ game.calistirma_verisi_dict.exe_path or '' }}" placeholder="EXE dosya yolunu girin..." class="form-input">
+                        </div>
+
+                        <!-- Oyun Kayıt Yolu -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-save"></i>
+                                <span>Oyun Kayıt Yolu</span>
+                            </label>
+                            <input type="text" name="save_path" value="{{ game.calistirma_verisi_dict.save_path or '' }}" placeholder="Örn: C:\Users\%USERNAME%\AppData\Local\GameName\Saved" class="form-input">
+                        </div>
+
+                        <!-- %100 Save Dosyası -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>%100 Save Dosyası</span>
+                            </label>
+                            <div class="save-upload-zone" onclick="triggerFileInput('save_file')">
+                                <div class="upload-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-file-archive"></i>
+                                </div>
+                                <p style="margin: 0; font-size: 0.875rem; color: var(--muted-foreground);">
+                                    {% if game.yuzde_yuz_save_file %}
+                                        <strong style="color: var(--primary);">{{ game.yuzde_yuz_save_file }}</strong>
+                                    {% else %}
+                                        Save dosyasını yüklemek için tıklayın
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <input type="file" id="save_file" name="save_file" accept=".zip,.rar,.7z" style="display: none;" onchange="handleSaveFileSelect(this)">
+                        </div>
+
+                        <!-- Özel Başlatma (.bat) -->
+                        <div class="form-group full-width">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="custom_startup" name="custom_startup" {% if game.calistirma_verisi_dict.custom_startup %}checked{% endif %} onchange="toggleCustomStartup(this.checked)">
+                                <span class="checkbox-text">
+                                    <i class="fas fa-terminal"></i>
+                                    Özel Başlatma Gerekiyor (.bat)
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- BAT Script Editor -->
+                        <div id="bat-script-section" style="display: {% if game.calistirma_verisi_dict.custom_startup %}block{% else %}none{% endif %};" class="form-group full-width">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <label class="form-label" style="margin: 0;">
+                                    <i class="fas fa-file-code"></i>
+                                    <span>Başlatma Script'i</span>
+                                </label>
+                                <button type="button" class="btn btn-secondary" onclick="openBatEditor()" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                    <i class="fas fa-edit"></i>
+                                    Script Editörü
+                                </button>
+                            </div>
+                            <textarea id="bat_script" name="bat_script" rows="8" class="form-input" style="font-family: 'Consolas', 'Courier New', monospace; font-size: 0.875rem;">{{ game.calistirma_verisi_dict.bat_script or '@echo off
+REM Auto-generated startup script for ' + game.oyun_adi + '
+REM Game: ' + game.oyun_adi + '
+REM EXE Path: %EXE_PATH%
+
+echo Starting ' + game.oyun_adi + '...
+start "" "%EXE_PATH%"
+' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="steam-section" style="margin-top: 1.5rem; display: none;">
+                    <label class="form-label">
+                        <i class="fab fa-steam-symbol"></i>
+                        <span>Steam Game ID</span>
+                    </label>
+                    <input type="text" name="steam_app_id" value="{{ game.calistirma_verisi_dict.app_id or '' }}" placeholder="Örn: 271590 (GTA V), 730 (CS:GO)" class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+            <a href="{{ url_for('list_games') }}" style="padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; color: var(--foreground); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-arrow-left"></i> Geri Dön
+            </a>
+            <button type="submit" style="padding: 0.75rem 1.5rem; background: var(--primary); border: none; border-radius: 0.5rem; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                <i class="fas fa-save"></i> Oyunu Güncelle
+            </button>
+        </div>
+
+        <input type="hidden" name="current_cover_image" value="{{ game.cover_image or '' }}">
+        <input type="hidden" name="current_yuzde_yuz_save_file" value="{{ game.yuzde_yuz_save_file or '' }}">
+        <input type="hidden" name="delete_gallery_images" id="delete_gallery_images" value="">
+    </form>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://unpkg.com/pell"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/shell/shell.min.js"></script>
+    <script>
+        // Global CodeMirror instance
+        let batCodeMirror = null;
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check URL hash and restore tab state
+            const hash = window.location.hash.substring(1); // Remove # character
+            const validTabs = ['temel', 'gorsel', 'calistirma'];
+            
+            if (hash && validTabs.includes(hash)) {
+                // Manually activate the correct tab on page load
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                
+                document.getElementById(hash + '-tab').classList.add('active');
+                
+                // Find and activate the correct button
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    const btnText = btn.textContent.toLowerCase();
+                    if ((hash === 'temel' && btnText.includes('temel')) ||
+                        (hash === 'gorsel' && btnText.includes('görsel')) ||
+                        (hash === 'calistirma' && btnText.includes('çalıştırma'))) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+            
+            // Pell editor
+            const editor = pell.init({
+                element: document.getElementById('aciklama-editor'),
+                onChange: html => {
+                    document.getElementById('aciklama_textarea').value = html;
+                },
+                defaultParagraphSeparator: 'p',
+                styleWithCSS: false,
+                actions: ['bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link']
+            });
+            editor.content.innerHTML = document.getElementById('aciklama_textarea').value;
+
+            // Initialize execution type
+            const currentType = '{{ game.calistirma_tipi or "exe" }}';
+            selectExecutionType(currentType);
+
+            // YouTube ID auto-detection
+            const youtubeInput = document.getElementById('youtube_id');
+            if (youtubeInput) {
+                youtubeInput.addEventListener('input', function() {
+                    const value = this.value.trim();
+                    
+                    // Check if it's a YouTube URL and extract the video ID
+                    const youtubePatterns = [
+                        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+                        /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+                        /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+                        /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/
+                    ];
+                    
+                    for (const pattern of youtubePatterns) {
+                        const match = value.match(pattern);
+                        if (match) {
+                            this.value = match[1]; // Extract and set only the video ID
+                            break;
+                        }
+                    }
+                });
+            }
+
+            // Category badge styling
+            document.querySelectorAll('.category-badge:not(.language-badge)').forEach(badge => {
+                const input = badge.previousElementSibling;
+                const updateStyle = () => {
+                    if (input.checked) {
+                        badge.style.background = 'var(--primary)';
+                        badge.style.color = 'white';
+                        badge.style.borderColor = 'var(--primary)';
+                    } else {
+                        badge.style.background = 'rgba(255, 255, 255, 0.05)';
+                        badge.style.color = '';
+                        badge.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }
+                };
+                input.addEventListener('change', updateStyle);
+                updateStyle();
+            });
+
+            // Language badge styling - now with multiple selection support
+            document.querySelectorAll('.language-badge').forEach(badge => {
+                const input = badge.previousElementSibling;
+                
+                const updateStyle = () => {
+                    if (input.checked) {
+                        badge.style.background = 'var(--primary)';
+                        badge.style.color = 'white';
+                        badge.style.borderColor = 'var(--primary)';
+                    } else {
+                        badge.style.background = 'rgba(255, 255, 255, 0.05)';
+                        badge.style.color = '';
+                        badge.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }
+                };
+                
+                input.addEventListener('change', updateStyle);
+                updateStyle();
+            });
+        });
+
+        // Tab switching
+        window.switchTab = function(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // If called programmatically, find and activate the button
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.textContent.toLowerCase().includes(tabName)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+            
+            // Save current tab to URL hash
+            window.location.hash = tabName;
+        };
+
+        // Execution type selection
+        window.selectExecutionType = function(type) {
+            const exeBtn = document.getElementById('exe-btn');
+            const steamBtn = document.getElementById('steam-btn');
+            const exeSection = document.getElementById('exe-section');
+            const steamSection = document.getElementById('steam-section');
+            
+            if (type === 'exe') {
+                exeBtn.classList.add('active');
+                steamBtn.classList.remove('active');
+                exeSection.style.display = 'block';
+                steamSection.style.display = 'none';
+            } else {
+                steamBtn.classList.add('active');
+                exeBtn.classList.remove('active');
+                steamSection.style.display = 'block';
+                exeSection.style.display = 'none';
+            }
+            
+            document.getElementById('calistirma_tipi').value = type;
+        };
+
+        // Cover image functions
+        window.triggerFileInput = function(inputId) {
+            document.getElementById(inputId).click();
+        };
+
+        window.handleCoverImageSelect = function(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Hide upload zone
+                    document.getElementById('cover-upload-zone').classList.add('upload-hidden');
+                    
+                    // Create or update preview
+                    let previewContainer = document.querySelector('.cover-images-grid');
+                    if (!previewContainer) {
+                        previewContainer = document.createElement('div');
+                        previewContainer.className = 'cover-images-grid';
+                        document.getElementById('cover-upload-zone').parentNode.insertBefore(
+                            previewContainer,
+                            document.getElementById('cover-upload-zone').nextSibling
+                        );
+                    }
+                    
+                    previewContainer.innerHTML = `
+                        <div class="cover-image-card">
+                            <div class="cover-image-wrapper">
+                                <img src="${e.target.result}" alt="Yeni Kapak Görseli">
+                                <div class="image-overlay">
+                                    <div class="image-actions">
+                                        <button type="button" class="action-btn" onclick="changeCoverImage()">Değiştir</button>
+                                        <button type="button" class="action-btn delete" onclick="removeCoverImage()">Kaldır</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="image-info">
+                                <div class="image-name">${file.name}</div>
+                                <div class="image-details">
+                                    <span>Yeni Kapak</span>
+                                    <span>Seçildi</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    previewContainer.style.display = 'flex';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.changeCoverImage = function() {
+            document.getElementById('cover_image').click();
+        };
+
+        window.removeCoverImage = function() {
+            if (confirm('Kapak görselini kaldırmak istediğinizden emin misiniz?')) {
+                // Hide current cover image
+                document.querySelector('.cover-images-grid').style.display = 'none';
+                // Show upload zone
+                document.getElementById('cover-upload-zone').classList.remove('upload-hidden');
+            }
+        };
+
+        // Gallery image functions
+        window.handleGalleryImagesSelect = function(input) {
+            if (input.files && input.files.length > 0) {
+                let galleryGrid = document.getElementById('gallery-images-grid');
+                
+                // Create gallery grid if it doesn't exist
+                if (!galleryGrid) {
+                    galleryGrid = document.createElement('div');
+                    galleryGrid.id = 'gallery-images-grid';
+                    galleryGrid.className = 'images-grid';
+                    document.getElementById('gallery-upload-zone').parentNode.appendChild(galleryGrid);
+                }
+                
+                // Process each selected file
+                Array.from(input.files).forEach((file, index) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const imageCard = document.createElement('div');
+                        imageCard.className = 'image-card';
+                        imageCard.setAttribute('data-image', file.name);
+                        
+                        imageCard.innerHTML = `
+                            <div class="selection-indicator">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="image-wrapper">
+                                <img src="${e.target.result}" alt="Galeri ${index + 1}">
+                            </div>
+                            <div class="image-info">
+                                <div class="image-name">${file.name}</div>
+                                <div class="image-details">
+                                    <span>Yeni Galeri</span>
+                                    <button type="button" class="action-btn delete" onclick="removeGalleryImage('${file.name}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        galleryGrid.appendChild(imageCard);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+        };
+
+        window.removeGalleryImage = function(imageName) {
+            if (confirm('Bu galeri görselini kaldırmak istediğinizden emin misiniz?\n' + imageName)) {
+                const imageCard = document.querySelector(`.image-card[data-image="${imageName}"]`);
+                if (imageCard) {
+                    imageCard.remove();
+                    
+                    // Check if there are any remaining images
+                    const remainingImages = document.querySelectorAll('.image-card');
+                    if (remainingImages.length === 0) {
+                        const galleryGrid = document.getElementById('gallery-images-grid');
+                        if (galleryGrid) {
+                            galleryGrid.remove();
+                        }
+                    }
+                }
+            }
+        };
+
+        // Gallery image selection for deletion
+        window.toggleImageSelection = function(imageName) {
+            const imageCard = document.querySelector(`.image-card[data-image="${imageName}"]`);
+            if (!imageCard) return;
+            
+            imageCard.classList.toggle('selected');
+            updateDeleteCounter();
+        };
+
+        function updateDeleteCounter() {
+            const selectedImages = document.querySelectorAll('.image-card.selected');
+            const deleteWarning = document.getElementById('delete-warning');
+            const deleteCount = document.getElementById('delete-count');
+            
+            if (selectedImages.length > 0) {
+                deleteCount.textContent = selectedImages.length;
+                deleteWarning.style.display = 'block';
+            } else {
+                deleteWarning.style.display = 'none';
+            }
+        }
+
+        // Add click handlers to existing gallery images
+        document.addEventListener('DOMContentLoaded', () => {
+            // Function to add click handler to image cards
+            function addClickHandler(card) {
+                const imageName = card.getAttribute('data-image');
+                card.addEventListener('click', (e) => {
+                    // Don't toggle if clicking the delete button
+                    if (e.target.closest('.action-btn')) return;
+                    toggleImageSelection(imageName);
+                });
+            }
+            
+            // Add click handlers to existing image cards
+            document.querySelectorAll('.image-card').forEach(addClickHandler);
+            
+            // Watch for dynamically added image cards
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            // Check if the added node is an image card
+                            if (node.classList && node.classList.contains('image-card')) {
+                                addClickHandler(node);
+                            }
+                            // Check if the added node contains image cards
+                            const imageCards = node.querySelectorAll && node.querySelectorAll('.image-card');
+                            if (imageCards) {
+                                imageCards.forEach(addClickHandler);
+                            }
+                        }
+                    });
+                });
+            });
+            
+            // Start observing the gallery grid for changes
+            const galleryGrid = document.getElementById('gallery-images-grid');
+            if (galleryGrid) {
+                observer.observe(galleryGrid, { childList: true });
+            }
+            
+            // Add form submit handler to populate delete_gallery_images field
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const selectedImages = document.querySelectorAll('.image-card.selected');
+                    const imageNames = Array.from(selectedImages).map(card => {
+                        return card.getAttribute('data-image');
+                    });
+                    
+                    // Debug log
+                    console.log('Selected images for deletion:', imageNames);
+                    
+                    const deleteField = document.getElementById('delete_gallery_images');
+                    deleteField.value = imageNames.join(',');
+                    
+                    // Debug log
+                    console.log('Delete field value:', deleteField.value);
+                });
+            }
+        });
+
+        // Save file handling
+        window.handleSaveFileSelect = function(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const saveZone = document.querySelector('.save-upload-zone p');
+                saveZone.innerHTML = `<strong style="color: var(--primary);">${file.name}</strong>`;
+            }
+        };
+
+        // Custom startup toggle
+        window.toggleCustomStartup = function(isChecked) {
+            const batSection = document.getElementById('bat-script-section');
+            if (isChecked) {
+                batSection.style.display = 'block';
+                // Generate default script if empty
+                const scriptTextarea = document.getElementById('bat_script');
+                if (!scriptTextarea.value.trim()) {
+                    const gameName = document.querySelector('input[name="oyun_adi"]').value || 'Game';
+                    scriptTextarea.value = `@echo off
+REM Auto-generated startup script for ${gameName}
+REM Game: ${gameName}
+REM EXE Path: %EXE_PATH%
+
+echo Starting ${gameName}...
+start "" "%EXE_PATH%"
+`;
+                }
+            } else {
+                batSection.style.display = 'none';
+            }
+        };
+
+        // BAT Script Editor Modal
+        window.openBatEditor = function() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'bat-editor-modal';
+            
+            const currentScript = document.getElementById('bat_script').value;
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>
+                            <i class="fas fa-file-code"></i>
+                            Başlatma Script'i Düzenleyici
+                        </h3>
+                        <button class="modal-close" onclick="closeBatEditor()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Shortcut Buttons -->
+                        <div class="shortcut-buttons">
+                            <div class="shortcut-group">
+                                <h4><i class="fas fa-link"></i> Link & Klasör İşlemleri</h4>
+                                <div class="button-grid">
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mklink /d \\"%SAVE_PATH%\\" \\"%SAVE_PATH%\\"')" title="Symbolic Link Oluştur">
+                                        <i class="fas fa-link"></i>
+                                        <span>Symbolic Link</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mklink /h \\"%SAVE_PATH%\\" \\"%SAVE_PATH%\\"')" title="Hard Link Oluştur">
+                                        <i class="fas fa-link"></i>
+                                        <span>Hard Link</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mkdir \\"%SAVE_PATH%\\"')" title="Klasör Oluştur">
+                                        <i class="fas fa-folder-plus"></i>
+                                        <span>MKDIR</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('xcopy \\"%SAVE_PATH%\\" \\"%SAVE_PATH%\\" /E /I /Y')" title="Klasör Kopyala">
+                                        <i class="fas fa-copy"></i>
+                                        <span>XCOPY</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="shortcut-group">
+                                <h4><i class="fas fa-cog"></i> Registry İşlemleri</h4>
+                                <div class="button-grid">
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg import \\"game_settings.reg\\"" title="Registry Dosyası İçe Aktar">
+                                        <i class="fas fa-file-import"></i>
+                                        <span>Reg Import</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('regedit /s \\"game_settings.reg\\"" title="Registry Dosyası Çalıştır">
+                                        <i class="fas fa-play"></i>
+                                        <span>Regedit /S</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg add \\"HKLM\\\\SOFTWARE\\\\GameName\\" /v \\"Setting\\" /t REG_SZ /d \\"Value\\" /f')" title="Registry Değeri Ekle">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Reg Add</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg delete \\"HKLM\\\\SOFTWARE\\\\GameName\\" /f')" title="Registry Anahtarı Sil">
+                                        <i class="fas fa-trash"></i>
+                                        <span>Reg Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="shortcut-group">
+                                <h4><i class="fas fa-terminal"></i> Komut Satırı</h4>
+                                <div class="button-grid">
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('echo Starting %GAME_NAME%...')" title="Echo Mesaj">
+                                        <i class="fas fa-comment"></i>
+                                        <span>Echo</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('timeout /t 3 /nobreak')" title="Bekle">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Timeout</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('start "" \\"%EXE_PATH%\\""')" title="Program Başlat">
+                                        <i class="fas fa-play"></i>
+                                        <span>Start</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('taskkill /f /im game.exe')" title="Programı Kapat">
+                                        <i class="fas fa-stop"></i>
+                                        <span>Taskkill</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="shortcut-group">
+                                <h4><i class="fas fa-file"></i> Dosya İşlemleri</h4>
+                                <div class="button-grid">
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('copy \\"source.txt\\" \\"destination.txt\\"" title="Dosya Kopyala">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Copy</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('move \\"source.txt\\" \\"destination.txt\\"" title="Dosya Taşı">
+                                        <i class="fas fa-arrows-alt"></i>
+                                        <span>Move</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('del \\"file.txt\\"" title="Dosya Sil">
+                                        <i class="fas fa-trash"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('if exist \\"file.txt\\" (echo File exists) else (echo File not found)')" title="Dosya Kontrol">
+                                        <i class="fas fa-search"></i>
+                                        <span>If Exist</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Editor Container -->
+                        <div class="editor-container">
+                            <div id="bat-codemirror-container"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeBatEditor()">
+                            <i class="fas fa-times"></i>
+                            İptal
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="saveBatScript()">
+                            <i class="fas fa-save"></i>
+                            Kaydet
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+            
+            // Initialize CodeMirror
+            setTimeout(() => {
+                const container = document.getElementById('bat-codemirror-container');
+                batCodeMirror = CodeMirror(container, {
+                    value: currentScript,
+                    mode: 'shell',
+                    theme: 'tomorrow-night-eighties',
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    indentUnit: 4,
+                    tabSize: 4,
+                    indentWithTabs: false,
+                    autofocus: true,
+                    styleActiveLine: true,
+                    matchBrackets: true,
+                    autoCloseBrackets: true
+                });
+                
+                // Set editor height
+                batCodeMirror.setSize(null, '400px');
+            }, 100);
+        };
+
+        // Insert command at cursor position
+        window.insertCommand = function(command) {
+            if (batCodeMirror) {
+                const doc = batCodeMirror.getDoc();
+                const cursor = doc.getCursor();
+                doc.replaceRange(command, cursor);
+                batCodeMirror.focus();
+            }
+        };
+
+        window.closeBatEditor = function() {
+            const modal = document.getElementById('bat-editor-modal');
+            if (modal) {
+                batCodeMirror = null;
+                modal.remove();
+            }
+        };
+
+        window.saveBatScript = function() {
+            if (batCodeMirror) {
+                const editorContent = batCodeMirror.getValue();
+                document.getElementById('bat_script').value = editorContent;
+                closeBatEditor();
+            }
+        };
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('bat-editor-modal');
+            if (modal && event.target === modal) {
+                closeBatEditor();
+            }
+        });
+
+        // Close modal with Escape key
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeBatEditor();
+            }
+        });
+
+        // Disk selection function
+        window.selectDisk = function(diskLetter) {
+            // Remove selected class from all disk cards
+            document.querySelectorAll('.disk-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked disk card
+            const selectedCard = document.querySelector(`.disk-card[data-disk="${diskLetter}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            // You can optionally auto-fill the EXE path input with the disk letter
+            // const exePathInput = document.querySelector('input[name="exe_path"]');
+            // if (exePathInput && !exePathInput.value) {
+            //     exePathInput.value = diskLetter + '\\';
+            // }
+        };
+    </script>
+    
     <style>
-        .modern-image-manager {
-            display: grid;
-            gap: 2rem;
-            padding: 1rem;
-        }
-
-        .image-section {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(229, 9, 20, 0.15);
-            border-radius: 16px;
-            padding: 30px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .image-section:hover {
-            border-color: rgba(229, 9, 20, 0.3);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        .section-header {
+        /* Tab Navigation - Modern Design */
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            gap: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            backdrop-filter: blur(10px);
         }
 
-        .gallery-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            width: 100%;
-        }
-
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .section-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #E50914, #B20710);
-            border-radius: 12px;
+        .tab-btn {
+            flex: 1;
+            padding: 0.875rem 1.25rem;
+            background: transparent;
+            border: none;
+            color: var(--muted-foreground);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            gap: 0.625rem;
+            border-radius: 0.5rem;
+            position: relative;
+            z-index: 1;
+            font-size: 0.9375rem;
+        }
+
+        .tab-btn i {
+            font-size: 1.125rem;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--foreground);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .tab-btn:hover:not(.active) i {
+            transform: scale(1.1);
+        }
+
+        .tab-btn.active {
             color: white;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+            background: linear-gradient(135deg, var(--primary) 0%, #b91c1c 100%);
+            box-shadow: 
+                0 4px 12px rgba(220, 38, 38, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
-        .section-info h3 {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0 0 5px 0;
+        .tab-btn.active i {
+            transform: scale(1.15);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
-        .section-info p {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin: 0;
-        }
-
-        .gallery-stats {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .stat-badge {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.08));
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-delete-selected {
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
+        /* Smooth tab content transitions */
+        .tab-content {
             display: none;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+            animation: fadeIn 0.3s ease-in-out;
         }
 
-        .btn-delete-selected:hover {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+        .tab-content.active {
+            display: block;
         }
 
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Upload Zone Styles */
         .upload-zone {
-            border: 3px dashed rgba(229, 9, 20, 0.3);
-            border-radius: 12px;
-            padding: 50px 30px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius);
+            padding: 2rem;
             text-align: center;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             cursor: pointer;
-            margin-bottom: 30px;
+            margin-bottom: 1.5rem;
         }
 
         .upload-zone:hover {
-            border-color: var(--accent-red);
-            background: rgba(229, 9, 20, 0.08);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary);
+            background: rgba(220, 38, 38, 0.05);
         }
 
         .upload-zone.upload-hidden {
-            display: none !important;
+            display: none;
         }
 
         .upload-icon {
-            font-size: 56px;
-            color: #94a3b8;
-            margin-bottom: 20px;
+            font-size: 3rem;
+            color: var(--muted-foreground);
+            margin-bottom: 1rem;
             opacity: 0.7;
-            transition: all 0.3s ease;
-        }
-
-        .upload-zone:hover .upload-icon {
-            color: #e50914;
-            opacity: 1;
-            /* Transform kaldırıldı */
         }
 
         .upload-zone h4 {
-            font-size: 20px;
+            font-size: 1.125rem;
             font-weight: 600;
-            color: var(--text-primary);
-            margin: 0 0 12px 0;
+            color: var(--foreground);
+            margin: 0 0 0.5rem 0;
         }
 
         .upload-zone p {
-            color: var(--text-secondary);
-            margin: 0 0 20px 0;
-            font-size: 15px;
+            color: var(--muted-foreground);
+            margin: 0 0 1rem 0;
+            font-size: 0.875rem;
         }
 
-        .upload-specs {
-            display: inline-flex;
-            align-items: center;
-            gap: 15px;
-            padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            font-size: 12px;
-            color: #94a3b8;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .upload-specs span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .images-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            padding: 2rem;
-        }
-
+        /* Cover Image Styles */
         .cover-images-grid {
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            min-height: 200px;
+            margin-top: 1rem;
         }
 
         .cover-image-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             cursor: pointer;
-            width: 300px;
-            max-width: 100%;
+            position: relative;
+            max-width: 300px;
         }
 
         .cover-image-card:hover {
-            border-color: #e50914;
-            /* Transform ve shadow kaldırıldı */
+            border-color: var(--primary);
+        }
+
+        .cover-image-wrapper {
+            position: relative;
+            background: var(--muted);
+            aspect-ratio: 2/3;
+        }
+
+        .cover-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Gallery Images Grid */
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
         }
 
         .image-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             cursor: pointer;
             position: relative;
         }
 
         .image-card:hover {
-            border-color: #e50914;
-            /* Transform ve shadow kaldırıldı */
+            border-color: var(--primary);
         }
 
         .image-card.selected {
-            border-color: #22c55e;
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .image-card.selected .selection-indicator {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+            opacity: 1;
+        }
+
+        .image-wrapper {
+            position: relative;
+            background: var(--muted);
+            aspect-ratio: 16/9;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .selection-indicator {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 28px;
-            height: 28px;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 1.75rem;
+            height: 1.75rem;
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -249,47 +1222,7 @@
             align-items: center;
             justify-content: center;
             z-index: 10;
-            transition: all 0.3s ease;
-            opacity: 0;
-        }
-
-        .image-card.selected .selection-indicator {
-            background: #22c55e;
-            border-color: #22c55e;
             color: white;
-            opacity: 1;
-            /* Transform kaldırıldı - CPU optimizasyonu */
-        }
-
-        .image-card:hover .selection-indicator {
-            opacity: 0.7;
-        }
-
-        .image-wrapper {
-            position: relative;
-            aspect-ratio: 16/9;
-            overflow: hidden;
-            background: #2a2a2a;
-        }
-
-        .cover-image-wrapper {
-            position: relative;
-            aspect-ratio: 2/3;
-            overflow: hidden;
-            background: #2a2a2a;
-        }
-
-        .image-wrapper img,
-        .cover-image-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            /* Transform transition kaldırıldı */
-        }
-
-        .image-card:hover .image-wrapper img,
-        .cover-image-card:hover .cover-image-wrapper img {
-            /* Scale efekti kaldırıldı */
         }
 
         .image-overlay {
@@ -304,7 +1237,7 @@
             justify-content: flex-end;
             padding: 1rem;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s;
         }
 
         .cover-image-card:hover .image-overlay {
@@ -321,74 +1254,27 @@
             background: rgba(255, 255, 255, 0.9);
             border: none;
             color: #2d3748;
-            padding: 12px 15px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: auto;
-            margin: 0 auto;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s;
         }
 
         .action-btn.delete {
-            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
-            color: white !important;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .action-btn.delete::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-            transition: left 0.3s ease;
-        }
-        
-        .action-btn.delete:hover::before {
-            left: 100%;
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: #94A3B8;
-        }
-        
-        .action-btn.delete:hover {
-            background: linear-gradient(135deg, #F6121D 0%, #E50914 100%);
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
-            color: white !important;
-        }
-        
-        .action-btn i {
-            font-size: 16px;
-        }
-        
-        .action-btn.delete i {
-            color: white !important;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
         }
 
         .image-info {
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
+            padding: 0.75rem;
         }
 
         .image-name {
-            font-size: 13px;
+            font-size: 0.8125rem;
             font-weight: 600;
-            color: #f1f5f9;
-            margin: 0 0 8px 0;
+            margin-bottom: 0.25rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -397,1606 +1283,770 @@
         .image-details {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            color: #94a3b8;
+            font-size: 0.6875rem;
+            color: var(--muted-foreground);
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #94a3b8;
+        /* Pell Editor Styles - Unified Design */
+        #aciklama-editor {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.625rem;
+            overflow: hidden;
+            transition: all 0.3s;
         }
 
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-            color: #94a3b8;
+        #aciklama-editor:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
         }
 
-        .empty-state h4 {
-            font-size: 1.25rem;
-            margin: 0 0 0.5rem 0;
-            color: #f1f5f9;
-        }
-
-        .empty-state p {
-            margin: 0;
-            font-size: 0.875rem;
-            color: #94a3b8;
-        }
-
-        .drag-over {
-            border-color: #22c55e !important;
-            background: rgba(34, 197, 94, 0.05) !important;
-        }
-
-        .file-counter {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #e53e3e;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .modern-image-manager {
-                padding: 0.5rem;
-                gap: 1rem;
-            }
-
-            .gallery-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .images-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1rem;
-                padding: 1rem;
-            }
-
-            .upload-zone {
-                margin: 1rem;
-                padding: 2rem 1rem;
-            }
-
-            .upload-specs {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-        }
-        /* Pell Editor Custom Styles */
-        .pell-content {
-            background: rgba(0, 0, 0, 0.2) !important;
-            color: var(--text-primary) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-        
         .pell-actionbar {
-            background: rgba(0, 0, 0, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            backdrop-filter: blur(10px);
+        }
+
+        .pell-content {
+            background: rgba(0, 0, 0, 0.15);
+            color: var(--foreground);
+            border: none;
+            min-height: 200px;
+            padding: 1.25rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .pell-content:focus {
+            outline: none;
         }
         
         .pell-button {
-            background: transparent !important;
-            color: var(--text-secondary) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            margin: 2px !important;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--muted-foreground);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.25rem;
         }
         
         .pell-button:hover {
-            background: rgba(255, 255, 255, 0.1) !important;
-            color: var(--text-primary) !important;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--foreground);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
         }
         
         .pell-button-selected {
-            background: var(--accent-red) !important;
-            color: white !important;
-        }
-        
-        /* Form Input Styles - Sidebar Background Color */
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            background: rgba(0, 0, 0, 0.2) !important;
-        }
-        
-        .category-checkbox-container {
-            background: rgba(0, 0, 0, 0.2) !important;
-        }
-        
-        .search-bar input {
-            background: rgba(0, 0, 0, 0.2) !important;
-        }
-        
-        /* Language Selection - Hide Radio Buttons, Use Category Style */
-        .radio-checkbox-container .category-checkbox-label input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .radio-checkbox-container .category-checkbox-label {
-            cursor: pointer;
-        }
-        
-        .radio-checkbox-container .category-checkbox-label input[type="radio"]:checked + .category-checkbox-custom {
-            background: var(--accent-red);
+            background: linear-gradient(135deg, var(--primary) 0%, #b91c1c 100%);
             color: white;
-            border-color: var(--accent-red-hover);
-            font-weight: 600;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+            transform: translateY(-1px);
         }
-        
-        .radio-checkbox-container .category-checkbox-label input[type="radio"]:checked + .category-checkbox-custom .fas.fa-check {
-            display: inline-block;
-            font-size: 12px;
-            opacity: 1;
+
+        .pell-button-selected:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
         }
-        
-        /* Execution Type Button Styles */
-        .execution-type-container {
-            margin-top: 10px;
-        }
-        
-        .execution-type-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: flex-start;
-            align-items: center;
-        }
-        
+
+        /* Execution Button Styles */
         .execution-btn {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 15px;
-            padding: 18px 30px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.2);
-            color: #94a3b8;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            min-width: 200px;
-            width: 220px;
-            position: relative;
-        }
-        
-        .execution-btn i {
-            font-size: 22px;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-        
-        .execution-btn span {
-            font-size: 14px;
-            font-weight: 700;
-        }
-        
-        .execution-btn:hover {
-            /* Transform kaldırıldı - CPU optimizasyonu */
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-        }
-        
-        /* EXE Button - Red Theme (Design Colors) */
-        .exe-btn.active {
-            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
-            border-color: #E50914;
-            color: white;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .exe-btn.active i {
-            color: white;
-        }
-        
-        .exe-btn:hover:not(.active) {
-            color: #ff4757;
-            border-color: rgba(229, 9, 20, 0.3);
-        }
-        
-        .exe-btn:hover:not(.active) i {
-            color: #ff4757;
-        }
-        
-        /* Steam Button - Blue/Steam Theme */
-        .steam-btn.active {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-color: #66a3e0;
-            color: #66a3e0;
-            box-shadow: 0 4px 15px rgba(102, 163, 224, 0.2);
-        }
-        
-        .steam-btn.active i {
-            color: #66a3e0;
-        }
-        
-        .steam-btn:hover:not(.active) {
-            color: #94a3b8;
-            border-color: rgba(102, 163, 224, 0.2);
-        }
-        
-        .steam-btn:hover:not(.active) i {
-            color: #94a3b8;
-        }
-        
-        /* Responsive Execution Buttons */
-        @media (max-width: 768px) {
-            .execution-type-buttons {
-                flex-direction: column;
-                gap: 20px;
-                align-items: stretch;
-            }
-            
-            .execution-btn {
-                width: 100%;
-                min-width: auto;
-                padding: 20px 30px;
-                justify-content: center;
-            }
-            
-            .execution-btn i {
-                font-size: 24px;
-            }
-            
-            .execution-btn span {
-                font-size: 16px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .execution-type-buttons {
-                gap: 15px;
-            }
-            
-            .execution-btn {
-                padding: 18px 25px;
-                gap: 15px;
-            }
-            
-            .execution-btn i {
-                font-size: 22px;
-            }
-            
-            .execution-btn span {
-                font-size: 14px;
-            }
-        }
-        
-        /* Execution Settings Sections */
-        .execution-settings-section {
-            margin-top: 25px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            transition: all 0.3s ease;
-        }
-        
-        
-        /* Steam ID Input */
-        .steam-id-input-container {
-            margin-top: 10px;
-        }
-        
-        .steam-id-input {
-            width: 100%;
-            padding: 16px 20px;
-            background: rgba(0, 0, 0, 0.3) !important;
-            border: 2px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 10px;
-            color: #f1f5f9;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .steam-id-input:focus {
-            border-color: #66a3e0 !important;
-            background: rgba(102, 163, 224, 0.05) !important;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 163, 224, 0.1);
-        }
-        
-        .steam-id-input::placeholder {
-            color: #6b7280;
-            font-style: italic;
-        }
-        
-        .steam-id-help {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-            padding: 8px 12px;
-            background: rgba(102, 163, 224, 0.1);
-            border: 1px solid rgba(102, 163, 224, 0.2);
-            border-radius: 6px;
-            color: #94a3b8;
-            font-size: 12px;
-        }
-        
-        .steam-id-help i {
-            color: #66a3e0;
-            font-size: 14px;
-        }
-        
-        
-        /* Modern Container ve Tab Tasarımları */
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .modern-tab-container {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.15) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .modern-tab-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
-            z-index: 1;
-        }
-        
-        .tab-nav {
-            display: flex;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%);
-            padding: 12px;
-            gap: 6px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            position: relative;
-            z-index: 2;
-        }
-        
-        .tab-nav::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .tab-nav-item {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 16px 24px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #94a3b8;
+            gap: 0.625rem;
+            padding: 0.875rem 1.25rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--muted-foreground);
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 13px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            position: relative;
-            min-width: 140px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9375rem;
+            min-height: 48px;
+            box-sizing: border-box;
         }
-        
-        .tab-nav-item i {
-            font-size: 16px;
-            transition: all 0.3s ease;
+
+        .execution-btn:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            transform: translateY(-1px);
         }
-        
-        .tab-nav-item:hover:not(.active) {
+
+        .execution-btn.active {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            border-color: #4a5568;
+            color: white;
+            box-shadow: 0 2px 8px rgba(74, 85, 104, 0.3);
+        }
+
+        /* Steam Button - Official Steam Colors */
+        .execution-btn-steam:hover {
+            border-color: #1b2838;
+            background: linear-gradient(135deg, #1b2838 0%, #2a475e 100%);
+        }
+
+        .execution-btn-steam.active {
+            background: linear-gradient(135deg, #1b2838 0%, #2a475e 100%);
+            border-color: #1b2838;
+            color: #c7d5e0;
+            box-shadow: 0 4px 12px rgba(27, 40, 56, 0.4);
+        }
+
+        .execution-btn i {
+            font-size: 1.125rem;
+        }
+
+        /* Form Styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--foreground);
+        }
+
+        .form-label i {
+            color: var(--primary);
+            font-size: 1.125rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            color: var(--foreground);
+            font-size: 0.9375rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--muted-foreground);
+            opacity: 0.6;
+        }
+
+        .form-input::placeholder em {
+            color: var(--muted-foreground);
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        .form-input::placeholder strong {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            margin-top: 0.25rem;
+            opacity: 0.7;
+        }
+
+        .badge-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        /* Category Badge Styles */
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.625rem 1.125rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.625rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+
+        .category-badge:hover {
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.2);
-            color: #f1f5f9;
-            /* Transform kaldırıldı - CPU optimizasyonu */
+            transform: translateY(-1px);
         }
-        
-        .tab-nav-item:hover:not(.active) i {
-            color: #e50914;
-            /* Transform kaldırıldı - CPU optimizasyonu */
-        }
-        
-        .tab-nav-item.active {
-            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
-            border-color: #E50914;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .tab-nav-item.active i {
-            color: white;
-        }
-        
-        .tab-content-wrapper {
-            position: relative;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.12) 100%);
-        }
-        
-        .tab-content {
+
+        /* Delete Warning Badge */
+        .delete-warning {
             display: none;
-            padding: 30px;
-            min-height: 400px;
-            /* Animation devre dışı - performans optimizasyonu */
-            background: transparent;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
+            border: 1.5px solid rgba(239, 68, 68, 0.4);
+            border-radius: 1rem;
+            color: #fca5a5;
+            font-size: 0.875rem;
+            font-weight: 600;
+            backdrop-filter: blur(8px);
+            animation: slideInRight 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
         }
-        
-        .tab-content.active {
-            display: block;
+
+        .delete-warning i {
+            font-size: 1.125rem;
+            color: #ef4444;
+            animation: pulse 2s ease-in-out infinite;
         }
-        
-        /* FadeIn animasyonu devre dışı - performans optimizasyonu */
-        @keyframes fadeIn {
+
+        @keyframes slideInRight {
             from {
-                opacity: 1;
-                transform: translateY(0);
+                opacity: 0;
+                transform: translateX(20px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateX(0);
             }
         }
-        
-        .form-actions {
-            padding: 25px 30px;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 100%);
-            border-top: 1px solid rgba(255, 255, 255, 0.12);
-            position: relative;
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
         }
-        
-        .form-actions::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 30px;
-            right: 30px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
-        }
-        
-        .form-actions .btn {
-            width: 100%;
-            padding: 16px 30px;
-            font-size: 15px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Poppins', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
             border: none;
-            border-radius: 12px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
             color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--foreground);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Save Upload Zone */
+        .save-upload-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        .save-upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(220, 38, 38, 0.05);
+        }
+
+        /* Checkbox Styles */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .checkbox-label:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-text {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--foreground);
+        }
+
+        .checkbox-text i {
+            color: var(--primary);
+            font-size: 1.125rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            margin: 5% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--foreground);
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+
+        .modal-header h3 i {
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--muted-foreground);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--foreground);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .bat-editor {
+            width: 100%;
+            min-height: 300px;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            color: var(--foreground);
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            resize: vertical;
+        }
+
+        .bat-editor:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        /* Custom scrollbar for BAT editor */
+        .bat-editor::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .bat-editor::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .bat-editor::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .bat-editor::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .bat-editor::-webkit-scrollbar-corner {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* BAT Editor Enhanced Styles */
+        .shortcut-buttons {
+            margin-bottom: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .shortcut-buttons::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .shortcut-buttons::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .shortcut-buttons::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .shortcut-buttons::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .shortcut-group {
+            margin-bottom: 1.25rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        }
+
+        .shortcut-group:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .shortcut-group h4 {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--foreground);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .shortcut-group h4 i {
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .shortcut-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.75rem 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+            color: var(--muted-foreground);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            min-height: 60px;
+            justify-content: center;
+        }
+
+        .shortcut-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: var(--foreground);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .shortcut-btn:active {
+            transform: translateY(0);
+        }
+
+        .shortcut-btn i {
+            font-size: 1.125rem;
+            transition: transform 0.3s;
+        }
+
+        .shortcut-btn:hover i {
+            transform: scale(1.1);
+        }
+
+        .shortcut-btn span {
+            line-height: 1.2;
+        }
+
+        .editor-container {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.875rem;
+        }
+
+        .bat-preview {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            min-height: 300px;
+            overflow: auto;
+        }
+
+        .bat-preview pre {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            color: var(--foreground);
+        }
+
+        .bat-preview code {
+            background: transparent;
+            padding: 0;
+            border: none;
+            font-size: inherit;
+            line-height: inherit;
+        }
+
+        /* Prism.js Theme Customization */
+        .token.comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        .token.string {
+            color: #ce9178;
+        }
+
+        .token.keyword {
+            color: #569cd6;
+        }
+
+        .token.number {
+            color: #b5cea8;
+        }
+
+        .token.operator {
+            color: #d4d4d4;
+        }
+
+        .token.function {
+            color: #dcdcaa;
+        }
+
+        .token.variable {
+            color: #9cdcfe;
+        }
+
+        /* Disk Selection Styles */
+        .disk-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .disk-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
+        }
+
+        .disk-card:hover {
+            border-color: var(--primary);
+            background: rgba(220, 38, 38, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .disk-card.selected {
+            border-color: var(--primary);
+            background: rgba(220, 38, 38, 0.2);
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.3);
+        }
+
+        .disk-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), #b91c1c);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+            color: white;
+            font-size: 1.125rem;
+            flex-shrink: 0;
         }
-        
-        .form-actions .btn:hover {
-            background: linear-gradient(135deg, #F6121D 0%, #E50914 100%);
-            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+
+        .disk-info {
+            flex: 1;
+            min-width: 0;
         }
-        
-        .form-actions .btn i {
-            font-size: 16px;
+
+        .disk-name {
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
-        /* Form Grid Uyumluluğu */
-        .tab-content .form-grid {
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
-            padding: 0;
-            margin: 0;
+
+        .disk-letter {
+            font-size: 0.875rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
         }
-        
-        .tab-content .form-section-title {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+
+        .disk-space {
+            margin-top: 0.5rem;
         }
-        
-        /* Responsive Tab Tasarımı */
-        @media (max-width: 768px) {
-            .main-container {
-                padding: 10px;
-            }
-            
-            .tab-nav {
-                padding: 6px;
-                gap: 3px;
-            }
-            
-            .tab-nav-item {
-                padding: 14px 18px;
-                min-width: 120px;
-                font-size: 12px;
-            }
-            
-            .tab-nav-item i {
-                font-size: 14px;
-            }
-            
-            .tab-content {
-                padding: 20px;
-            }
-            
-            .form-actions {
-                padding: 20px;
-            }
+
+        .free-space {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            display: block;
+            margin-bottom: 0.25rem;
         }
-        
-        @media (max-width: 480px) {
-            .tab-nav {
-                flex-direction: column;
-                gap: 6px;
-            }
-            
-            .tab-nav-item {
-                min-width: auto;
-                width: 100%;
-            }
-            
-            .tab-nav-item span {
-                display: none;
-            }
-            
-            .tab-nav-item {
-                padding: 12px 15px;
-            }
-            
-            .tab-nav-item i {
-                font-size: 18px;
-            }
+
+        .space-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .space-used {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #ef4444 90%);
+            transition: width 0.3s ease;
+        }
+
+        .no-disks {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            color: var(--muted-foreground);
+        }
+
+        .no-disks i {
+            color: #f59e0b;
+            font-size: 1.25rem;
         }
     </style>
-{% endblock %}
-
-{% block content %}
-    <header class="header">
-        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-            <i class="fas fa-edit" style="color: var(--accent-red);"></i>
-            Oyunu Düzenle: {{ game.oyun_adi }}
-        </h1>
-        <div class="header-actions">
-            <a href="{{ url_for('list_games') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Geri Dön
-            </a>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <form method="POST" enctype="multipart/form-data">
-            <div class="modern-tab-container">
-                <div class="tab-nav">
-                    <div class="tab-nav-item active" data-tab="temel-bilgiler">
-                        <i class="fas fa-gamepad"></i>
-                        <span>Temel Bilgiler</span>
-                    </div>
-                    <div class="tab-nav-item" data-tab="gorsel-yonetim">
-                        <i class="fas fa-images"></i>
-                        <span>Görsel Yönetimi</span>
-                    </div>
-                    <div class="tab-nav-item" data-tab="calistirma-ayarlari">
-                        <i class="fas fa-cogs"></i>
-                        <span>Çalıştırma Ayarları</span>
-                    </div>
-                </div>
-
-                <div class="tab-content-wrapper">
-                    <div id="temel-bilgiler" class="tab-content active">
-                        <h2 class="form-section-title">Temel Bilgiler</h2>
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label for="oyun_adi_input"><i class="fas fa-gamepad" style="color: #e50914; margin-right: 8px;"></i>Oyun Adı:</label>
-                                <input type="text" name="oyun_adi" id="oyun_adi_input" value="{{ game.oyun_adi }}" required>
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label><i class="fas fa-tags" style="color: #e50914; margin-right: 8px;"></i>Kategoriler:</label>
-                                <div class="category-checkbox-container">
-                                    {% for category in categories %}
-                                        <label class="category-checkbox-label">
-                                            <input type="checkbox" name="category_ids" value="{{ category.id }}"
-                                                {% if category.id in game_category_ids %}checked{% endif %}>
-                                            <span class="category-checkbox-custom">
-                                                <i class="fas fa-check"></i>
-                                                {{ category.icon }} {{ category.name }}
-                                            </span>
-                                        </label>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="youtube_id_input"><i class="fab fa-youtube" style="color: #e50914; margin-right: 8px;"></i>YouTube Fragman ID:</label>
-                                <input type="text" name="youtube_id" id="youtube_id_input" value="{{ game.youtube_id or '' }}" placeholder="video_id">
-                            </div>
-                            <div class="form-group">
-                                <label for="cikis_yili_input"><i class="fas fa-calendar-alt" style="color: #e50914; margin-right: 8px;"></i>Çıkış Yılı:</label>
-                                <input type="text" name="cikis_yili" id="cikis_yili_input" value="{{ game.cikis_yili or '' }}" placeholder="2023">
-                            </div>
-                            <div class="form-group">
-                                <label for="pegi_input"><i class="fas fa-shield-alt" style="color: #e50914; margin-right: 8px;"></i>PEGI Rating:</label>
-                                <input type="text" name="pegi" id="pegi_input" value="{{ game.pegi or '' }}" placeholder="PEGI 18">
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label><i class="fas fa-globe" style="color: #e50914; margin-right: 8px;"></i>Oyun Dili:</label>
-                                <div class="category-checkbox-container radio-checkbox-container">
-                                    {% for language in languages %}
-                                        <label class="category-checkbox-label">
-                                            <input type="radio" name="oyun_dili" value="{{ language.name }}"
-                                                {% if game.oyun_dili == language.name %}checked
-                                                {% elif not game.oyun_dili and loop.first %}checked{% endif %}>
-                                            <span class="category-checkbox-custom">
-                                                <i class="fas fa-check"></i>
-                                                {{ language.name }}
-                                            </span>
-                                        </label>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label for="aciklama_textarea"><i class="fas fa-align-left" style="color: #e50914; margin-right: 8px;"></i>Açıklama:</label>
-                                <textarea name="aciklama" id="aciklama_textarea" rows="4" style="display:none;">{{ game.aciklama or '' }}</textarea>
-                                <div id="aciklama-editor" class="pell"></div>
-                            </div>
-                            </div>
-                </div>
-
-                    <div id="gorsel-yonetim" class="tab-content">
-                        <div style="display: grid; gap: 2rem; padding: 1rem;">
-                            <!-- Cover Images Section -->
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
-                                    <div style="display: flex; align-items: center; gap: 1rem;">
-                                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #E50914 0%, #B20710 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);">
-                                            <i class="fas fa-image"></i>
-                                        </div>
-                                        <div>
-                                            <h3 style="font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0 0 5px 0;">Kapak Görseli</h3>
-                                            <p style="font-size: 13px; color: #94a3b8; margin: 0;">Oyun kapak resmi - tek görsel (2:3 oran)</p>
-                                        </div>
-                                    </div>
-                                    <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-image"></i>
-                                        <span id="cover-count">{% if game.cover_image %}1{% else %}0{% endif %}</span> Görsel
-                                    </span>
-                                </div>
-
-                                <div class="upload-zone{% if game.cover_image %} upload-hidden{% endif %}" id="cover-upload-zone" onclick="triggerFileUpload('covers')">
-                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <h4>Kapak Görseli Yükle</h4>
-                                    <p>Tek bir kapak görseli seçin (eski görsel değiştirilir)</p>
-                                    <div class="upload-specs">
-                                        <span><i class="fas fa-file-image"></i> PNG, JPG, WEBP</span>
-                                        <span><i class="fas fa-expand-arrows-alt"></i> Dikey (2:3)</span>
-                                        <span><i class="fas fa-exclamation-triangle"></i> Tek Dosya</span>
-                                    </div>
-                                </div>
-
-                                <div class="cover-images-grid" id="covers-container">
-                                    {% if game.cover_image %}
-                                        <div class="cover-image-card" data-file-name="{{ game.cover_image }}">
-                                            <div class="cover-image-wrapper">
-                                                <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" alt="{{ game.oyun_adi }}" loading="lazy" decoding="async">
-                                                <div class="image-overlay">
-                                                    <div class="image-actions">
-                                                        <button class="action-btn delete" type="button" onclick="deleteCoverImage('{{ game.cover_image }}')">
-                                                            <i class="fas fa-trash"></i> Değiştir
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="image-info">
-                                                <div class="image-name">{{ game.cover_image }}</div>
-                                                <div class="image-details">
-                                                    <span>Kapak</span>
-                                                    <span>Mevcut</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {% else %}
-                                        <div class="empty-state">
-                                            <i class="fas fa-image"></i>
-                                            <h4>Henüz kapak görseli yok</h4>
-                                            <p>Yukarıdaki upload alanını kullanarak kapak görseli yükleyebilirsiniz</p>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <!-- Gallery Images Section -->
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); flex-wrap: wrap; gap: 1rem; width: 100%;">
-                                    <div style="display: flex; align-items: center; gap: 1rem;">
-                                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #E50914 0%, #B20710 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);">
-                                            <i class="fas fa-images"></i>
-                                        </div>
-                                        <div>
-                                            <h3 style="font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0 0 5px 0;">Galeri Görselleri</h3>
-                                            <p style="font-size: 13px; color: #94a3b8; margin: 0;">Oyun galeri resimleri - çoklu görsel (16:9 oran)</p>
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 1rem;">
-                                        <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                                            <i class="fas fa-images"></i>
-                                            <span id="gallery-count">{{ gallery|length }}</span> Görsel
-                                        </span>
-                                        <div id="selected-info" style="display: none; background: rgba(220, 38, 38, 0.15); color: #fca5a5; border: 1px solid rgba(220, 38, 38, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; align-items: center; gap: 8px;">
-                                            <i class="fas fa-info-circle"></i>
-                                            <span id="selected-count">0</span> görsel silinmek üzere işaretlendi
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="upload-zone" onclick="triggerFileUpload('gallery')">
-                                    <i class="fas fa-camera upload-icon"></i>
-                                    <h4>Galeri Görselleri Yükle</h4>
-                                    <p>Birden fazla oyun ekran görüntüsü ve tanıtım görseli seçebilirsiniz</p>
-                                    <div class="upload-specs">
-                                        <span><i class="fas fa-file-image"></i> PNG, JPG, WEBP</span>
-                                        <span><i class="fas fa-expand-arrows-alt"></i> Yatay (16:9)</span>
-                                        <span><i class="fas fa-layer-group"></i> Çoklu Dosya</span>
-                                    </div>
-                                </div>
-
-                                <div class="images-grid" id="gallery-grid">
-                                    {% if gallery %}
-                                        {% for image in gallery %}
-                                            <div class="image-card" data-file-name="{{ image.image_path }}" data-index="{{ loop.index0 }}" onclick="toggleImageSelection('{{ image.image_path }}', '{{ loop.index0 }}')">
-                                                <div class="selection-indicator">
-                                                    <i class="fas fa-check"></i>
-                                                </div>
-                                                <div class="image-wrapper">
-                                                    <img src="{{ url_for('static', filename='images/gallery/' + image.image_path) }}" alt="{{ image.image_path }}" loading="lazy" decoding="async">
-                                                </div>
-                                                <div class="image-info">
-                                                    <div class="image-name">{{ image.image_path }}</div>
-                                                    <div class="image-details">
-                                                        <span>Galeri</span>
-                                                        <span>Mevcut</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <div class="empty-state">
-                                            <i class="fas fa-images"></i>
-                                            <h4>Henüz galeri görseli yok</h4>
-                                            <p>Yukarıdaki upload alanını kullanarak galeri görselleri yükleyebilirsiniz</p>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Hidden file inputs -->
-                        <input type="file" name="cover_image" id="cover-input" accept="image/*" style="display: none;">
-                        <input type="file" name="gallery_images" id="gallery-input" accept="image/*" multiple style="display: none;">
-                        
-                        <!-- Hidden inputs for backend compatibility -->
-                        <input type="hidden" name="current_cover_image" value="{{ game.cover_image or '' }}">
-                        <input type="hidden" name="current_yuzde_yuz_save_file" value="{{ game.yuzde_yuz_save_path or '' }}">
-                        
-                        <!-- Hidden input for selected images to delete -->
-                        <input type="hidden" name="delete_gallery_images" id="delete-gallery-input">
-                    </div>
-
-                    <div id="calistirma-ayarlari" class="tab-content">
-                        <h2 class="form-section-title">Çalıştırma Ayarları</h2>
-                        
-                        <!-- Çalıştırma Tipi Seçimi -->
-                        <div class="form-group full-width">
-                            <label><i class="fas fa-play-circle" style="color: #e50914; margin-right: 8px;"></i>Çalıştırma Tipi:</label>
-                            <div class="execution-type-container">
-                                <div class="execution-type-buttons">
-                                    <button type="button" class="execution-btn exe-btn active" data-type="exe" onclick="selectExecutionType('exe')">
-                                        <i class="fas fa-desktop"></i>
-                                        <span>EXE</span>
-                                    </button>
-                                    <button type="button" class="execution-btn steam-btn" data-type="steam" onclick="selectExecutionType('steam')">
-                                        <i class="fab fa-steam"></i>
-                                        <span>Steam</span>
-                                    </button>
-                                </div>
-                                <input type="hidden" name="calistirma_tipi" id="calistirma_tipi" value="{{ game.calistirma_tipi or 'exe' }}">
-                            </div>
-                        </div>
-                        
-                        <!-- Disk Bilgileri Grid -->
-                        {% if drives %}
-                        <div class="form-group full-width" style="margin-top: 25px; margin-bottom: 25px;">
-                            <label style="margin-bottom: 15px;"><i class="fas fa-hdd" style="color: #e50914; margin-right: 8px;"></i>Mevcut Diskler:</label>
-                            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-                                {% for drive in drives %}
-                                <div class="disk-info-card" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 10px; transition: all 0.3s ease; cursor: pointer; display: flex; align-items: center; gap: 8px; width: fit-content;" onclick="selectDisk('{{ drive.device_id }}')">
-                                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #E50914, #B20710); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">
-                                        <i class="fas fa-hdd"></i>
-                                    </div>
-                                    <div style="white-space: nowrap;">
-                                        <div style="font-size: 13px; font-weight: 600; color: #f1f5f9;">
-                                            {% if drive.custom_name %}
-                                                {{ drive.custom_name }}
-                                            {% else %}
-                                                {{ drive.volume_name }}
-                                            {% endif %}
-                                        </div>
-                                        <div style="font-size: 11px; color: #94a3b8;">{{ drive.device_id }}</div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- EXE Dosya Yolu - Ana bölüm -->
-                        <div class="form-group full-width" id="exe-path-section" style="margin-top: 15px;">
-                            <label style="margin-bottom: 15px;"><i class="fas fa-file-alt" style="color: #e50914; margin-right: 8px;"></i>EXE Dosya Yolu:</label>
-                            <div class="steam-id-input-container">
-                                <input type="text"
-                                       name="exe_path"
-                                       id="exe-path-display"
-                                       value="{{ game.calistirma_verisi_dict.exe_path or '' }}"
-                                       placeholder="EXE dosyasını seçmek için tıklayın..."
-                                       readonly
-                                       onclick="selectExeFile()"
-                                       class="steam-id-input"
-                                       style="cursor: pointer;">
-                                <div class="steam-id-help">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>Oyunun ana exe dosyasını seçin. Dosya yolu otomatik olarak gösterilecektir.</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Hidden file input for EXE selection -->
-                        <input type="file"
-                               id="exe-file-input"
-                               accept=".exe"
-                               style="display: none;"
-                               onchange="handleExeFileSelection(this)">
-                        
-                        <!-- Hidden input for selected disk -->
-                        <input type="hidden" name="selected_disk" id="selected-disk-input" value="">
-                        
-                        <!-- Steam Game ID Section -->
-                        <div class="form-group full-width" id="steam-id-section" style="margin-top: 15px; display: none;">
-                            <label><i class="fab fa-steam" style="color: #e50914; margin-right: 8px;"></i>Steam Game ID:</label>
-                            <div class="steam-id-input-container">
-                                <input type="text" name="steam_app_id" id="steam-app-id"
-                                       value="{{ game.calistirma_verisi_dict.app_id or '' }}"
-                                       placeholder="Örn: 271590 (GTA V), 730 (CS:GO), 440 (TF2)"
-                                       class="steam-id-input">
-                                <div class="steam-id-help">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>Steam oyun sayfasındaki sayısal ID'yi girin</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i>
-                            Oyunu Güncelle
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-
-
-{% endblock %}
-
-{% block scripts %}
-    <script src="https://unpkg.com/pell"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Tab functionality with persistent state - OPTIMIZED
-            const tabNavItems = document.querySelectorAll('.tab-nav-item');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            // Function to switch tabs - PERFORMANCE OPTIMIZED
-            function switchTab(tabId) {
-                // Batch DOM operations for performance
-                requestAnimationFrame(() => {
-                    tabNavItems.forEach(navItem => navItem.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    
-                    const targetNavItem = document.querySelector(`[data-tab="${tabId}"]`);
-                    const targetContent = document.getElementById(tabId);
-                    
-                    if (targetNavItem && targetContent) {
-                        targetNavItem.classList.add('active');
-                        targetContent.classList.add('active');
-                        
-                        // Save to localStorage - throttled
-                        localStorage.setItem('activeEditTab', tabId);
-                        window.location.hash = `tab-${tabId}`;
-                    }
-                });
-            }
-            
-            // Add click listeners to tab items - DEBOUNCED
-            tabNavItems.forEach(item => {
-                let clickTimeout;
-                item.addEventListener('click', () => {
-                    clearTimeout(clickTimeout);
-                    clickTimeout = setTimeout(() => {
-                        const tabId = item.getAttribute('data-tab');
-                        switchTab(tabId);
-                    }, 50); // 50ms debounce
-                });
-            });
-            
-            // Initialize active tab on page load
-            function initializeActiveTab() {
-                let activeTab = null;
-                
-                // 1. Check URL hash first
-                if (window.location.hash && window.location.hash.startsWith('#tab-')) {
-                    activeTab = window.location.hash.substring(5); // Remove '#tab-'
-                }
-                
-                // 2. If no hash, check localStorage
-                if (!activeTab) {
-                    activeTab = localStorage.getItem('activeEditTab');
-                }
-                
-                // 3. If neither, default to 'temel-bilgiler'
-                if (!activeTab || !document.getElementById(activeTab)) {
-                    activeTab = 'temel-bilgiler';
-                }
-                
-                switchTab(activeTab);
-            }
-            
-            // Initialize the active tab
-            initializeActiveTab();
-            
-            // Listen for hash changes (back/forward buttons)
-            window.addEventListener('hashchange', () => {
-                if (window.location.hash.startsWith('#tab-')) {
-                    const tabId = window.location.hash.substring(5);
-                    if (document.getElementById(tabId)) {
-                        switchTab(tabId);
-                    }
-                }
-            });
-
-            // Pell editor - PERFORMANCE OPTIMIZED
-            var editorEl = document.getElementById('aciklama-editor');
-            if (editorEl) {
-              // Throttle onChange for performance
-              let changeTimeout;
-              const editorInstance = pell.init({
-                element: editorEl,
-                onChange: html => {
-                    clearTimeout(changeTimeout);
-                    changeTimeout = setTimeout(() => {
-                        document.getElementById('aciklama_textarea').value = html;
-                    }, 300); // 300ms throttle
-                },
-                defaultParagraphSeparator: 'p',
-                styleWithCSS: false,
-                actions: ['bold', 'italic', 'underline', 'strikethrough', 'olist', 'ulist', 'link']
-              });
-              editorInstance.content.innerHTML = document.getElementById('aciklama_textarea').value;
-            }
-
-            // Modern Image Manager JavaScript - Enhanced Version
-            let selectedImages = new Set();
-            let galleryCount = {% if gallery %}{{ gallery|length }}{% else %}0{% endif %};
-            let coverImageExists = {% if game.cover_image %}true{% else %}false{% endif %};
-
-            // Cover Image Handler
-            const coverInput = document.getElementById('cover-input');
-            const coversContainer = document.getElementById('covers-container');
-
-            coverInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    // Use requestAnimationFrame for smooth UI updates
-                    requestAnimationFrame(() => {
-                        handleCoverImageUpload(file);
-                    });
-                }
-            });
-
-            // Gallery Images Handler
-            const galleryInput = document.getElementById('gallery-input');
-            const galleryGrid = document.getElementById('gallery-grid');
-
-            galleryInput.addEventListener('change', function(e) {
-                const files = Array.from(e.target.files);
-                // Batch process files for performance
-                requestAnimationFrame(() => {
-                    handleGalleryImagesUpload(files);
-                });
-            });
-
-            // Handle Cover Image Upload
-            function handleCoverImageUpload(file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    coversContainer.innerHTML = '';
-                    const imageCard = createCoverImageCard(file.name, e.target.result);
-                    coversContainer.appendChild(imageCard);
-                    coverImageExists = true;
-                    updateCoverUploadZone();
-                    updateCoverCount();
-                };
-                reader.readAsDataURL(file);
-            }
-
-            // Handle Gallery Images Upload - PERFORMANCE OPTIMIZED
-            function handleGalleryImagesUpload(files) {
-                // Clear empty state if exists
-                const emptyState = galleryGrid.querySelector('.empty-state');
-                if (emptyState) {
-                    emptyState.remove();
-                }
-
-                // Process files in batches to avoid blocking UI
-                let processedCount = 0;
-                function processBatch() {
-                    const batchSize = 3; // Process 3 files at a time
-                    const endIndex = Math.min(processedCount + batchSize, files.length);
-                    
-                    for (let i = processedCount; i < endIndex; i++) {
-                        const file = files[i];
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            requestAnimationFrame(() => {
-                                const imageCard = createGalleryImageCard(file.name, e.target.result, galleryCount + i);
-                                galleryGrid.appendChild(imageCard);
-                            });
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                    
-                    processedCount = endIndex;
-                    
-                    if (processedCount < files.length) {
-                        // Process next batch after a short delay
-                        setTimeout(processBatch, 100);
-                    }
-                }
-                
-                processBatch();
-                galleryCount += files.length;
-                updateGalleryCount();
-            }
-
-            // Create Cover Image Card
-            function createCoverImageCard(fileName, imageSrc) {
-                const card = document.createElement('div');
-                card.className = 'cover-image-card';
-                card.dataset.fileName = fileName;
-                
-                card.innerHTML = `
-                    <div class="cover-image-wrapper">
-                        <img src="${imageSrc}" alt="${fileName}" loading="lazy" decoding="async">
-                        <div class="image-overlay">
-                            <div class="image-actions">
-                                <button class="action-btn delete" onclick="deleteCoverImage('${fileName}')">
-                                    <i class="fas fa-trash"></i> Değiştir
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="image-info">
-                        <div class="image-name">${fileName}</div>
-                        <div class="image-details">
-                            <span>Kapak</span>
-                            <span>${getFileSize(imageSrc)}</span>
-                        </div>
-                    </div>
-                `;
-
-                return card;
-            }
-
-            // Create Gallery Image Card
-            function createGalleryImageCard(fileName, imageSrc, index) {
-                const card = document.createElement('div');
-                card.className = 'image-card';
-                card.dataset.fileName = fileName;
-                card.dataset.index = index;
-                card.onclick = function() { toggleImageSelection(fileName, index); };
-                
-                card.innerHTML = `
-                    <div class="selection-indicator">
-                        <i class="fas fa-check"></i>
-                    </div>
-                    <div class="image-wrapper">
-                        <img src="${imageSrc}" alt="${fileName}">
-                    </div>
-                    <div class="image-info">
-                        <div class="image-name">${fileName}</div>
-                        <div class="image-details">
-                            <span>Galeri</span>
-                            <span>${getFileSize(imageSrc)}</span>
-                        </div>
-                    </div>
-                `;
-
-                return card;
-            }
-
-            // Toggle Image Selection
-            window.toggleImageSelection = function(imageName, index) {
-                const card = document.querySelector(`[data-file-name="${imageName}"]`);
-                
-                if (selectedImages.has(imageName)) {
-                    selectedImages.delete(imageName);
-                    card.classList.remove('selected');
-                } else {
-                    selectedImages.add(imageName);
-                    card.classList.add('selected');
-                }
-                
-                updateDeleteButton();
-            };
-
-            // Delete Cover Image
-            window.deleteCoverImage = function(imageName) {
-                if (confirm(`${imageName} kapak görselini silmek istediğinizden emin misiniz?\nUpload bölümü tekrar görünecek.`)) {
-                    coversContainer.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-image"></i>
-                            <h4>Henüz kapak görseli yok</h4>
-                            <p>Yukarıdaki upload alanını kullanarak kapak görseli yükleyebilirsiniz</p>
-                        </div>
-                    `;
-                    coverImageExists = false;
-                    updateCoverUploadZone();
-                    updateCoverCount();
-                    
-                    // Clear the file input
-                    coverInput.value = '';
-                }
-            };
-
-            // Update form with selected images to delete
-            function updateDeleteInput() {
-                const deleteInput = document.getElementById('delete-gallery-input');
-                if (deleteInput) {
-                    deleteInput.value = Array.from(selectedImages).join(',');
-                }
-            }
-
-            // File Upload Trigger
-            window.triggerFileUpload = function(type) {
-                if (type === 'covers') {
-                    coverInput.click();
-                } else if (type === 'gallery') {
-                    galleryInput.click();
-                }
-            };
-
-            // Update Cover Upload Zone Visibility
-            function updateCoverUploadZone() {
-                const uploadZone = document.getElementById('cover-upload-zone');
-                if (coverImageExists) {
-                    uploadZone.classList.add('upload-hidden');
-                } else {
-                    uploadZone.classList.remove('upload-hidden');
-                }
-            }
-
-            // Update Cover Count
-            function updateCoverCount() {
-                const coverCount = document.getElementById('cover-count');
-                if (coverCount) {
-                    coverCount.textContent = coverImageExists ? '1' : '0';
-                }
-            }
-
-            // Update Gallery Count
-            function updateGalleryCount() {
-                const countElement = document.getElementById('gallery-count');
-                if (countElement) {
-                    countElement.textContent = galleryCount;
-                }
-            }
-
-            // Update Selected Info Display
-            function updateDeleteButton() {
-                const selectedInfo = document.getElementById('selected-info');
-                const selectedCount = document.getElementById('selected-count');
-                
-                if (selectedImages.size > 0) {
-                    selectedInfo.style.display = 'flex';
-                    selectedCount.textContent = selectedImages.size;
-                } else {
-                    selectedInfo.style.display = 'none';
-                }
-                
-                updateDeleteInput();
-            }
-
-            // Get File Size (approximate)
-            function getFileSize(dataUrl) {
-                const base64 = dataUrl.split(',')[1];
-                const bytes = (base64.length * 3) / 4;
-                
-                if (bytes < 1024) return Math.round(bytes) + ' B';
-                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-            }
-
-            // Initialize image manager
-            function initializeImageManager() {
-                updateCoverCount();
-                updateGalleryCount();
-                updateCoverUploadZone();
-            }
-
-            // Add Drag & Drop functionality - THROTTLED
-            function setupDragAndDrop() {
-                const uploadZones = document.querySelectorAll('.upload-zone:not(.upload-hidden)');
-                
-                uploadZones.forEach(zone => {
-                    // Prevent default drag behaviors
-                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                        zone.addEventListener(eventName, preventDefaults, { passive: false });
-                    });
-
-                    // Throttled highlight effects for performance
-                    let highlightTimeout;
-                    ['dragenter', 'dragover'].forEach(eventName => {
-                        zone.addEventListener(eventName, (e) => {
-                            clearTimeout(highlightTimeout);
-                            highlight(e);
-                        }, { passive: true });
-                    });
-
-                    ['dragleave', 'drop'].forEach(eventName => {
-                        zone.addEventListener(eventName, (e) => {
-                            highlightTimeout = setTimeout(() => unhighlight(e), 50);
-                        }, { passive: true });
-                    });
-
-                    // Handle dropped files
-                    zone.addEventListener('drop', handleDrop, { passive: false });
-                });
-
-                function preventDefaults(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-
-                function highlight(e) {
-                    e.currentTarget.classList.add('drag-over');
-                }
-
-                function unhighlight(e) {
-                    e.currentTarget.classList.remove('drag-over');
-                }
-
-                function handleDrop(e) {
-                    const dt = e.dataTransfer;
-                    const files = dt.files;
-                    const zone = e.currentTarget;
-                    
-                    if (zone.id === 'cover-upload-zone') {
-                        if (files.length === 1) {
-                            handleCoverImageUpload(files[0]);
-                        } else {
-                            alert('Kapak görseli için sadece tek dosya seçin!');
-                        }
-                    } else {
-                        handleGalleryImagesUpload(Array.from(files));
-                    }
-                }
-            }
-
-            // File counter for multiple uploads
-            function showFileCounter(count) {
-                // This can be enhanced to show upload progress
-                console.log(`${count} dosya yükleniyor...`);
-            }
-
-            // Execution type selection function
-            window.selectExecutionType = function(type) {
-                // Remove active class from all buttons
-                document.querySelectorAll('.execution-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                
-                // Add active class to selected button
-                const selectedBtn = document.querySelector(`.execution-btn[data-type="${type}"]`);
-                if (selectedBtn) {
-                    selectedBtn.classList.add('active');
-                }
-                
-                // Update hidden input value
-                document.getElementById('calistirma_tipi').value = type;
-                
-                // Show/hide appropriate settings sections
-                const steamIdSection = document.getElementById('steam-id-section');
-                const exePathSection = document.getElementById('exe-path-section');
-                
-                if (type === 'exe') {
-                    steamIdSection.style.display = 'none';
-                    exePathSection.style.display = 'block';
-                } else if (type === 'steam') {
-                    steamIdSection.style.display = 'block';
-                    exePathSection.style.display = 'none';
-                }
-            };
-
-            // Initialize execution type display
-            const currentType = '{{ game.calistirma_tipi or "exe" }}';
-            selectExecutionType(currentType);
-            
-            // Initialize disk selection on page load
-            function initializeDiskSelection() {
-                const currentExePath = '{{ game.calistirma_verisi_dict.exe_path or "" }}';
-                const selectedDiskInput = document.getElementById('selected-disk-input');
-                
-                if (currentExePath && currentExePath.length >= 2 && currentExePath[1] === ':') {
-                    const detectedDrive = currentExePath.substring(0, 2).toUpperCase();
-                    
-                    // Find and visually select the disk card
-                    const diskCards = document.querySelectorAll('.disk-info-card');
-                    diskCards.forEach(card => {
-                        const onclickAttr = card.getAttribute('onclick');
-                        if (onclickAttr) {
-                            const match = onclickAttr.match(/'([^']+)'/);
-                            if (match && match[1] === detectedDrive) {
-                                // Remove active from all cards first
-                                document.querySelectorAll('.disk-info-card').forEach(c => {
-                                    c.style.border = '1px solid rgba(255, 255, 255, 0.1)';
-                                    c.style.boxShadow = 'none';
-                                });
-                                
-                                // Activate this card
-                                card.style.border = '2px solid #E50914';
-                                card.style.boxShadow = '0 4px 15px rgba(229, 9, 20, 0.3)';
-                                
-                                // Update global variables and hidden input
-                                window.selectedDisk = detectedDrive;
-                                selectedDiskInput.value = detectedDrive;
-                            }
-                        }
-                    });
-                }
-            }
-            
-            // Call initialization after DOM is ready
-            initializeDiskSelection();
-            
-            // Disk selection function
-            window.selectDisk = function(diskLetter) {
-                // Remove active class from all disk cards
-                document.querySelectorAll('.disk-info-card').forEach(card => {
-                    card.style.border = '1px solid rgba(255, 255, 255, 0.1)';
-                    card.style.boxShadow = 'none';
-                });
-                
-                // Add active styling to selected disk
-                event.currentTarget.style.border = '2px solid #E50914';
-                event.currentTarget.style.boxShadow = '0 4px 15px rgba(229, 9, 20, 0.3)';
-                
-                // Update selected disk for future EXE search
-                window.selectedDisk = diskLetter;
-                
-                // Update hidden input
-                document.getElementById('selected-disk-input').value = diskLetter;
-                
-                // Update EXE path with new disk letter if path exists
-                const exePathDisplay = document.getElementById('exe-path-display');
-                if (exePathDisplay && exePathDisplay.value) {
-                    const currentPath = exePathDisplay.value;
-                    // Check if current path has a drive letter (format: X:\...)
-                    if (currentPath.length >= 2 && currentPath[1] === ':') {
-                        // Replace the drive letter with the new one
-                        const newPath = diskLetter + currentPath.substring(2);
-                        exePathDisplay.value = newPath;
-                        showNotification(`${diskLetter} diski seçildi - EXE yolu güncellendi: ${newPath}`, 'success');
-                    } else {
-                        showNotification(`${diskLetter} diski seçildi`, 'success');
-                    }
-                } else {
-                    showNotification(`${diskLetter} diski seçildi`, 'success');
-                }
-            };
-            
-            // EXE File Selection Functions
-            window.selectExeFile = function() {
-                const exeInput = document.getElementById('exe-file-input');
-                exeInput.click();
-            };
-            
-            window.handleExeFileSelection = function(input) {
-                const file = input.files[0];
-                if (file) {
-                    // Get the full path (this will work in Electron environment)
-                    const fullPath = file.path || file.webkitRelativePath || file.name;
-                    const pathDisplay = document.getElementById('exe-path-display');
-                    pathDisplay.value = fullPath;
-                    
-                    // Extract drive letter from path (C:\, D:\, etc.)
-                    let detectedDrive = null;
-                    if (fullPath.length >= 2 && fullPath[1] === ':') {
-                        detectedDrive = fullPath.substring(0, 2).toUpperCase(); // C:, D:, etc.
-                    }
-                    
-                    // Auto-select the corresponding disk if found
-                    if (detectedDrive) {
-                        // Find and select the disk card
-                        const diskCards = document.querySelectorAll('.disk-info-card');
-                        diskCards.forEach(card => {
-                            const diskLetter = card.getAttribute('onclick').match(/'([^']+)'/)[1];
-                            if (diskLetter === detectedDrive) {
-                                // Remove active from all cards
-                                document.querySelectorAll('.disk-info-card').forEach(c => {
-                                    c.style.border = '1px solid rgba(255, 255, 255, 0.1)';
-                                    c.style.boxShadow = 'none';
-                                });
-                                
-                                // Activate this card
-                                card.style.border = '2px solid #E50914';
-                                card.style.boxShadow = '0 4px 15px rgba(229, 9, 20, 0.3)';
-                                
-                                // Update selected disk
-                                window.selectedDisk = detectedDrive;
-                                
-                                // Update hidden input
-                                document.getElementById('selected-disk-input').value = detectedDrive;
-                                
-                                showNotification(`EXE dosyası seçildi: ${file.name} (${detectedDrive} diski otomatik seçildi)`, 'success');
-                                return;
-                            }
-                        });
-                    }
-                    
-                    // If no drive detected or found, show regular notification
-                    if (!detectedDrive) {
-                        showNotification(`EXE dosyası seçildi: ${file.name}`, 'success');
-                    }
-                }
-            };
-            
-            // Notification function
-            function showNotification(message, type = 'info') {
-                // Create notification element
-                const notification = document.createElement('div');
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 8px;
-                    color: white;
-                    font-weight: 500;
-                    z-index: 10000;
-                    max-width: 400px;
-                    word-wrap: break-word;
-                    animation: slideIn 0.3s ease-out;
-                `;
-                
-                // Set background color based on type
-                switch (type) {
-                    case 'success':
-                        notification.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-                        break;
-                    case 'warning':
-                        notification.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
-                        break;
-                    case 'error':
-                        notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
-                        break;
-                    default:
-                        notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
-                }
-                
-                notification.textContent = message;
-                
-                // Add to page
-                document.body.appendChild(notification);
-                
-                // Auto remove after 5 seconds
-                setTimeout(() => {
-                    notification.style.animation = 'slideOut 0.3s ease-out';
-                    setTimeout(() => {
-                        if (notification.parentNode) {
-                            notification.parentNode.removeChild(notification);
-                        }
-                    }, 300);
-                }, 5000);
-            }
-            
-            // Add CSS animations for notifications
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-                
-                @keyframes slideOut {
-                    from {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                    to {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-            
-
-            // Initialize drag & drop when DOM is ready
-            setupDragAndDrop();
-            
-            // Re-setup drag & drop when upload zones change visibility
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                        setupDragAndDrop();
-                    }
-                });
-            });
-
-            // Observe upload zones for class changes
-            const coverUploadZone = document.getElementById('cover-upload-zone');
-            if (coverUploadZone) {
-                observer.observe(coverUploadZone, { attributes: true });
-            }
-
-            // Initialize on page load
-            initializeImageManager();
-            
-        });
-        
-    </script>
 {% endblock %}
