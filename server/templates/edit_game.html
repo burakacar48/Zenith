@@ -13,18 +13,18 @@
         }
 
         .image-section {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(229, 9, 20, 0.15);
             border-radius: 16px;
             padding: 30px;
             transition: all 0.3s ease;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .image-section:hover {
             border-color: rgba(229, 9, 20, 0.3);
-            /* GPU-yoğun efektler kaldırıldı */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
         }
 
         .section-header {
@@ -60,20 +60,20 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            color: #98a3b7;
+            color: white;
             box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
         }
 
         .section-info h3 {
             font-size: 20px;
             font-weight: 700;
-            color: #f1f5f9;
+            color: var(--text-primary);
             margin: 0 0 5px 0;
         }
 
         .section-info p {
             font-size: 13px;
-            color: #94a3b8;
+            color: var(--text-secondary);
             margin: 0;
         }
 
@@ -84,7 +84,7 @@
         }
 
         .stat-badge {
-            background: rgba(59, 130, 246, 0.15);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.08));
             color: #60a5fa;
             border: 1px solid rgba(59, 130, 246, 0.3);
             padding: 8px 16px;
@@ -94,11 +94,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .btn-delete-selected {
             background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            color: #98a3b7;
+            color: white;
             border: none;
             padding: 12px 24px;
             border-radius: 8px;
@@ -113,24 +115,25 @@
         }
 
         .btn-delete-selected:hover {
-            /* GPU-yoğun efektler kaldırıldı */
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
         }
 
         .upload-zone {
-            border: 3px dashed rgba(255, 255, 255, 0.2);
+            border: 3px dashed rgba(229, 9, 20, 0.3);
             border-radius: 12px;
             padding: 50px 30px;
             text-align: center;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             cursor: pointer;
             margin-bottom: 30px;
         }
 
         .upload-zone:hover {
-            border-color: #e50914;
-            background: rgba(229, 9, 20, 0.05);
-            /* Transform kaldırıldı */
+            border-color: var(--accent-red);
+            background: rgba(229, 9, 20, 0.08);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         .upload-zone.upload-hidden {
@@ -154,12 +157,12 @@
         .upload-zone h4 {
             font-size: 20px;
             font-weight: 600;
-            color: #f1f5f9;
+            color: var(--text-primary);
             margin: 0 0 12px 0;
         }
 
         .upload-zone p {
-            color: #94a3b8;
+            color: var(--text-secondary);
             margin: 0 0 20px 0;
             font-size: 15px;
         }
@@ -253,7 +256,7 @@
         .image-card.selected .selection-indicator {
             background: #22c55e;
             border-color: #22c55e;
-            color: #98a3b7;
+            color: white;
             opacity: 1;
             /* Transform kaldırıldı - CPU optimizasyonu */
         }
@@ -318,24 +321,62 @@
             background: rgba(255, 255, 255, 0.9);
             border: none;
             color: #2d3748;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 0.25rem;
+            justify-content: center;
+            gap: 10px;
+            width: auto;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
         }
 
         .action-btn.delete {
-            background: rgba(239, 68, 68, 0.9);
-            color: #98a3b7;
+            background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
+            color: white !important;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .action-btn.delete::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transition: left 0.3s ease;
+        }
+        
+        .action-btn.delete:hover::before {
+            left: 100%;
         }
 
         .action-btn:hover {
-            /* Transform efekti kaldırıldı */
+            background: rgba(255, 255, 255, 0.05);
+            color: #94A3B8;
+        }
+        
+        .action-btn.delete:hover {
+            background: linear-gradient(135deg, #F6121D 0%, #E50914 100%);
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
+            color: white !important;
+        }
+        
+        .action-btn i {
+            font-size: 16px;
+        }
+        
+        .action-btn.delete i {
+            color: white !important;
         }
 
         .image-info {
@@ -461,7 +502,7 @@
         
         .pell-button-selected {
             background: var(--accent-red) !important;
-            color: #98a3b7 !important;
+            color: white !important;
         }
         
         /* Form Input Styles - Sidebar Background Color */
@@ -493,7 +534,7 @@
         
         .radio-checkbox-container .category-checkbox-label input[type="radio"]:checked + .category-checkbox-custom {
             background: var(--accent-red);
-            color: #98a3b7;
+            color: white;
             border-color: var(--accent-red-hover);
             font-weight: 600;
         }
@@ -559,13 +600,13 @@
         .exe-btn.active {
             background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
             border-color: #E50914;
-            color: #98a3b7;
+            color: white;
             box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .exe-btn.active i {
-            color: #98a3b7;
+            color: white;
         }
         
         .exe-btn:hover:not(.active) {
@@ -788,13 +829,14 @@
         .tab-nav-item.active {
             background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
             border-color: #E50914;
-            color: #98a3b7;
-            /* Transform kaldırıldı - CPU optimizasyonu */
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3), 0 0 20px rgba(229, 9, 20, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .tab-nav-item.active i {
-            color: #98a3b7;
+            color: white;
         }
         
         .tab-content-wrapper {
@@ -853,7 +895,7 @@
             background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
             border: none;
             border-radius: 12px;
-            color: #98a3b7;
+            color: white;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -864,8 +906,8 @@
         }
         
         .form-actions .btn:hover {
-            /* Transform ve yoğun shadow kaldırıldı - CPU optimizasyonu */
-            background: linear-gradient(135deg, #B20710 0%, #E50914 100%);
+            background: linear-gradient(135deg, #F6121D 0%, #E50914 100%);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
         }
         
         .form-actions .btn i {
@@ -1537,7 +1579,7 @@
 
             // Delete Cover Image
             window.deleteCoverImage = function(imageName) {
-                if (confirm(`${imageName} kapak görselini silmek istediğinizden emin misiniz?\\nUpload bölümü tekrar görünecek.`)) {
+                if (confirm(`${imageName} kapak görselini silmek istediğinizden emin misiniz?\nUpload bölümü tekrar görünecek.`)) {
                     coversContainer.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-image"></i>
