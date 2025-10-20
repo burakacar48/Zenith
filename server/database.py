@@ -119,6 +119,9 @@ def init_db():
         try:
             cursor.execute('ALTER TABLE games ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP')
         except: pass
+        try:
+            cursor.execute('ALTER TABLE games ADD COLUMN play_count INTEGER NOT NULL DEFAULT 0')
+        except: pass
 
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_ratings (

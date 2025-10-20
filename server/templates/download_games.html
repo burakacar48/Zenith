@@ -9,60 +9,60 @@
                 <h1 class="page-title">Oyun İndir</h1>
                 <p class="page-description">Oyunlarınızı indirin ve yönetin</p>
             </div>
-            <button onclick="openDownloadSettings()" class="filter-btn filter-btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fas fa-cog"></i>
-                İndirme Ayarları
-            </button>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Ana Arama Çubuğu -->
+                <div class="search-box" style="position: relative;">
+                    <input type="text" placeholder="Oyun ara..." id="mainGameSearch"
+                           style="padding: 0.5rem 2.5rem 0.5rem 0.75rem; background: var(--muted); border: 1px solid var(--border); border-radius: 0.5rem; color: var(--foreground); font-size: 0.875rem; width: 250px; transition: all 0.2s;">
+                    <i class="fas fa-search" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--muted-foreground);"></i>
+                </div>
+                <button onclick="openDownloadSettings()" class="filter-btn filter-btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-cog"></i>
+                    İndirme Ayarları
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- İstatistik Kartları -->
     <div class="stats-grid">
         <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-download"></i>
+            </div>
             <div class="stat-content">
-                <div class="stat-icon">
-                    <i class="fas fa-download"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Aktif İndirmeler</div>
-                    <div class="stat-value">2</div>
-                </div>
+                <div class="stat-label">Aktif İndirmeler</div>
+                <div class="stat-value">2</div>
             </div>
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
             <div class="stat-content">
-                <div class="stat-icon green">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Tamamlanan</div>
-                    <div class="stat-value">1</div>
-                </div>
+                <div class="stat-label">Tamamlanan</div>
+                <div class="stat-value">1</div>
             </div>
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
             <div class="stat-content">
-                <div class="stat-icon amber">
-                    <i class="fas fa-tachometer-alt"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Toplam Hız</div>
-                    <div class="stat-value" id="totalSpeedValue">25.3 MB/s</div>
-                </div>
+                <div class="stat-label">Toplam Hız</div>
+                <div class="stat-value" id="totalSpeedValue">25.3 MB/s</div>
             </div>
         </div>
 
         <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
             <div class="stat-content">
-                <div class="stat-icon purple">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Mevcut Oyunlar</div>
-                    <div class="stat-value">12</div>
-                </div>
+                <div class="stat-label">Mevcut Oyunlar</div>
+                <div class="stat-value">12</div>
             </div>
         </div>
     </div>
@@ -592,11 +592,39 @@ function showNotification(message, type = 'info') {
 
 // Arama ve filtreleme
 document.addEventListener('DOMContentLoaded', function() {
+    const mainSearchInput = document.getElementById('mainGameSearch');
     const searchInput = document.getElementById('gameSearch');
     const categoryFilter = document.getElementById('categoryFilter');
     
+    // Ana arama çubuğu event listener
+    if (mainSearchInput) {
+        mainSearchInput.addEventListener('input', function() {
+            // Alt arama çubuğunu da senkronize et
+            if (searchInput) {
+                searchInput.value = mainSearchInput.value;
+            }
+            filterGames();
+        });
+        
+        // Odaklanma efekti
+        mainSearchInput.addEventListener('focus', function() {
+            this.style.borderColor = '#60a5fa';
+            this.style.boxShadow = '0 0 0 3px rgba(96, 165, 250, 0.1)';
+        });
+        
+        mainSearchInput.addEventListener('blur', function() {
+            this.style.borderColor = 'var(--border)';
+            this.style.boxShadow = 'none';
+        });
+    }
+    
+    // Alt arama çubuğu event listener
     if (searchInput) {
         searchInput.addEventListener('input', function() {
+            // Ana arama çubuğunu da senkronize et
+            if (mainSearchInput) {
+                mainSearchInput.value = searchInput.value;
+            }
             filterGames();
         });
     }
@@ -608,7 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function filterGames() {
-        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const searchTerm = (mainSearchInput ? mainSearchInput.value : searchInput ? searchInput.value : '').toLowerCase();
         const category = categoryFilter ? categoryFilter.value : '';
         
         const gameCards = document.querySelectorAll('.game-card');
@@ -626,6 +654,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.style.display = 'none';
             }
         });
+        
+        // Arama sonuçlarını güncelle
+        updateSearchResults();
+    }
+    
+    function updateSearchResults() {
+        const visibleGames = document.querySelectorAll('.game-card[style*="display: block"], .game-card:not([style*="display: none"])');
+        const totalGames = document.querySelectorAll('.game-card').length;
+        
+        // İstatistikleri güncelle
+        const searchTerm = mainSearchInput ? mainSearchInput.value : '';
+        if (searchTerm) {
+            console.log(`"${searchTerm}" araması için ${visibleGames.length} sonuç bulundu`);
+        }
     }
     
     // Ayarları yükle

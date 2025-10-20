@@ -232,6 +232,12 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.user-actions {
+    display: flex;
+    justify-content: center;
 }
 
 .user-avatar {
@@ -275,23 +281,37 @@ body {
 }
 
 .logout-btn {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.375rem;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #ef4444;
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(100, 116, 139, 0.1);
+    border: 1px solid rgba(100, 116, 139, 0.2);
+    border-radius: 0.5rem;
+    color: #94a3b8;
     text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
 }
 
 .logout-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(100, 116, 139, 0.15);
+    border-color: rgba(100, 116, 139, 0.3);
+    color: #cbd5e1;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.logout-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.logout-btn:hover svg {
+    transform: translateX(2px);
 }
 
 .sidebar-footer {
@@ -408,84 +428,329 @@ body {
     color: #fbbf24;
 }
 
-/* Stats Grid */
+/* Stats Grid - Minimal ve Bilgilendirici */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
 .stat-card {
-    background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 1.5rem;
-    transition: all 0.3s;
-    box-shadow: 
-        0 4px 6px rgba(0, 0, 0, 0.3),
-        0 1px 3px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: all 0.2s ease;
 }
 
 .stat-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
-    box-shadow: 
-        0 8px 12px rgba(0, 0, 0, 0.4),
-        0 2px 4px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.stat-content {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(26, 26, 26, 0.8);
 }
 
 .stat-icon {
-    width: 3rem;
-    height: 3rem;
-    border-radius: var(--radius);
-    background: var(--muted);
+    width: 48px;
+    height: 48px;
+    border-radius: 0.5rem;
+    background: var(--secondary);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-}
-
-.stat-icon svg {
-    width: 1.75rem;
-    height: 1.75rem;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    fill: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-icon i {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
+    color: var(--primary);
 }
 
-.stat-icon.purple { color: #a78bfa; }
-.stat-icon.blue { color: #60a5fa; }
-.stat-icon.green { color: #34d399; }
-.stat-icon.amber { color: #fbbf24; }
-.stat-icon.red { color: #ef4444; }
+/* Stat ikonları için renkler */
+.stat-card:nth-child(1) .stat-icon {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+}
 
-.stat-info {
+.stat-card:nth-child(1) .stat-icon i {
+    color: #8b5cf6;
+}
+
+.stat-card:nth-child(2) .stat-icon {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.stat-card:nth-child(2) .stat-icon i {
+    color: #3b82f6;
+}
+
+.stat-card:nth-child(3) .stat-icon {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.stat-card:nth-child(3) .stat-icon i {
+    color: #10b981;
+}
+
+.stat-card:nth-child(4) .stat-icon {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.stat-card:nth-child(4) .stat-icon i {
+    color: #f59e0b;
+}
+
+.stat-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 .stat-label {
     font-size: 0.875rem;
     color: var(--muted-foreground);
     margin-bottom: 0.25rem;
+    font-weight: 500;
+    line-height: 1.2;
 }
 
 .stat-value {
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--foreground);
+    line-height: 1;
+    align-self: flex-start;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .stat-card-inner {
+        padding: 1.75rem;
+    }
+    
+    .stat-value {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.25rem;
+    }
+    
+    .stat-card-inner {
+        padding: 1.5rem;
+    }
+    
+    .stat-header {
+        margin-bottom: 1.25rem;
+    }
+    
+    .stat-icon-wrapper {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2.75rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8125rem;
+    }
+    
+    .stat-trend {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card-inner {
+        padding: 1.25rem;
+    }
+    
+    .stat-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .stat-actions {
+        align-self: flex-end;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+    }
+    
+    .stat-value-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .stat-unit {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .stat-card-inner {
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 2.25rem;
+    }
+    
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.25rem;
+    }
+}
+
+/* Stats Grid Responsive Design */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.25rem;
+    }
+    
+    .stat-card {
+        padding: 1.75rem;
+    }
+    
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.625rem;
+    }
+    
+    .stat-value {
+        font-size: 2.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+    
+    .stat-content {
+        gap: 1.25rem;
+    }
+    
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8125rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1.25rem;
+    }
+    
+    .stat-content {
+        gap: 1rem;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.375rem;
+    }
+    
+    .stat-value {
+        font-size: 2.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .stat-trend {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .stat-icon {
+        align-self: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+    }
 }
 
 /* Sections */
@@ -742,150 +1007,6 @@ body {
     color: #ef4444;
 }
 
-/* Disk Usage Grid */
-.disk-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-}
-
-.disk-card {
-    background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    transition: all 0.3s;
-    box-shadow: 
-        0 4px 6px rgba(0, 0, 0, 0.3),
-        0 1px 3px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.disk-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
-    box-shadow: 
-        0 8px 12px rgba(0, 0, 0, 0.4),
-        0 2px 4px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.disk-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-}
-
-.disk-icon {
-    width: 3rem;
-    height: 3rem;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.disk-icon svg {
-    width: 1.5rem;
-    height: 1.5rem;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-.disk-icon i {
-    font-size: 1.5rem;
-}
-
-.disk-icon.disk-green {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-}
-
-.disk-icon.disk-amber {
-    background: rgba(251, 191, 36, 0.1);
-    color: #fbbf24;
-}
-
-.disk-icon.disk-red {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-}
-
-.disk-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.disk-name {
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
-}
-
-.disk-drive {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-}
-
-.disk-stats {
-    margin-bottom: 1rem;
-}
-
-.disk-stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-}
-
-.disk-stat-row:not(:last-child) {
-    border-bottom: 1px solid var(--border);
-}
-
-.disk-stat-value {
-    font-weight: 600;
-    color: var(--foreground);
-}
-
-.disk-progress-container {
-    width: 100%;
-    height: 0.5rem;
-    background: var(--muted);
-    border-radius: 9999px;
-    overflow: hidden;
-    margin-bottom: 0.75rem;
-}
-
-.disk-progress-bar {
-    height: 100%;
-    transition: width 0.3s;
-    border-radius: 9999px;
-}
-
-.disk-progress-green {
-    background: linear-gradient(90deg, #22c55e, #34d399);
-}
-
-.disk-progress-amber {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24);
-}
-
-.disk-progress-red {
-    background: linear-gradient(90deg, #dc2626, #ef4444);
-}
-
-.disk-usage-text {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-    text-align: center;
-}
 
 /* Filter Section */
 .filters-section {
@@ -1263,9 +1384,6 @@ tbody tr:hover {
         grid-template-columns: 1fr;
     }
 
-    .disk-grid {
-        grid-template-columns: 1fr;
-    }
 }
         /* Tab Navigation - Modern Design */
         .tabs {
@@ -1991,7 +2109,7 @@ tbody tr:hover {
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 0.5rem;
             color: var(--foreground);
-            font-family: 'Consolas', 'Courier New', monospace;
+            font-family: 'Poppins', 'Consolas', 'Courier New', monospace;
             font-size: 0.875rem;
             line-height: 1.4;
             resize: vertical;
@@ -2224,11 +2342,6 @@ tbody tr:hover {
             transition: all 0.3s ease;
         }
 
-        .disk-card:hover {
-            border-color: var(--primary);
-            background: rgba(100, 116, 139, 0.1);
-            transform: translateY(-1px);
-        }
 
         .disk-card.selected {
             border-color: var(--primary);
@@ -2340,3 +2453,461 @@ tbody tr:hover {
         #bat-script-editor .CodeMirror-selected {
             background: rgba(255, 255, 255, 0.1) !important;
         }
+    /* Card Header Modern */
+    .card-header-modern {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-header-modern h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        margin: 0;
+    }
+
+    .card-header-modern h3 i {
+        color: #64748b;
+        font-size: 1.125rem;
+    }
+
+    /* Disk Table */
+    .disk-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .disk-table thead th {
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted-foreground);
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        text-align: left;
+    }
+
+    .disk-table tbody td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .disk-table tbody tr {
+        transition: none;
+    }
+
+    .disk-table tbody tr:hover {
+        background-color: transparent;
+    }
+
+    /* Drive Letter Badge */
+    .drive-letter-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        border-radius: 0.5rem;
+        color: white;
+        font-weight: 400;
+        font-size: 1rem;
+        letter-spacing: 0.1em;
+    }
+
+    /* Volume Name */
+    .volume-name {
+        font-style: italic;
+        color: var(--muted-foreground);
+        font-size: 0.9375rem;
+    }
+
+    /* Disk Name Input */
+    .input-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .disk-name-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--foreground);
+        font-size: 0.875rem;
+        transition: all 0.3s;
+        outline: none;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .disk-name-input:focus {
+        border-color: #64748b;
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
+    }
+
+    .disk-name-input::placeholder {
+        color: var(--muted-foreground);
+        opacity: 0.6;
+    }
+
+    /* Size Badges */
+    .size-badge {
+        font-family: 'Poppins', 'Courier New', monospace;
+        font-size: 0.875rem;
+        background: rgba(100, 116, 139, 0.2);
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        color: var(--muted-foreground);
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .size-badge.free-space {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #10b981;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--muted-foreground);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        color: #64748b;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--foreground);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9375rem;
+    }
+
+    /* Disk Grid - Yeniden Tasarlanmış */
+    .disk-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+
+    /* Disk Usage Card - Yeniden Tasarlanmış */
+    .disk-usage-card {
+        background: linear-gradient(145deg, rgba(26, 26, 26, 0.85) 0%, rgba(30, 30, 30, 0.85) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.2);
+        border-radius: 1rem;
+        padding: 2rem;
+        position: relative;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+
+    .disk-usage-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #64748b 0%, #475569 50%, #64748b 100%);
+        opacity: 1;
+    }
+
+    /* Disk Header - Geliştirilmiş */
+    .disk-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .disk-info-section {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        flex: 1;
+    }
+
+    .disk-icon-badge {
+        width: 4rem;
+        height: 3.5rem;
+        background: linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%);
+        border-radius: 0.875rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 400;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+        position: relative;
+        letter-spacing: 0.1em;
+    }
+
+    .disk-icon-badge::after {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%);
+        border-radius: 0.75rem;
+        pointer-events: none;
+    }
+
+    .disk-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .disk-details h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--foreground);
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .disk-details p {
+        margin: 0;
+        color: var(--muted-foreground);
+        font-size: 0.875rem;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .disk-percentage {
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .percentage-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--foreground);
+        line-height: 1;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .percentage-label {
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+        margin-top: 0.25rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Progress Bar - Yeniden Tasarlanmış */
+    .progress-bar-container {
+        background: rgba(42, 42, 42, 0.8);
+        border-radius: 0.75rem;
+        height: 0.75rem;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        position: relative;
+        border: 1px solid rgba(100, 116, 139, 0.2);
+    }
+
+    .progress-bar-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg,
+            rgba(16, 185, 129, 0.1) 0%,
+            rgba(245, 158, 11, 0.1) 70%,
+            rgba(239, 68, 68, 0.1) 90%);
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg,
+            #10b981 0%,
+            #22c55e 30%,
+            #eab308 60%,
+            #f97316 80%,
+            #ef4444 95%);
+        border-radius: 0.75rem;
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    }
+
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(90deg,
+            rgba(255,255,255,0.3) 0%,
+            rgba(255,255,255,0.1) 100%);
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+
+    /* Disk Stats - Geliştirilmiş */
+    .disk-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 1rem 0.75rem;
+        background: rgba(42, 42, 42, 0.6);
+        border: 1px solid rgba(100, 116, 139, 0.15);
+        border-radius: 0.75rem;
+        position: relative;
+    }
+
+    .stat-item:nth-child(1) {
+        border-top: 2px solid #ef4444;
+    }
+
+    .stat-item:nth-child(2) {
+        border-top: 2px solid #10b981;
+    }
+
+    .stat-item:nth-child(3) {
+        border-top: 2px solid #3b82f6;
+    }
+
+    .stat-value {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--foreground);
+        font-family: 'Poppins', 'Courier New', monospace;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.6875rem;
+        color: var(--muted-foreground);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    /* Button Styles */
+    .btn-primary-modern {
+        padding: 0.75rem 1.25rem;
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        border: none;
+        border-radius: 0.5rem;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+    }
+
+    /* Responsive - Geliştirilmiş */
+    @media (max-width: 768px) {
+        .card-header-modern {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .disk-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .disk-usage-card {
+            padding: 1.5rem;
+        }
+
+        .disk-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.25rem;
+        }
+
+        .disk-info-section {
+            width: 100%;
+        }
+
+        .disk-percentage {
+            text-align: left;
+            align-self: flex-start;
+        }
+
+        .percentage-value {
+            font-size: 1.75rem;
+        }
+
+        .disk-stats {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+    }
+
+    /* Tablet için iki sütun */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .disk-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+    }
+
+    /* Desktop için üç sütun */
+    @media (min-width: 1025px) {
+        .disk-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+    }

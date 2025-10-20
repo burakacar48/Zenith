@@ -141,9 +141,14 @@
                 <h3 class="game-card-title" title="{{ game.oyun_adi }}">{{ game.oyun_adi }}</h3>
                 <p class="game-card-category">
                     {% if game.category_names %}
-                        {{ game.category_names.split(',')[0] }}
-                        {% if game.category_names.split(',')|length > 1 %}
-                        <span style="opacity: 0.6;">+{{ game.category_names.split(',')|length - 1 }}</span>
+                        {% set categories = game.category_names.split(',') %}
+                        {{ categories[0].strip() }}
+                        {% if categories|length > 1 %}
+                            {% if categories|length > 2 %}
+                                , {{ categories[1].strip() }} <span style="opacity: 0.6;">+{{ categories|length - 2 }}</span>
+                            {% else %}
+                                , {{ categories[1].strip() }}
+                            {% endif %}
                         {% endif %}
                     {% else %}
                         Steam Oyunu

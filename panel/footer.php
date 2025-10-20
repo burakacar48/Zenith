@@ -1,5 +1,6 @@
         </div>
     </main>
+    </div><!-- End app-container -->
 
     <script>
         lucide.createIcons();

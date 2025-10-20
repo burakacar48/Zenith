@@ -113,7 +113,15 @@
                 <div class="game-card-title">{{ game.oyun_adi }}</div>
                 <div class="game-card-category">
                     {% if game.category_names %}
-                        {{ game.category_names.split(',')[0].strip() }}
+                        {% set categories = game.category_names.split(',') %}
+                        {{ categories[0].strip() }}
+                        {% if categories|length > 1 %}
+                            {% if categories|length > 2 %}
+                                , {{ categories[1].strip() }} <span style="opacity: 0.6;">+{{ categories|length - 2 }}</span>
+                            {% else %}
+                                , {{ categories[1].strip() }}
+                            {% endif %}
+                        {% endif %}
                     {% else %}
                         Kategorisiz
                     {% endif %}

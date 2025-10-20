@@ -10,47 +10,42 @@
 
     <div class="stats-grid">
         <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
             <div class="stat-content">
-                <div class="stat-icon purple">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Toplam Oyun</div>
-                    <div class="stat-value">{{ stats.game_count }}</div>
-                </div>
+                <div class="stat-label">Toplam Oyun</div>
+                <div class="stat-value">{{ stats.game_count or 0 }}</div>
             </div>
         </div>
+
         <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
             <div class="stat-content">
-                <div class="stat-icon blue">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Kayıtlı Kullanıcı</div>
-                    <div class="stat-value">{{ stats.user_count }}</div>
-                </div>
+                <div class="stat-label">Kayıtlı Kullanıcı</div>
+                <div class="stat-value">{{ stats.user_count or 0 }}</div>
             </div>
         </div>
+
         <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-folder"></i>
+            </div>
             <div class="stat-content">
-                <div class="stat-icon green">
-                    <i class="fas fa-folder"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Kategori</div>
-                    <div class="stat-value">{{ stats.category_count }}</div>
-                </div>
+                <div class="stat-label">Kategori</div>
+                <div class="stat-value">{{ stats.category_count or 0 }}</div>
             </div>
         </div>
+
         <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-eye"></i>
+            </div>
             <div class="stat-content">
-                <div class="stat-icon amber">
-                    <i class="fas fa-eye"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Toplam Oturum</div>
-                    <div class="stat-value">{{ total_clicks or 0 }}</div>
-                </div>
+                <div class="stat-label">Toplam Oturum</div>
+                <div class="stat-value">{{ total_clicks or 0 }}</div>
             </div>
         </div>
     </div>
@@ -96,7 +91,15 @@
                     <div class="game-card-title">{{ game.oyun_adi }}</div>
                     <div class="game-card-category">
                         {% if game.category_names %}
-                            {{ game.category_names.split(',')[0].strip() }}
+                            {% set categories = game.category_names.split(',') %}
+                            {{ categories[0].strip() }}
+                            {% if categories|length > 1 %}
+                                {% if categories|length > 2 %}
+                                    , {{ categories[1].strip() }} <span style="opacity: 0.6;">+{{ categories|length - 2 }}</span>
+                                {% else %}
+                                    , {{ categories[1].strip() }}
+                                {% endif %}
+                            {% endif %}
                         {% else %}
                             Kategorisiz
                         {% endif %}
@@ -157,7 +160,15 @@
                     <div class="game-card-title">{{ game.oyun_adi }}</div>
                     <div class="game-card-category">
                         {% if game.category_names %}
-                            {{ game.category_names.split(',')[0].strip() }}
+                            {% set categories = game.category_names.split(',') %}
+                            {{ categories[0].strip() }}
+                            {% if categories|length > 1 %}
+                                {% if categories|length > 2 %}
+                                    , {{ categories[1].strip() }} <span style="opacity: 0.6;">+{{ categories|length - 2 }}</span>
+                                {% else %}
+                                    , {{ categories[1].strip() }}
+                                {% endif %}
+                            {% endif %}
                         {% else %}
                             Kategorisiz
                         {% endif %}
@@ -186,49 +197,60 @@
         {% if drives %}
         <div class="disk-grid">
             {% for drive in drives %}
-            <div class="disk-card">
+            <div class="disk-usage-card">
+                <!-- Disk Header -->
                 <div class="disk-header">
-                    <div class="disk-icon {% if drive.usage_percent <= 60 %}disk-green{% elif drive.usage_percent <= 80 %}disk-amber{% else %}disk-red{% endif %}">
-                        <i class="fas fa-hdd"></i>
-                    </div>
-                    <div class="disk-info">
-                        <div class="disk-name">
-                            {% if drive.custom_name %}
-                                {{ drive.custom_name }}
-                            {% else %}
-                                {{ drive.volume_name }}
-                            {% endif %}
+                    <div class="disk-info-section">
+                        <div class="disk-icon-badge">
+                            {{ drive.device_id.replace(':', '') }}
                         </div>
-                        <div class="disk-drive">{{ drive.device_id }}</div>
+                        <div class="disk-details">
+                            <h4>
+                                {% if drive.custom_name %}
+                                    {{ drive.custom_name }}
+                                {% else %}
+                                    {{ drive.volume_name }}
+                                {% endif %}
+                            </h4>
+                            <p>{{ drive.device_id }}</p>
+                        </div>
                     </div>
+                    {% if drive.usage_percent > 0 %}
+                    <div class="disk-percentage">
+                        <div class="percentage-value">{{ drive.usage_percent }}%</div>
+                        <div class="percentage-label">Kullanılıyor</div>
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="disk-stats">
-                    <div class="disk-stat-row">
-                        <span>Kapasite</span>
-                        <span class="disk-stat-value">
-                            {% if drive.size_gb != 'Bilinmiyor' %}{{ drive.size_gb }} GB{% else %}{{ drive.size_gb }}{% endif %}
-                        </span>
-                    </div>
-                    <div class="disk-stat-row">
-                        <span>Kullanılan</span>
-                        <span class="disk-stat-value">
-                            {% if drive.used_gb != 'Bilinmiyor' %}{{ drive.used_gb }} GB{% else %}{{ drive.used_gb }}{% endif %}
-                        </span>
-                    </div>
-                    <div class="disk-stat-row">
-                        <span>Boş Alan</span>
-                        <span class="disk-stat-value">
-                            {% if drive.free_space_gb != 'Bilinmiyor' %}{{ drive.free_space_gb }} GB{% else %}{{ drive.free_space_gb }}{% endif %}
-                        </span>
-                    </div>
-                </div>
+                
+                <!-- Progress Bar -->
                 {% if drive.size_gb != 'Bilinmiyor' and drive.usage_percent > 0 %}
-                <div class="disk-progress-container">
-                    <div class="disk-progress-bar {% if drive.usage_percent <= 60 %}disk-progress-green{% elif drive.usage_percent <= 80 %}disk-progress-amber{% else %}disk-progress-red{% endif %}" 
-                         style="width: {{ drive.usage_percent }}%"></div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {{ drive.usage_percent }}%;"></div>
                 </div>
-                <div class="disk-usage-text">{{ drive.usage_percent }}% Kullanımda</div>
                 {% endif %}
+                
+                <!-- Disk Stats -->
+                <div class="disk-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            {% if drive.used_gb != 'Bilinmiyor' %}{{ drive.used_gb }} GB{% else %}{{ drive.used_gb }}{% endif %}
+                        </div>
+                        <div class="stat-label">Kullanılan</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            {% if drive.free_space_gb != 'Bilinmiyor' %}{{ drive.free_space_gb }} GB{% else %}{{ drive.free_space_gb }}{% endif %}
+                        </div>
+                        <div class="stat-label">Boş</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            {% if drive.size_gb != 'Bilinmiyor' %}{{ drive.size_gb }} GB{% else %}{{ drive.size_gb }}{% endif %}
+                        </div>
+                        <div class="stat-label">Toplam</div>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>

@@ -429,6 +429,44 @@ def get_games():
     conn.close()
     return json_response(games_list)
 
+@app.route('/api/games/most-played', methods=['GET'])
+def get_most_played_games():
+    conn = get_db_connection()
+    limit = request.args.get('limit', 10, type=int)
+    
+    query = """
+        SELECT g.*, GROUP_CONCAT(c.name) as kategoriler
+        FROM games g
+        LEFT JOIN game_categories gc ON g.id = gc.game_id
+        LEFT JOIN categories c ON gc.category_id = c.id
+        WHERE g.play_count > 0
+        GROUP BY g.id 
+        ORDER BY g.play_count DESC 
+        LIMIT ?
+    """
+    
+    games_cursor = conn.execute(query, (limit,)).fetchall()
+    
+    games_list = []
+    for game in games_cursor:
+        game_dict = dict(game)
+        
+        # Kategorileri işle
+        kategoriler_str = game_dict.get('kategoriler')
+        if kategoriler_str:
+            game_dict['kategoriler'] = kategoriler_str.split(',')
+        else:
+            game_dict['kategoriler'] = []
+            
+        # Galeri görsellerini ekle
+        gallery_cursor = conn.execute('SELECT image_path FROM gallery_images WHERE game_id = ?', (game['id'],))
+        game_dict['galeri'] = [row['image_path'] for row in gallery_cursor.fetchall()]
+        
+        games_list.append(game_dict)
+        
+    conn.close()
+    return json_response(games_list)
+
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     conn = get_db_connection()
@@ -499,13 +537,117 @@ def get_recently_played(current_user_id):
 @token_required
 def get_user_saves(current_user_id):
     user_save_dir = os.path.join(app.config['SAVE_FOLDER'], str(current_user_id))
-    if not os.path.exists(user_save_dir): 
+    if not os.path.exists(user_save_dir):
         return jsonify([])
     try:
-        saved_games = [int(f.split('.')[0]) for f in os.listdir(user_save_dir) if f.endswith('.zip') and f.split('.')[0].isdigit()]
-        return json_response(saved_games)
+        saved_games = []
+        conn = get_db_connection()
+        
+        for filename in os.listdir(user_save_dir):
+            if filename.endswith('.zip'):
+                # Yeni format: id-oyun_ismi.zip
+                if '-' in filename:
+                    try:
+                        game_id = int(filename.split('-')[0])
+                        saved_games.append(game_id)
+                    except (ValueError, IndexError):
+                        continue
+                # Eski format: game_id.zip (geriye uyumluluk için)
+                elif filename.split('.')[0].isdigit():
+                    try:
+                        game_id = int(filename.split('.')[0])
+                        # Eski formatı yeni formata dönüştür
+                        game = conn.execute('SELECT oyun_adi FROM games WHERE id = ?', (game_id,)).fetchone()
+                        if game:
+                            old_path = os.path.join(user_save_dir, filename)
+                            clean_name = get_gallery_folder_name(game['oyun_adi']).replace(' ', '')
+                            new_filename = f"{game_id}-{clean_name}.zip"
+                            new_path = os.path.join(user_save_dir, new_filename)
+                            
+                            # Dosyayı yeniden adlandır
+                            if not os.path.exists(new_path):
+                                os.rename(old_path, new_path)
+                        
+                        saved_games.append(game_id)
+                    except (ValueError, IndexError):
+                        continue
+        
+        conn.close()
+        return json_response(list(set(saved_games)))  # Benzersiz game_id'leri döndür
     except Exception as e:
         return jsonify({'mesaj': f'Kayıtlar okunurken bir hata oluştu: {e}'}), 500
+
+@app.route('/api/user/saves/<int:game_id>', methods=['POST'])
+@token_required
+def save_game_file(current_user_id, game_id):
+    """Oyun save dosyasını kullanıcı klasörüne kaydet"""
+    try:
+        if 'save_file' not in request.files:
+            return jsonify({'mesaj': 'Save dosyası bulunamadı.'}), 400
+        
+        file = request.files['save_file']
+        if file.filename == '':
+            return jsonify({'mesaj': 'Dosya seçilmedi.'}), 400
+        
+        # Kullanıcı save klasörünü oluştur
+        user_save_dir = os.path.join(app.config['SAVE_FOLDER'], str(current_user_id))
+        if not os.path.exists(user_save_dir):
+            os.makedirs(user_save_dir)
+        
+        # Oyun bilgilerini al
+        conn = get_db_connection()
+        game = conn.execute('SELECT oyun_adi FROM games WHERE id = ?', (game_id,)).fetchone()
+        conn.close()
+        
+        if not game:
+            return jsonify({'mesaj': 'Oyun bulunamadı.'}), 404
+        
+        # Dosya adını yeni formatta oluştur: id-oyun_ismi.zip
+        clean_name = get_gallery_folder_name(game['oyun_adi']).replace(' ', '')
+        filename = f"{game_id}-{clean_name}.zip"
+        file_path = os.path.join(user_save_dir, filename)
+        
+        # Eski save dosyasını varsa sil
+        for existing_file in os.listdir(user_save_dir):
+            if existing_file.startswith(f"{game_id}-") and existing_file.endswith('.zip'):
+                os.remove(os.path.join(user_save_dir, existing_file))
+                break
+        
+        # Yeni dosyayı kaydet
+        file.save(file_path)
+        
+        return jsonify({'mesaj': 'Save dosyası başarıyla kaydedildi.', 'filename': filename}), 200
+        
+    except Exception as e:
+        return jsonify({'mesaj': f'Save kaydedilirken hata oluştu: {e}'}), 500
+
+@app.route('/api/user/saves/<int:game_id>', methods=['GET'])
+@token_required
+def download_save_file(current_user_id, game_id):
+    """Kullanıcının save dosyasını indir"""
+    try:
+        user_save_dir = os.path.join(app.config['SAVE_FOLDER'], str(current_user_id))
+        if not os.path.exists(user_save_dir):
+            return jsonify({'mesaj': 'Save klasörü bulunamadı.'}), 404
+        
+        # İlgili save dosyasını bul
+        save_file = None
+        for filename in os.listdir(user_save_dir):
+            if filename.startswith(f"{game_id}-") and filename.endswith('.zip'):
+                save_file = filename
+                break
+            # Geriye uyumluluk için eski format
+            elif filename == f"{game_id}.zip":
+                save_file = filename
+                break
+        
+        if not save_file:
+            return jsonify({'mesaj': 'Save dosyası bulunamadı.'}), 404
+        
+        return send_from_directory(user_save_dir, save_file, as_attachment=True)
+        
+    except Exception as e:
+        return jsonify({'mesaj': f'Save indirilirken hata oluştu: {e}'}), 500
 
 @app.route('/api/games/<int:game_id>/click', methods=['POST'])
 def increment_click_count(game_id):
@@ -660,8 +802,23 @@ def admin_index():
         'user_count': conn.execute('SELECT COUNT(*) FROM users').fetchone()[0]
     }
     total_clicks = conn.execute('SELECT SUM(click_count) FROM games').fetchone()[0] or 0
+    
+    # Son eklenen oyunlar
     query = "SELECT g.id, g.oyun_adi, g.cover_image, g.created_at, GROUP_CONCAT(c.name) as category_names FROM games g LEFT JOIN game_categories gc ON g.id = gc.game_id LEFT JOIN categories c ON gc.category_id = c.id WHERE g.id IS NOT NULL GROUP BY g.id ORDER BY g.id DESC LIMIT 5"
     recent_games = [dict(g) for g in conn.execute(query).fetchall() if g['id'] is not None]
+    
+    # En çok oynanan oyunlar
+    most_played_query = """
+        SELECT g.id, g.oyun_adi, g.cover_image, g.play_count, GROUP_CONCAT(c.name) as category_names
+        FROM games g
+        LEFT JOIN game_categories gc ON g.id = gc.game_id
+        LEFT JOIN categories c ON gc.category_id = c.id
+        WHERE g.play_count > 0
+        GROUP BY g.id
+        ORDER BY g.play_count DESC
+        LIMIT 5
+    """
+    most_played_games = [dict(g) for g in conn.execute(most_played_query).fetchall()]
     
     # Disk bilgilerini al
     available_drives = get_windows_drives()
@@ -691,7 +848,7 @@ def admin_index():
             drive['free_space_gb'] = 'Bilinmiyor'
     
     conn.close()
-    return render_template('index.html', stats=stats, recent_games=recent_games, total_clicks=total_clicks, drives=available_drives)
+    return render_template('index.html', stats=stats, recent_games=recent_games, most_played_games=most_played_games, total_clicks=total_clicks, drives=available_drives)
 
 @app.route('/admin/games')
 @admin_required
@@ -1197,8 +1354,46 @@ def delete_category(category_id):
 def manage_users():
     conn = get_db_connection()
     try:
-        users = conn.execute('SELECT id, username FROM users ORDER BY username ASC').fetchall()
-        return render_template('manage_users.html', users=users)
+        users_raw = conn.execute('SELECT id, username FROM users ORDER BY username ASC').fetchall()
+        users_with_data = []
+        
+        for user in users_raw:
+            user_dict = dict(user)
+            user_id = user['id']
+            
+            # Save dosyaları sayısını hesapla
+            user_save_dir = os.path.join(app.config['SAVE_FOLDER'], str(user_id))
+            save_count = 0
+            disk_usage = 0
+            
+            if os.path.exists(user_save_dir):
+                try:
+                    # Save dosyalarını say ve boyutunu hesapla
+                    for filename in os.listdir(user_save_dir):
+                        if filename.endswith('.zip'):
+                            save_count += 1
+                            file_path = os.path.join(user_save_dir, filename)
+                            try:
+                                disk_usage += os.path.getsize(file_path)
+                            except OSError:
+                                continue
+                except OSError:
+                    pass
+            
+            # Disk kullanımını MB cinsinden formatla
+            if disk_usage > 0:
+                if disk_usage < 1024 * 1024:  # 1 MB'den küçükse KB olarak göster
+                    disk_usage_str = f"{disk_usage / 1024:.1f} KB"
+                else:  # MB olarak göster
+                    disk_usage_str = f"{disk_usage / (1024 * 1024):.1f} MB"
+            else:
+                disk_usage_str = "0 MB"
+            
+            user_dict['save_count'] = save_count
+            user_dict['disk_usage'] = disk_usage_str
+            users_with_data.append(user_dict)
+        
+        return render_template('manage_users.html', users=users_with_data)
     finally:
         if conn:
             conn.close()
@@ -1220,9 +1415,65 @@ def edit_user(user_id):
                 conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (generate_password_hash(new_password), user_id))
                 conn.commit()
             return redirect(url_for('manage_users'))
+        
         user = conn.execute('SELECT id, username FROM users WHERE id = ?', (user_id,)).fetchone()
         if not user: return "Kullanıcı bulunamadı!", 404
-        return render_template('edit_user.html', user=user)
+        
+        # Kullanıcının save dosyalarına sahip olduğu oyunları bul
+        user_save_dir = os.path.join(app.config['SAVE_FOLDER'], str(user_id))
+        saved_games = []
+        
+        if os.path.exists(user_save_dir):
+            try:
+                saved_game_ids = []
+                for filename in os.listdir(user_save_dir):
+                    if filename.endswith('.zip'):
+                        # Yeni format: id-oyun_ismi.zip
+                        if '-' in filename:
+                            try:
+                                game_id = int(filename.split('-')[0])
+                                saved_game_ids.append(game_id)
+                            except (ValueError, IndexError):
+                                continue
+                        # Eski format: game_id.zip
+                        elif filename.split('.')[0].isdigit():
+                            try:
+                                game_id = int(filename.split('.')[0])
+                                saved_game_ids.append(game_id)
+                            except (ValueError, IndexError):
+                                continue
+                
+                # Benzersiz game_id'leri al
+                saved_game_ids = list(set(saved_game_ids))
+                
+                # Oyun bilgilerini veritabanından çek
+                if saved_game_ids:
+                    placeholders = ','.join(['?' for _ in saved_game_ids])
+                    query = f'''
+                        SELECT g.id, g.oyun_adi, g.aciklama, g.cover_image, g.cikis_yili, g.pegi, g.oyun_dili,
+                               GROUP_CONCAT(c.name) as kategoriler
+                        FROM games g
+                        LEFT JOIN game_categories gc ON g.id = gc.game_id
+                        LEFT JOIN categories c ON gc.category_id = c.id
+                        WHERE g.id IN ({placeholders})
+                        GROUP BY g.id
+                        ORDER BY g.oyun_adi ASC
+                    '''
+                    
+                    games_cursor = conn.execute(query, saved_game_ids).fetchall()
+                    for game in games_cursor:
+                        game_dict = dict(game)
+                        kategoriler_str = game_dict.get('kategoriler')
+                        if kategoriler_str:
+                            game_dict['kategoriler'] = kategoriler_str.split(',')
+                        else:
+                            game_dict['kategoriler'] = []
+                        saved_games.append(game_dict)
+                        
+            except OSError:
+                pass
+        
+        return render_template('edit_user.html', user=user, saved_games=saved_games)
     finally:
         if conn:
             conn.close()
@@ -1347,12 +1598,12 @@ def manage_ratings():
 @admin_required
 @license_required
 def manage_statistics():
-    sort_by, order = request.args.get('sort_by', 'click_count'), request.args.get('order', 'desc')
-    if sort_by not in ['oyun_adi', 'click_count']: sort_by = 'click_count'
+    sort_by, order = request.args.get('sort_by', 'play_count'), request.args.get('order', 'desc')
+    if sort_by not in ['id', 'oyun_adi', 'click_count', 'play_count']: sort_by = 'play_count'
     if order not in ['asc', 'desc']: order = 'desc'
     conn = get_db_connection()
     try:
-        games = conn.execute(f"SELECT id, oyun_adi, click_count FROM games ORDER BY {sort_by} {order}").fetchall()
+        games = conn.execute(f"SELECT id, oyun_adi, click_count, play_count FROM games ORDER BY {sort_by} {order}").fetchall()
         return render_template('manage_statistics.html', games=games, sort_by=sort_by, next_order='desc' if order == 'asc' else 'asc')
     finally:
         if conn:

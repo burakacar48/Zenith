@@ -173,6 +173,16 @@
                         <div class="user-email">admin@zenith.com</div>
                     </div>
                 </div>
+                <div class="user-actions">
+                    <a href="{{ url_for('admin_logout') }}" class="logout-btn" title="Çıkış Yap" onclick="return confirm('Oturumu kapatmak istediğinizden emin misiniz?')">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span>Çıkış Yap</span>
+                    </a>
+                </div>
             </div>
         </aside>
 
@@ -209,10 +219,49 @@
         function toggleCategory(element) {
             const items = element.nextElementSibling;
             const toggle = element.querySelector('.nav-group-toggle');
+            const categoryName = element.querySelector('span').textContent.trim();
             
             items.classList.toggle('collapsed');
-            toggle.textContent = items.classList.contains('collapsed') ? '+' : '−';
+            const isCollapsed = items.classList.contains('collapsed');
+            toggle.textContent = isCollapsed ? '+' : '−';
+            
+            // Durumu localStorage'da sakla
+            saveCategoryState(categoryName, isCollapsed);
         }
+
+        function saveCategoryState(categoryName, isCollapsed) {
+            let categoryStates = JSON.parse(localStorage.getItem('categoryStates') || '{}');
+            categoryStates[categoryName] = isCollapsed;
+            localStorage.setItem('categoryStates', JSON.stringify(categoryStates));
+        }
+
+        function loadCategoryStates() {
+            const categoryStates = JSON.parse(localStorage.getItem('categoryStates') || '{}');
+            
+            // Tüm kategori başlıklarını bul ve durumlarını uygula
+            document.querySelectorAll('.nav-group-title').forEach(title => {
+                const categoryName = title.querySelector('span').textContent.trim();
+                const items = title.nextElementSibling;
+                const toggle = title.querySelector('.nav-group-toggle');
+                
+                if (categoryStates.hasOwnProperty(categoryName)) {
+                    const isCollapsed = categoryStates[categoryName];
+                    
+                    if (isCollapsed) {
+                        items.classList.add('collapsed');
+                        toggle.textContent = '+';
+                    } else {
+                        items.classList.remove('collapsed');
+                        toggle.textContent = '−';
+                    }
+                }
+            });
+        }
+
+        // Sayfa yüklendiğinde kategori durumlarını yükle
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategoryStates();
+        });
 
         function editGame(event, gameName) {
             event.stopPropagation();

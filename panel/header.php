@@ -53,53 +53,91 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
             cursor: default;
         }
 
-        /* Dark mode styles */
+        /* Boxed layout for desktop */
+        @media (min-width: 1280px) {
+            body {
+                display: flex;
+                justify-content: center;
+                background: #f8fafc;
+            }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #f8fafc;
+                z-index: -1;
+            }
+
+            .app-container {
+                width: 100%;
+                max-width: 1920px;
+                box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        /* Dark mode styles - Much darker tones */
         .dark {
             color-scheme: dark;
         }
 
         .dark body {
-            background: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a);
+            background: #000000;
+        }
+
+        .dark body::before {
+            background: #000000;
         }
 
         .dark .bg-white {
-            background-color: #1e293b;
+            background-color: #0a0a0a;
         }
 
         .dark .bg-gray-50 {
-            background-color: #0f172a;
+            background-color: #050505;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #0f0f0f;
         }
 
         .dark .border-gray-200 {
-            border-color: #334155;
+            border-color: #1a1a1a;
         }
 
         .dark .border-gray-100 {
-            border-color: #1e293b;
+            border-color: #141414;
         }
 
         .dark .text-gray-900 {
-            color: #f1f5f9;
+            color: #e5e5e5;
         }
 
         .dark .text-gray-700 {
-            color: #cbd5e1;
+            color: #a3a3a3;
         }
 
         .dark .text-gray-600 {
-            color: #94a3b8;
+            color: #737373;
         }
 
         .dark .text-gray-500 {
-            color: #64748b;
+            color: #525252;
         }
 
         .dark .hover\:bg-gray-50:hover {
-            background-color: #334155;
+            background-color: #1a1a1a;
         }
 
         .dark .hover\:bg-gray-100:hover {
-            background-color: #334155;
+            background-color: #1a1a1a;
+        }
+
+        .dark .hover\:bg-gray-700:hover {
+            background-color: #262626;
         }
 
         .theme-toggle {
@@ -112,12 +150,12 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     </style>
 </head>
 <body class="bg-gray-50 transition-colors duration-300">
-    
+    <div class="app-container">
     <!-- Mobile Overlay -->
     <div id="overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
     
     <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-50 flex flex-col">
+    <aside id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-50 flex flex-col xl:absolute">
         <div class="p-6 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">

@@ -12,12 +12,6 @@
 
     <form method="POST">
         <div class="card">
-            <div class="card-header-modern">
-                <h3>
-                    <i class="fas fa-user-cog"></i>
-                    Kullanıcı Bilgileri
-                </h3>
-            </div>
             <div class="card-body-modern">
                 <div class="user-profile-section">
                     <div class="profile-avatar">
@@ -64,6 +58,67 @@
             </div>
         </div>
 
+        <!-- Save Dosyaları Bölümü -->
+        {% if saved_games %}
+        <div class="section" style="margin-top: 2rem;">
+            <div class="games-grid">
+                {% for game in saved_games %}
+                <div class="game-card">
+                    <div class="game-card-actions">
+                        {% if game.id %}
+                        <a href="{{ url_for('edit_game', game_id=game.id) }}" class="game-card-action-btn edit" title="Düzenle">
+                            <i class="fas fa-pencil-alt"></i>
+                        </a>
+                        <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" style="display: inline;"
+                              onsubmit="return confirm('{{ game.oyun_adi }} oyununu silmek istediğinize emin misiniz?');">
+                            <button type="submit" class="game-card-action-btn delete" title="Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% if game.cover_image %}
+                        <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}"
+                             alt="{{ game.oyun_adi }}"
+                             class="game-card-cover"
+                             onerror="this.src='{{ url_for('static', filename='images/covers/default-cover.jpg') }}'">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/covers/default-cover.jpg') }}"
+                             alt="{{ game.oyun_adi }}"
+                             class="game-card-cover">
+                    {% endif %}
+                    <div class="game-card-content">
+                        <div class="game-card-title">{{ game.oyun_adi }}</div>
+                        <div class="game-card-category">
+                            {% if game.kategoriler %}
+                                {{ game.kategoriler[0] }}
+                                {% if game.kategoriler|length > 1 %}
+                                    {% if game.kategoriler|length > 2 %}
+                                        , {{ game.kategoriler[1] }} <span style="opacity: 0.6;">+{{ game.kategoriler|length - 2 }}</span>
+                                    {% else %}
+                                        , {{ game.kategoriler[1] }}
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                Kategorisiz
+                            {% endif %}
+                        </div>
+                        <div class="game-card-stats">
+                            <span class="game-card-clicks">Save dosyası mevcut</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state" style="margin-top: 2rem;">
+            <i class="fas fa-folder-open"></i>
+            <h3 style="color: var(--text-secondary);">Save Dosyası Bulunamadı</h3>
+            <p style="color: var(--text-secondary);">Bu kullanıcının henüz save dosyası bulunmuyor.</p>
+        </div>
+        {% endif %}
+
         <!-- Form Actions -->
         <div class="form-actions">
             <a href="{{ url_for('manage_users') }}" class="btn btn-secondary-modern">
@@ -80,7 +135,6 @@
 <style>
     /* Card Header Modern */
     .card-header-modern {
-        background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
         padding: 1.5rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
@@ -299,6 +353,200 @@
         box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
     }
 
+    /* Games Grid - server_style.css ile aynı */
+    .games-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+        max-width: 100%;
+    }
+
+    .game-card {
+        background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+        box-shadow:
+            0 4px 6px rgba(0, 0, 0, 0.3),
+            0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .game-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0);
+        transition: background 0.3s;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .game-card:hover::before {
+        background: rgba(0, 0, 0, 0.35);
+    }
+
+    .game-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-4px);
+        box-shadow:
+            0 8px 16px rgba(0, 0, 0, 0.4),
+            0 2px 4px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(220, 38, 38, 0.3);
+    }
+
+    .game-card-cover {
+        width: 100%;
+        aspect-ratio: 2 / 3;
+        object-fit: cover;
+        background: var(--muted);
+    }
+
+    .game-card-content {
+        padding: 0.75rem;
+    }
+
+    .game-card-title {
+        font-weight: 500;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .game-card-category {
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .badge.active {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+    }
+
+    .badge.inactive {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .game-card-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .game-card-clicks {
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+    }
+
+    /* Game Card Actions - server_style.css ile aynı */
+    .game-card-actions {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: flex;
+        gap: 0.375rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 2;
+    }
+
+    .game-card:hover .game-card-actions {
+        opacity: 1;
+    }
+
+    .game-card-action-btn {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.375rem;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(8px);
+        position: relative;
+    }
+
+    .game-card-action-btn svg,
+    .game-card-action-btn i {
+        width: 1rem;
+        height: 1rem;
+        transition: transform 0.2s ease;
+    }
+
+    .game-card-action-btn svg {
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .game-card-action-btn.edit {
+        background: rgba(59, 130, 246, 0.9);
+        color: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .game-card-action-btn.edit:hover {
+        background: rgba(37, 99, 235, 0.95);
+        box-shadow: 0 3px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .game-card-action-btn.edit:active {
+        transform: scale(0.95);
+    }
+
+    .game-card-action-btn.delete {
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .game-card-action-btn.delete:hover {
+        background: rgba(220, 38, 38, 0.95);
+        box-shadow: 0 3px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .game-card-action-btn.delete:active {
+        transform: scale(0.95);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--muted-foreground);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #64748b;
+        opacity: 0.3;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .user-profile-section {
@@ -320,6 +568,10 @@
         .btn-primary-modern {
             width: 100%;
             justify-content: center;
+        }
+
+        .games-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 </style>
