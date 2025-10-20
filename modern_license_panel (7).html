@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="tr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lisans Yönetim Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        .license-blur {
+            filter: blur(5px);
+            transition: filter 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .license-blur:hover {
+            filter: blur(2px);
+        }
+
+        .license-blur.revealed {
+            filter: blur(0);
+            cursor: default;
+        }
+
+        /* Dark mode styles */
+        .dark {
+            color-scheme: dark;
+        }
+
+        .dark body {
+            background: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a);
+        }
+
+        .dark .bg-white {
+            background-color: #1e293b;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #0f172a;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #334155;
+        }
+
+        .dark .border-gray-100 {
+            border-color: #1e293b;
+        }
+
+        .dark .text-gray-900 {
+            color: #f1f5f9;
+        }
+
+        .dark .text-gray-700 {
+            color: #cbd5e1;
+        }
+
+        .dark .text-gray-600 {
+            color: #94a3b8;
+        }
+
+        .dark .text-gray-500 {
+            color: #64748b;
+        }
+
+        .dark .hover\:bg-gray-50:hover {
+            background-color: #334155;
+        }
+
+        .dark .hover\:bg-gray-100:hover {
+            background-color: #334155;
+        }
+
+        .theme-toggle {
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 transition-colors duration-300">
+    
+    <!-- Mobile Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
+    
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-50 flex flex-col">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                        <i data-lucide="shield" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-gray-900">LicenseHub</h1>
+                        <p class="text-xs text-gray-500">Yönetim Paneli</p>
+                    </div>
+                </div>
+                <button id="closeSidebar" class="md:hidden text-gray-500">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <span>Müşteriler</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                <i data-lucide="key" class="w-5 h-5"></i>
+                <span>Lisanslar</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                <i data-lucide="building-2" class="w-5 h-5"></i>
+                <span>Bayiler</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                <i data-lucide="credit-card" class="w-5 h-5"></i>
+                <span>Ödemeler</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                <span>Raporlar</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span>Ayarlar</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-200">
+            <div class="flex items-center gap-3 px-3 py-2">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                    AD
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-gray-900 text-sm truncate">Admin User</p>
+                    <p class="text-xs text-gray-500 truncate">admin@panel.com</p>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:ml-64">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+            <div class="px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 flex-1 min-w-0">
+                        <button id="menuBtn" class="md:hidden text-gray-600">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                        <div class="min-w-0">
+                            <h2 class="text-xl md:text-2xl font-bold text-gray-900 truncate">Dashboard</h2>
+                            <p class="text-sm text-gray-500 hidden sm:block">Genel sistem durumu</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <button id="themeToggle" class="theme-toggle hidden sm:flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 text-gray-600 dark:text-gray-400 dark:hover:bg-gray-700">
+                            <i data-lucide="sun" class="w-5 h-5 sun-icon"></i>
+                            <i data-lucide="moon" class="w-5 h-5 moon-icon hidden"></i>
+                        </button>
+                        <button class="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 text-gray-600 relative dark:hover:bg-gray-700 dark:text-gray-400">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                            <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Yeni Ekle</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="p-4 sm:p-6 lg:p-8 space-y-6">
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl p-5 border border-gray-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-1">Toplam Müşteri</p>
+                    <p class="text-2xl font-bold text-gray-900">1,284</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 border border-gray-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-1">Aktif Lisans</p>
+                    <p class="text-2xl font-bold text-gray-900">956</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 border border-gray-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-1">Süresi Dolan</p>
+                    <p class="text-2xl font-bold text-gray-900">128</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 border border-gray-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-1">Aylık Gelir</p>
+                    <p class="text-2xl font-bold text-gray-900">₺84.5K</p>
+                </div>
+            </div>
+
+            <!-- Customers List -->
+            <div class="bg-white rounded-xl border border-gray-200">
+                <div class="p-4 sm:p-6 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <h3 class="text-lg font-bold text-gray-900">Son Müşteriler</h3>
+                        <div class="flex items-center gap-3">
+                            <div class="relative flex-1 sm:flex-initial">
+                                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                <input type="text" placeholder="Ara..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <button class="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 hover:bg-gray-50 flex-shrink-0">
+                                <i data-lucide="filter" class="w-4 h-4 text-gray-600"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divide-y divide-gray-100">
+                    <!-- Customer Card 1 -->
+                    <div class="p-4 sm:p-6 hover:bg-gray-50 transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                                AY
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div class="min-w-0">
+                                        <h4 class="font-semibold text-gray-900 truncate">Ahmet Yılmaz</h4>
+                                        <p class="text-sm text-gray-500 truncate">Kafe Keyif</p>
+                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 self-start sm:self-auto">
+                                        Aktif
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="key" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="font-mono text-xs license-blur">KA-STD-4A2B</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="text-xs">12.08.2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button class="w-9 h-9 rounded-lg hover:bg-red-50 flex items-center justify-center text-red-600">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Card 2 -->
+                    <div class="p-4 sm:p-6 hover:bg-gray-50 transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                                MK
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div class="min-w-0">
+                                        <h4 class="font-semibold text-gray-900 truncate">Mehmet Kaya</h4>
+                                        <p class="text-sm text-gray-500 truncate">Cafe Mola</p>
+                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 self-start sm:self-auto">
+                                        Aktif
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="key" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="font-mono text-xs license-blur">KA-STD-9X7C</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="text-xs">28.09.2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button class="w-9 h-9 rounded-lg hover:bg-red-50 flex items-center justify-center text-red-600">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Card 3 -->
+                    <div class="p-4 sm:p-6 hover:bg-gray-50 transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                                SD
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div class="min-w-0">
+                                        <h4 class="font-semibold text-gray-900 truncate">Selin Demir</h4>
+                                        <p class="text-sm text-gray-500 truncate">Bistro 34</p>
+                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 self-start sm:self-auto">
+                                        Beklemede
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="key" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="font-mono text-xs license-blur">KA-STD-2M5N</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="text-xs">05.07.2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button class="w-9 h-9 rounded-lg hover:bg-red-50 flex items-center justify-center text-red-600">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Card 4 -->
+                    <div class="p-4 sm:p-6 hover:bg-gray-50 transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                                ZA
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div class="min-w-0">
+                                        <h4 class="font-semibold text-gray-900 truncate">Zeynep Arslan</h4>
+                                        <p class="text-sm text-gray-500 truncate">Kahve Durağı</p>
+                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 self-start sm:self-auto">
+                                        Aktif
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="key" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="font-mono text-xs license-blur">KA-STD-8P4Q</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="text-xs">15.11.2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button class="w-9 h-9 rounded-lg hover:bg-red-50 flex items-center justify-center text-red-600">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Card 5 -->
+                    <div class="p-4 sm:p-6 hover:bg-gray-50 transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                                BÖ
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div class="min-w-0">
+                                        <h4 class="font-semibold text-gray-900 truncate">Burak Özdemir</h4>
+                                        <p class="text-sm text-gray-500 truncate">Lezzet Durağı</p>
+                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 self-start sm:self-auto">
+                                        Süresi Doldu
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="key" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="font-mono text-xs license-blur">KA-STD-3L9K</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-600">
+                                        <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
+                                        <span class="text-xs">02.10.2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button class="w-9 h-9 rounded-lg hover:bg-red-50 flex items-center justify-center text-red-600">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-6 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <p class="text-sm text-gray-600">1-10 / 1284 kayıt gösteriliyor</p>
+                        <div class="flex items-center gap-2">
+                            <button class="px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50" disabled>
+                                Önceki
+                            </button>
+                            <button class="px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                Sonraki
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const menuBtn = document.getElementById('menuBtn');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.remove('hidden');
+        });
+
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.add('hidden');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.add('hidden');
+        });
+
+        // License blur toggle functionality
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('license-blur')) {
+                e.target.classList.toggle('revealed');
+            }
+        });
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const sunIcon = document.querySelector('.sun-icon');
+        const moonIcon = document.querySelector('.moon-icon');
+
+        // Check for saved theme preference or default to 'light'
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        html.classList.add(currentTheme);
+
+        if (currentTheme === 'dark') {
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            // Recreate icons after theme change
+            setTimeout(() => lucide.createIcons(), 10);
+        });
+    </script>
+</body>
+</html>
