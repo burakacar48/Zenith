@@ -5,19 +5,17 @@ server/electron/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
+yarn.lock
 
-# Keep package files for app functionality
-# package-lock.json
-# yarn.lock
-
-# Python (Keep requirements.txt for app functionality)
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
 
-# Virtual environments (exclude to avoid large files)
+# Virtual environments
 env/
 venv/
 ENV/
@@ -34,21 +32,20 @@ pip-delete-this-directory.txt
 server/kafe.db
 server/kafe - Kopya.db
 
-# Static Files & Uploads (Keep game images for app functionality)
-# server/static/images/
-# server/static/images/covers/
-# server/static/images/gallery/
-# server/static/images/slider/
-# server/static/images/backgrounds/
-# server/static/images/logos/
+# PostgreSQL Data Directory
+portable/postgresql/data/
+portable/postgresql/logs/
+portable/postgresql/symbols/
 
-# User Generated Content (Exclude user uploads)
+# User Generated Content
 server/static/images/user_uploads/
 server/static/images/temp/
 server/user_saves/
 server/yuzde_yuz_saves/
 
-# Electron Build Output
+# Tauri Build Output
+tauri-app/src-tauri/target/
+tauri-app/src-tauri/gen/
 dist/
 build/
 out/
@@ -59,6 +56,7 @@ out/
 *.swp
 *.swo
 *~
+*.code-workspace
 
 # OS Generated Files
 .DS_Store
@@ -68,6 +66,7 @@ out/
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # Log Files
 *.log
@@ -98,3 +97,37 @@ coverage/
 config.json
 settings.json
 server/settings.json
+
+# PHP Panel specific
+panel/config.php
+
+# Compiled/Binary Files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Rust/Cargo (Tauri)
+Cargo.lock
+**/target/
+**/*.rs.bk
+
+# Lock files (can be regenerated)
+pnpm-lock.yaml
+
+# System and runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# Test coverage
+.nyc_output/
+coverage/
+
+# Optional npm cache
+.npm
+
+# Optional eslint cache
+.eslintcache
+zenith-client/
+zenith-server/

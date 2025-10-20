@@ -1922,6 +1922,193 @@ def find_exe_path():
     except Exception as e:
         return jsonify({'success': False, 'error': f'Dosya aranırken hata oluştu: {str(e)}'}), 500
 
+@app.route('/admin/game_updates')
+@admin_required
+@license_required
+def game_updates():
+    """Oyun güncellemeleri sayfası"""
+    conn = get_db_connection()
+    try:
+        # Online Oyunlar kategorisine ait oyunları getir
+        query = """
+            SELECT 
+                g.id, g.oyun_adi, g.cover_image, g.calistirma_tipi, g.calistirma_verisi,
+                GROUP_CONCAT(DISTINCT c.id) as category_ids,
+                GROUP_CONCAT(DISTINCT c.name) as category_names,
+                gu.last_launched, gu.update_date
+            FROM games g
+            LEFT JOIN game_categories gc ON g.id = gc.game_id
+            LEFT JOIN categories c ON gc.category_id = c.id
+            LEFT JOIN game_updates gu ON g.id = gu.game_id
+            WHERE EXISTS (
+                SELECT 1 FROM game_categories gc2
+                JOIN categories c2 ON gc2.category_id = c2.id
+                WHERE gc2.game_id = g.id AND c2.name = 'Online Oyunlar'
+            )
+            GROUP BY g.id
+            ORDER BY g.calistirma_tipi ASC, g.oyun_adi ASC
+        """
+        
+        games_raw = conn.execute(query).fetchall()
+        
+        # Oyunları EXE ve Steam olarak ayır
+        exe_games = []
+        steam_games = []
+        
+        for game_row in games_raw:
+            game_dict = dict(game_row)
+            if game_dict.get('calistirma_verisi'):
+                game_dict['calistirma_verisi_dict'] = json.loads(game_dict['calistirma_verisi'])
+            else:
+                game_dict['calistirma_verisi_dict'] = {}
+            
+            if game_dict['calistirma_tipi'] == 'steam':
+                steam_games.append(game_dict)
+            else:
+                exe_games.append(game_dict)
+        
+        categories = conn.execute('SELECT * FROM categories ORDER BY name ASC').fetchall()
+        
+        return render_template('game_updates.html', 
+                             exe_games=exe_games, 
+                             steam_games=steam_games, 
+                             categories=categories)
+        
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/launch_game', methods=['POST'])
+@admin_required
+@license_required
+def launch_game():
+    """Oyunu başlat"""
+    try:
+        data = request.get_json()
+        game_id = data.get('game_id')
+        
+        if not game_id:
+            return jsonify({'success': False, 'error': 'Oyun ID gerekli'}), 400
+        
+        conn = get_db_connection()
+        try:
+            game = conn.execute('SELECT * FROM games WHERE id = ?', (game_id,)).fetchone()
+            
+            if not game:
+                return jsonify({'success': False, 'error': 'Oyun bulunamadı'}), 404
+            
+            # Oyunu başlat
+            calistirma_tipi = game['calistirma_tipi']
+            calistirma_verisi = json.loads(game['calistirma_verisi'] or '{}')
+            
+            if calistirma_tipi == 'steam':
+                # Steam oyunu başlat
+                app_id = calistirma_verisi.get('app_id')
+                if app_id:
+                    subprocess.Popen(['cmd', '/c', f'start steam://rungameid/{app_id}'], 
+                                   creationflags=subprocess.CREATE_NO_WINDOW)
+                else:
+                    return jsonify({'success': False, 'error': 'Steam App ID bulunamadı'}), 400
+                    
+            elif calistirma_tipi == 'exe':
+                # EXE oyunu başlat
+                exe_path = calistirma_verisi.get('exe_path', '')
+                disk_letter = calistirma_verisi.get('disk_letter', '')
+                relative_path = calistirma_verisi.get('relative_path', '')
+                custom_startup = calistirma_verisi.get('custom_startup', False)
+                
+                if custom_startup and game['launch_script']:
+                    # Özel başlatma betiği kullan
+                    bat_content = game['launch_script']
+                    
+                    # Değişkenleri değiştir
+                    full_path = disk_letter + relative_path if disk_letter else exe_path
+                    bat_content = bat_content.replace('%EXE_YOLU%', full_path)
+                    bat_content = bat_content.replace('%EXE_ARGS%', calistirma_verisi.get('argumanlar', ''))
+                    
+                    # Geçici bat dosyası oluştur
+                    temp_bat = os.path.join(os.getcwd(), f'temp_launch_{game_id}.bat')
+                    with open(temp_bat, 'w', encoding='utf-8') as f:
+                        f.write(bat_content)
+                    
+                    # Bat dosyasını çalıştır
+                    subprocess.Popen(['cmd', '/c', temp_bat], creationflags=subprocess.CREATE_NO_WINDOW)
+                else:
+                    # Normal başlatma
+                    full_path = disk_letter + relative_path if disk_letter else exe_path
+                    args = calistirma_verisi.get('argumanlar', '')
+                    
+                    if args:
+                        subprocess.Popen(['cmd', '/c', 'start', '', full_path] + args.split(), 
+                                       creationflags=subprocess.CREATE_NO_WINDOW)
+                    else:
+                        subprocess.Popen(['cmd', '/c', 'start', '', full_path], 
+                                       creationflags=subprocess.CREATE_NO_WINDOW)
+            else:
+                return jsonify({'success': False, 'error': 'Geçersiz çalıştırma tipi'}), 400
+            
+            # Son açılış tarihini ve güncelleme tarihini güncelle
+            launch_time = datetime.now().strftime('%d.%m.%Y %H:%M')
+            conn.execute('''
+                INSERT OR REPLACE INTO game_updates (game_id, last_launched, update_date)
+                VALUES (?, ?, ?)
+            ''', (game_id, launch_time, launch_time))
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'launch_time': launch_time,
+                'message': 'Oyun başarıyla başlatıldı'
+            })
+            
+        finally:
+            if conn:
+                conn.close()
+                
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Oyun başlatılırken hata oluştu: {str(e)}'}), 500
+
+@app.route('/api/mark_game_updated', methods=['POST'])
+@admin_required
+@license_required
+def mark_game_updated():
+    """Oyunu güncellenmiş olarak işaretle"""
+    try:
+        data = request.get_json()
+        game_id = data.get('game_id')
+        
+        if not game_id:
+            return jsonify({'success': False, 'error': 'Oyun ID gerekli'}), 400
+        
+        conn = get_db_connection()
+        try:
+            # Oyunun var olduğunu kontrol et
+            game = conn.execute('SELECT id FROM games WHERE id = ?', (game_id,)).fetchone()
+            
+            if not game:
+                return jsonify({'success': False, 'error': 'Oyun bulunamadı'}), 404
+            
+            # Güncelleme tarihini kaydet
+            update_time = datetime.now().strftime('%d.%m.%Y %H:%M')
+            conn.execute('''
+                INSERT OR REPLACE INTO game_updates (game_id, last_launched, update_date)
+                VALUES (?, COALESCE((SELECT last_launched FROM game_updates WHERE game_id = ?), NULL), ?)
+            ''', (game_id, game_id, update_time))
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'update_date': update_time,
+                'message': 'Oyun güncellenmiş olarak işaretlendi'
+            })
+            
+        finally:
+            if conn:
+                conn.close()
+                
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'İşaretlenirken hata oluştu: {str(e)}'}), 500
+
 @app.route('/api/internal/check_status')
 def check_status_for_client():
     global license_status_cache
@@ -1949,7 +2136,7 @@ if __name__ == '__main__':
     
     if is_electron_mode:
         # Electron modunda debug kapalı
-        app.run(debug=False, host='0.0.0.0', port=5001)
+        app.run(debug=False, host='0.0.0.0', port=5088)
     else:
         # Manuel başlatmada debug açık
-        app.run(debug=True, host='0.0.0.0', port=5001)
+        app.run(debug=True, host='0.0.0.0', port=5088)

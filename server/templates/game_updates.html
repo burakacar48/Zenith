@@ -1,0 +1,545 @@
+
+{% extends "base_admin.html" %}
+
+{% block title %}Oyun Güncellemeleri{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        Oyun Güncellemeleri
+    </h1>
+    <p class="page-description">Online ve Steam oyunlarınızı yönetin ve başlatın</p>
+</div>
+
+<!-- Online Oyunlar Bölümü -->
+{% if exe_games %}
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-globe" style="color: var(--primary); margin-right: 0.5rem;"></i>
+            Online Oyunlar ({{ exe_games|length }})
+        </h2>
+        <div style="display: flex; gap: 0.75rem;">
+            <button class="btn btn-primary" onclick="bulkUpdateGames()">
+                Toplu Güncelleme Başlat
+            </button>
+            <button class="btn btn-secondary" onclick="refreshGames()">
+                <i class="fas fa-redo"></i>
+                Yenile
+            </button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <table style="margin: 0;">
+            <thead>
+                <tr>
+                    <th style="width: 80px; text-align: center;">Kapak</th>
+                    <th>Oyun Adı</th>
+                    <th>Kategoriler</th>
+                    <th style="width: 200px;">Güncelleme Tarihi</th>
+                    <th style="width: 150px; text-align: center;">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in exe_games %}
+                <tr>
+                    <td style="text-align: center; padding: 0.75rem;">
+                        {% if game.cover_image %}
+                        <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}"
+                             alt="{{ game.oyun_adi }}"
+                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                        {% else %}
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #1f2937, #374151); border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <i class="fas fa-gamepad" style="color: var(--primary); font-size: 1.25rem;"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div>
+                            <strong style="color: var(--foreground); font-size: 1rem;">{{ game.oyun_adi }}</strong>
+                            <div style="color: var(--muted-foreground); font-size: 0.8rem; margin-top: 2px;">Online Oyun</div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if game.category_names %}
+                            {% for cat_name in game.category_names.split(',')[:3] %}
+                            <span class="badge" style="background: rgba(100, 116, 139, 0.2); color: var(--primary); border: 1px solid rgba(100, 116, 139, 0.3); margin-right: 0.25rem; margin-bottom: 0.25rem; display: inline-block;">{{ cat_name.strip() }}</span>
+                            {% endfor %}
+                            {% if game.category_names.split(',')|length > 3 %}
+                            <span style="color: var(--muted-foreground); font-size: 0.8rem;">+{{ game.category_names.split(',')|length - 3 }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge" style="background: rgba(107, 114, 128, 0.2); color: var(--muted-foreground); border: 1px solid rgba(107, 114, 128, 0.3);">Kategori Yok</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div id="update-date-{{ game.id }}">
+                            {% if game.update_date %}
+                            <div style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <div style="font-weight: 600;">{{ game.update_date }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--muted-foreground);">Son güncelleme</div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div style="color: var(--muted-foreground); display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <div>Henüz güncellenmedi</div>
+                                    <div style="font-size: 0.8rem;">Bekleniyor</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <button class="btn"
+                                onclick="launchGame({{ game.id }})"
+                                style="background: var(--primary); color: white; padding: 0.75rem; font-size: 1rem;"
+                                title="Oyunu Aç">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Steam Oyunlar Bölümü -->
+{% if steam_games %}
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fab fa-steam" style="color: #60a5fa; margin-right: 0.5rem;"></i>
+            Steam Oyunları
+        </h2>
+        <a href="#" class="section-link">
+            <span>Steam Kütüphanesine Git</span>
+            <i class="fas fa-external-link-alt"></i>
+        </a>
+    </div>
+    
+    <div class="games-grid">
+        {% for game in steam_games %}
+        <div class="game-card" onclick="launchGameWithParams({{ game.id }}, '{{ game.oyun_adi|replace("'", "\\'") }}', '{{ game.calistirma_tipi }}')">
+            
+            {% if game.cover_image %}
+            <img src="{{ url_for('static', filename='images/covers/' + game.cover_image) }}" 
+                 alt="{{ game.oyun_adi }}" class="game-card-cover">
+            {% else %}
+            <div class="game-card-cover" style="background: linear-gradient(135deg, #1e3a8a, #1d4ed8); display: flex; align-items: center; justify-content: center;">
+                <i class="fab fa-steam" style="font-size: 3rem; color: #60a5fa; opacity: 0.7;"></i>
+            </div>
+            {% endif %}
+            
+            <div class="game-card-content">
+                <h3 class="game-card-title" title="{{ game.oyun_adi }}">{{ game.oyun_adi }}</h3>
+                <p class="game-card-category">
+                    {% if game.category_names %}
+                        {{ game.category_names.split(',')[0] }}
+                        {% if game.category_names.split(',')|length > 1 %}
+                        <span style="opacity: 0.6;">+{{ game.category_names.split(',')|length - 1 }}</span>
+                        {% endif %}
+                    {% else %}
+                        Steam Oyunu
+                    {% endif %}
+                </p>
+                <div class="game-card-stats">
+                    {% if game.update_date %}
+                    <span class="game-card-clicks" style="color: #60a5fa;">
+                        <i class="fas fa-check-circle"></i> {{ game.update_date }}
+                    </span>
+                    {% else %}
+                    <span class="game-card-clicks" style="color: var(--muted-foreground);">
+                        <i class="fas fa-clock"></i> Güncellenmedi
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Oyun Bulunamadı Durumu -->
+{% if not exe_games and not steam_games %}
+<div class="section">
+    <div class="card" style="text-align: center; padding: 4rem 2rem;">
+        <div style="margin-bottom: 2rem;">
+            <i class="fas fa-gamepad" style="font-size: 4rem; color: var(--muted-foreground); opacity: 0.5;"></i>
+        </div>
+        <h3 style="margin-bottom: 1rem; color: var(--foreground);">Henüz Oyun Eklenmemiş</h3>
+        <p style="color: var(--muted-foreground); margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+            Online veya Steam oyunu eklemek için oyun yönetimi bölümünü kullanabilirsiniz.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('add_game') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Oyun Ekle
+            </a>
+            <a href="{{ url_for('list_games') }}" class="btn btn-secondary">
+                <i class="fas fa-list"></i>
+                Oyun Listesi
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Launch Modal -->
+<div class="modal fade" id="launchModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-rocket" style="color: var(--primary); margin-right: 0.5rem;"></i>
+                    Oyun Başlatılıyor
+                </h5>
+                <button type="button" class="btn-close" onclick="hideLaunchModal()"></button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <div class="spinner-border" style="width: 3rem; height: 3rem; color: var(--primary); margin-bottom: 1rem;" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+                <p id="launchStatus" style="margin: 0; font-size: 1.1rem; color: var(--foreground);">Oyun başlatılıyor, lütfen bekleyin...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Oyun kartları için ek stiller */
+.game-card {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.game-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(100, 116, 139, 0.3);
+}
+
+.game-card-cover {
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover .game-card-cover {
+    transform: scale(1.05);
+}
+
+/* Modal spinner animasyonu */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/* Responsive tasarım */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .games-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .games-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* Modal stilleri */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+}
+
+.modal.show {
+    display: flex !important;
+}
+
+.modal-dialog {
+    max-width: 500px;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.modal-content {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--muted-foreground);
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-close:hover {
+    color: var(--foreground);
+}
+
+.btn-close::before {
+    content: '×';
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba(100, 116, 139, 0.3);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+</style>
+
+<script>
+// Oyun başlatma fonksiyonları
+async function launchGame(gameId) {
+    showLaunchModal();
+    
+    try {
+        const response = await fetch('/api/launch_game', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ game_id: gameId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('launchStatus').innerHTML =
+                '<i class="fas fa-check-circle" style="color: var(--primary); margin-right: 0.5rem;"></i>Oyun başarıyla başlatıldı!';
+            
+            // Güncelleme tarihini güncelle
+            updateGameDate(gameId, result.launch_time);
+            
+            setTimeout(function() {
+                hideLaunchModal();
+            }, 2000);
+        } else {
+            document.getElementById('launchStatus').innerHTML = 
+                '<i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 0.5rem;"></i>Hata: ' + result.error;
+        }
+    } catch (error) {
+        document.getElementById('launchStatus').innerHTML = 
+            '<i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 0.5rem;"></i>Bir hata oluştu: ' + error.message;
+    }
+}
+
+async function launchGameWithParams(gameId, gameName, launchType) {
+    showLaunchModal();
+    document.getElementById('launchStatus').innerHTML = gameName + ' başlatılıyor...';
+    
+    try {
+        const response = await fetch('/api/launch_game', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ game_id: gameId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('launchStatus').innerHTML =
+                '<i class="fas fa-check-circle" style="color: var(--primary); margin-right: 0.5rem;"></i>' + gameName + ' başarıyla başlatıldı!';
+            
+            // Güncelleme tarihini güncelle
+            updateGameDate(gameId, result.launch_time);
+            
+            setTimeout(function() {
+                hideLaunchModal();
+            }, 2000);
+        } else {
+            document.getElementById('launchStatus').innerHTML =
+                '<i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 0.5rem;"></i>Hata: ' + result.error;
+        }
+    } catch (error) {
+        document.getElementById('launchStatus').innerHTML =
+            '<i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 0.5rem;"></i>Bir hata oluştu: ' + error.message;
+    }
+}
+
+// Modal helper fonksiyonları
+function showLaunchModal() {
+    const modal = document.getElementById('launchModal');
+    modal.style.display = 'flex';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+}
+
+function hideLaunchModal() {
+    const modal = document.getElementById('launchModal');
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+}
+
+// Oyunları yenileme
+function refreshGames() {
+    location.reload();
+}
+
+// Toplu güncelleme başlat
+async function bulkUpdateGames() {
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    
+    // Butonu disable et ve yükleniyor durumuna geçir
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Güncelleniyor...';
+    
+    try {
+        const response = await fetch('/api/bulk_update_games', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ type: 'online' })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Başarılı mesaj göster
+            button.innerHTML = '<i class="fas fa-check"></i> Güncelleme Tamamlandı';
+            button.style.background = 'var(--primary)';
+            
+            // 2 saniye sonra sayfayı yenile
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            throw new Error(result.error || 'Güncelleme başarısız');
+        }
+    } catch (error) {
+        // Hata durumunda
+        button.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Hata Oluştu';
+        button.style.background = '#ef4444';
+        
+        console.error('Toplu güncelleme hatası:', error);
+        
+        // 3 saniye sonra butonu eski haline getir
+        setTimeout(() => {
+            button.disabled = false;
+            button.innerHTML = originalText;
+            button.style.background = 'var(--primary)';
+        }, 3000);
+    }
+}
+
+// Güncelleme tarihini güncelleme fonksiyonu
+function updateGameDate(gameId, updateTime) {
+    const updateDateEl = document.getElementById('update-date-' + gameId);
+    if (updateDateEl) {
+        updateDateEl.innerHTML = `
+            <div style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <div style="font-weight: 600;">${updateTime}</div>
+                    <div style="font-size: 0.8rem; color: var(--muted-foreground);">Son güncelleme</div>
+                </div>
+            </div>`;
+    }
+}
+
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', function() {
+    // Oyun kartlarına hover efekti
+    document.querySelectorAll('.game-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(100, 116, 139, 0.3)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.boxShadow = '';
+        });
+    });
+});
+</script>
+
+{% endblock %}

@@ -168,6 +168,15 @@ def init_db():
         )
         ''')
         
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS game_updates (
+            game_id INTEGER PRIMARY KEY,
+            last_launched TEXT,
+            update_date TEXT,
+            FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
+        )
+        ''')
+        
         # Admin kullanıcısı oluştur
         if cursor.execute("SELECT COUNT(*) FROM admin_users").fetchone()[0] == 0:
             admin_password_hash = generate_password_hash('admin123')
