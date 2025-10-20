@@ -3,42 +3,344 @@
 {% block title %}Kullanıcı Düzenle{% endblock %}
 
 {% block content %}
-    <header class="header">
-        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-            <i class="fas fa-user-edit" style="color: var(--accent-red);"></i>
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-user-edit"></i>
             Kullanıcı Düzenle
         </h1>
-        <div class="header-actions">
-            <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Geri Dön
-            </a>
-        </div>
-    </header>
+        <p class="page-description">"{{ user.username }}" kullanıcısının bilgilerini güncelleyin</p>
+    </div>
 
-    <div class="card full-width">
-        <div class="card-header">
-            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-                <i class="fas fa-user" style="color: var(--accent-red);"></i>
-                "{{ user.username }}" Kullanıcısını Düzenle
-            </h2>
-        </div>
-        <div class="card-body">
-            <form method="POST">
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label for="username">Kullanıcı Adı (en az 3 karakter):</label>
-                        <input type="text" name="username" id="username" value="{{ user.username }}" required minlength="3">
+    <form method="POST">
+        <div class="card">
+            <div class="card-header-modern">
+                <h3>
+                    <i class="fas fa-user-cog"></i>
+                    Kullanıcı Bilgileri
+                </h3>
+            </div>
+            <div class="card-body-modern">
+                <div class="user-profile-section">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
                     </div>
-                    <div class="form-group full-width">
-                        <label for="new_password">Yeni Şifre (isteğe bağlı, en az 5 karakter):</label>
-                        <input type="password" name="new_password" id="new_password" minlength="5" placeholder="Değiştirmek istemiyorsanız boş bırakın">
+                    <div class="profile-info">
+                        <div class="profile-name">{{ user.username }}</div>
+                        <div class="profile-role">Sistem Kullanıcısı</div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
-                    <i class="fas fa-save"></i>
-                    Değişiklikleri Kaydet
-                </button>
-            </form>
+
+                <div class="form-grid-modern">
+                    <!-- Kullanıcı Adı -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-user"></i>
+                            <span>Kullanıcı Adı</span>
+                        </label>
+                        <input type="text" name="username" id="username" value="{{ user.username }}" required minlength="3" class="form-input-modern" placeholder="En az 3 karakter">
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Kullanıcı adı en az 3 karakter olmalıdır
+                        </div>
+                    </div>
+
+                    <!-- Yeni Şifre -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-lock"></i>
+                            <span>Yeni Şifre</span>
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input type="password" name="new_password" id="new_password" minlength="5" class="form-input-modern" placeholder="Değiştirmek istemiyorsanız boş bırakın">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">
+                                <i class="fas fa-eye" id="password-toggle-icon"></i>
+                            </button>
+                        </div>
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i>
+                            İsteğe bağlı - Şifre değiştirmek istemiyorsanız boş bırakabilirsiniz (en az 5 karakter)
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{{ url_for('manage_users') }}" class="btn btn-secondary-modern">
+                <i class="fas fa-arrow-left"></i> Geri Dön
+            </a>
+            <button type="submit" class="btn btn-primary-modern">
+                <i class="fas fa-save"></i> Değişiklikleri Kaydet
+            </button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block head %}
+<style>
+    /* Card Header Modern */
+    .card-header-modern {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-header-modern h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        margin: 0;
+    }
+
+    .card-header-modern h3 i {
+        color: #64748b;
+        font-size: 1.125rem;
+    }
+
+    /* User Profile Section */
+    .user-profile-section {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 2rem;
+        background: rgba(100, 116, 139, 0.1);
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(100, 116, 139, 0.2);
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: rgba(100, 116, 139, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 3.5rem;
+        border: 3px solid rgba(100, 116, 139, 0.3);
+        flex-shrink: 0;
+    }
+
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--foreground);
+    }
+
+    .profile-role {
+        font-size: 0.875rem;
+        color: var(--muted-foreground);
+        opacity: 0.8;
+    }
+
+    /* Form Grid Modern */
+    .form-grid-modern {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .form-group-modern {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group-modern.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label-modern {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--foreground);
+    }
+
+    .form-label-modern i {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .form-input-modern {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        color: var(--foreground);
+        font-size: 0.9375rem;
+        transition: all 0.3s;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .form-input-modern:focus {
+        outline: none;
+        border-color: #64748b;
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
+    }
+
+    .form-input-modern::placeholder {
+        color: var(--muted-foreground);
+        opacity: 0.6;
+    }
+
+    /* Password Input Wrapper */
+    .password-input-wrapper {
+        position: relative;
+    }
+
+    .password-input-wrapper input {
+        padding-right: 3rem;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: var(--muted-foreground);
+        cursor: pointer;
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        border-radius: 0.375rem;
+    }
+
+    .toggle-password:hover {
+        color: #64748b;
+        background: rgba(100, 116, 139, 0.1);
+    }
+
+    .toggle-password i {
+        font-size: 1rem;
+    }
+
+    /* Input Hint */
+    .input-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+        margin-top: 0.5rem;
+        opacity: 0.8;
+    }
+
+    .input-hint i {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-secondary-modern {
+        padding: 0.875rem 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        color: var(--foreground);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .btn-secondary-modern:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary-modern {
+        padding: 0.875rem 1.5rem;
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        border: none;
+        border-radius: 0.5rem;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .user-profile-section {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 4rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-secondary-modern,
+        .btn-primary-modern {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('new_password');
+        const toggleIcon = document.getElementById('password-toggle-icon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+</script>
 {% endblock %}

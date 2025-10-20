@@ -850,6 +850,8 @@ def add_game():
             if calistirma_tipi == 'exe':
                 exe_path = form_data.get('exe_path', '')
                 selected_disk = form_data.get('selected_disk', '')
+                custom_startup = 'custom_startup' in form_data  # Checkbox değerini al
+                bat_script = form_data.get('bat_script', '')
                 
                 # Disk harfi ve oyun yolunu ayır
                 disk_letter = ''
@@ -866,7 +868,9 @@ def add_game():
                     'argumanlar': form_data.get('exe_argumanlar', ''),
                     'exe_path': exe_path,
                     'disk_letter': disk_letter,
-                    'relative_path': relative_path
+                    'relative_path': relative_path,
+                    'custom_startup': custom_startup,
+                    'bat_script': bat_script if custom_startup else ''
                 })
                 
                 # BASIT VARSAYILAN BETİK TANIMI
@@ -1011,14 +1015,15 @@ def edit_game(game_id):
             if calistirma_tipi == 'exe':
                 exe_path = form_data.get('exe_path', '')
                 selected_disk = form_data.get('selected_disk', '')
+                custom_startup = 'custom_startup' in form_data  # Checkbox değerini al
+                bat_script = form_data.get('bat_script', '')
                 
                 # Disk harfi ve oyun yolunu ayır
                 disk_letter = ''
                 relative_path = exe_path
                 
                 if exe_path and len(exe_path) >= 2 and exe_path[1] == ':':
-                    disk_letter = exe_path[:2].upper()  # C:, D:, vb.
-                    relative_path = exe_path[2:]  # \Program Files\Game\game.exe
+                    disk_letter = exe_path[:2].upper()  # C:, D:, relative_path = exe_path[2:]  # \Program Files\Game\game.exe
                 elif selected_disk:
                     disk_letter = selected_disk
                     
@@ -1027,7 +1032,9 @@ def edit_game(game_id):
                     'argumanlar': form_data.get('exe_argumanlar', ''),
                     'exe_path': exe_path,
                     'disk_letter': disk_letter,
-                    'relative_path': relative_path
+                    'relative_path': relative_path,
+                    'custom_startup': custom_startup,
+                    'bat_script': bat_script if custom_startup else ''
                 })
                 
                 # BASIT VARSAYILAN BETİK TANIMI

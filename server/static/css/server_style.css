@@ -12,12 +12,12 @@
     --foreground: #f2f2f2;
     --card: #1a1a1a;
     --card-foreground: #f2f2f2;
-    --primary: #dc2626;
+    --primary: #64748b;
     --primary-foreground: #fafafa;
     --secondary: #2a2a2a;
     --muted: #2a2a2a;
     --muted-foreground: #999999;
-    --accent: #ef4444;
+    --accent: #64748b;
     --border: #2a2a2a;
     --input: #2a2a2a;
     --radius: 0.75rem;
@@ -190,9 +190,11 @@ body {
 
 .nav-item.active,
 .menu-item.active {
-    background: var(--primary);
-    color: var(--primary-foreground);
+    background: linear-gradient(135deg, rgba(100, 116, 139, 0.3), rgba(71, 85, 105, 0.3));
+    color: var(--foreground);
     font-weight: 500;
+    border-left: 3px solid #64748b;
+    padding-left: calc(0.75rem - 3px);
 }
 
 .nav-item-icon,
@@ -236,7 +238,7 @@ body {
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 50%;
-    background: var(--primary);
+    background: linear-gradient(135deg, #64748b, #475569);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -982,12 +984,12 @@ body {
 .filter-btn-primary {
     background: var(--primary);
     color: white;
-    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 2px 6px rgba(100, 116, 139, 0.3);
 }
 
 .filter-btn-primary:hover {
-    background: #b91c1c;
-    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.4);
+    background: #475569;
+    box-shadow: 0 3px 8px rgba(100, 116, 139, 0.4);
 }
 
 .filter-btn-secondary {

@@ -3,112 +3,723 @@
 {% block title %}Genel Ayarlar{% endblock %}
 
 {% block content %}
-    <header class="header">
-        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-            <i class="fas fa-cogs" style="color: var(--accent-red);"></i>
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-cogs"></i>
             Genel Ayarlar
         </h1>
-    </header>
+        <p class="page-description">İstemci uygulamasının görünümünü ve davranışını yapılandırın</p>
+    </div>
 
-    <div class="card full-width">
-        <div class="card-body">
-            <form method="POST" enctype="multipart/form-data">
-                <h2 class="form-section-title">Marka Bilgileri</h2>
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Kafe Logosu</label>
+    <form method="POST" enctype="multipart/form-data">
+        <!-- Marka Bilgileri -->
+        <div class="card">
+            <div class="card-header-modern">
+                <h3>
+                    <i class="fas fa-trademark"></i>
+                    Marka Bilgileri
+                </h3>
+            </div>
+            <div class="card-body-modern">
+                <div class="form-grid-modern">
+                    <!-- Logo Upload -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-image"></i>
+                            <span>Kafe Logosu</span>
+                        </label>
+                        
                         {% if settings.logo_file %}
-                            <div style="margin-bottom: 15px; background: var(--bg-dark-tertiary); padding: 15px; border-radius: 8px; text-align: left; border: 1px solid var(--border-color);">
-                                <img src="{{ url_for('static', filename='images/logos/' + settings.logo_file) }}" alt="Mevcut Logo" style="max-height: 150px; max-width: 250px; border-radius: 4px; display: block; margin-bottom: 15px;">
-                                <button type="submit" name="delete_logo" value="1" class="btn btn-danger" style="padding: 8px 12px; font-size: 12px;" onclick="return confirm('Logoyu silmek istediğinizden emin misiniz?');">
-                                    <i class="fas fa-trash"></i> Logoyu Sil
+                        <div class="current-logo-preview">
+                            <div class="preview-header">
+                                <span class="preview-label">Mevcut Logo:</span>
+                                <button type="submit" name="delete_logo" value="1" class="btn-delete-small" onclick="return confirm('Logoyu silmek istediğinizden emin misiniz?');">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Logoyu Sil
                                 </button>
                             </div>
-                            <p class="file-prompt">Logoyu değiştirmek için yeni bir dosya seçin:</p>
+                            <div class="logo-preview-container">
+                                <img src="{{ url_for('static', filename='images/logos/' + settings.logo_file) }}" alt="Mevcut Logo">
+                            </div>
+                        </div>
+                        <div class="input-hint" style="margin-bottom: 0.75rem;">
+                            <i class="fas fa-info-circle"></i>
+                            Logoyu değiştirmek için yeni bir dosya seçin
+                        </div>
                         {% else %}
-                            <p class="file-prompt">Lütfen bir logo seçin (isteğe bağlı). Logo yoksa kafe adı gösterilir.</p>
+                        <div class="input-hint" style="margin-bottom: 0.75rem;">
+                            <i class="fas fa-info-circle"></i>
+                            Logo yoksa kafe adı gösterilir
+                        </div>
                         {% endif %}
-                        <div class="custom-file-input-wrapper">
-                            <input type="file" name="logo_file" id="logo_file_input" class="file-input" accept="image/png, image/jpeg, image/webp, image/svg+xml">
-                            <label for="logo_file_input" class="btn btn-secondary">Dosya Seç...</label>
+                        
+                        <div class="file-upload-zone" onclick="document.getElementById('logo_file_input').click()">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h4>{% if settings.logo_file %}Yeni logo yükle{% else %}Logo yüklemek için tıklayın{% endif %}</h4>
+                                <p>PNG, JPG, WebP veya SVG formatında</p>
+                            </div>
                             <span class="file-name" id="logo_file_name">Dosya seçilmedi</span>
                         </div>
+                        <input type="file" name="logo_file" id="logo_file_input" class="hidden-input" accept="image/png, image/jpeg, image/webp, image/svg+xml">
                     </div>
 
-                    <div class="form-group full-width">
-                        <label for="cafe_name">Kafe Adı (Logo olmadığında gösterilir):</label>
-                        <input type="text" id="cafe_name" name="cafe_name" value="{{ settings.cafe_name }}" required>
-                    </div>
-                    <div class="form-group full-width">
-                        <label for="slogan">Slogan (Logo olmadığında gösterilir):</label>
-                        <input type="text" id="slogan" name="slogan" value="{{ settings.slogan }}">
-                    </div>
-                </div>
-                
-                <h2 class="form-section-title">İstemci Görsel Ayarları</h2>
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Hazır Tema Seçenekleri:</label>
-                        <div id="preset-container" class="preset-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="primary_color_start">Ana Renk (Başlangıç Gradyanı):</label>
-                        <input type="color" name="primary_color_start" id="primary_color_start" value="{{ settings.primary_color_start }}" class="color-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="primary_color_end">Ana Renk (Bitiş Gradyanı):</label>
-                        <input type="color" name="primary_color_end" id="primary_color_end" value="{{ settings.primary_color_end }}" class="color-input">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="background_type">Arkaplan Tipi:</label>
-                        <select name="background_type" id="background_type" onchange="toggleBackgroundUpload()">
-                            <option value="default" {% if settings.background_type == 'default' %}selected{% endif %}>Varsayılan Arkaplan</option>
-                            <option value="custom_bg" {% if settings.background_type == 'custom_bg' %}selected{% endif %}>BG Yükle (Özel Resim)</option>
-                        </select>
-                    </div>
-                    <div id="custom_bg_fields" class="form-group full-width">
-                        <label>Özel Arkaplan Resmi</label>
-                        {% if settings.background_file and settings.background_type == 'custom_bg' %}
-                            <img src="{{ url_for('static', filename='images/backgrounds/' + settings.background_file) }}" alt="Mevcut Arkaplan" class="image-preview" style="max-width: 300px;">
-                            <input type="hidden" name="current_background_file" value="{{ settings.background_file }}">
-                            <p class="file-prompt">Mevcut resim: {{ settings.background_file }}</p>
-                        {% endif %}
-                        <div class="custom-file-input-wrapper">
-                            <input type="file" name="custom_background_file" id="custom_background_file_input" class="file-input" accept="image/jpeg, image/png, image/webp">
-                            <label for="custom_background_file_input" class="btn btn-secondary">Dosya Seç...</label>
-                            <span class="file-name" id="custom_background_file_name">Dosya seçilmedi</span>
+                    <!-- Kafe Adı -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-store"></i>
+                            <span>Kafe Adı</span>
+                        </label>
+                        <input type="text" id="cafe_name" name="cafe_name" value="{{ settings.cafe_name }}" required class="form-input-modern" placeholder="Kafe adınızı girin">
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Logo olmadığında gösterilir
                         </div>
                     </div>
-                    
-                    <div class="form-group full-width">
-                        <label for="background_opacity_factor">Arkaplan Parlaklık/Saydımlık: <span id="opacity_display">{{ "%.1f"|format(settings.background_opacity_factor|float) }}</span></label>
-                        <input type="range" name="background_opacity_factor" id="background_opacity_factor" min="0.1" max="1.0" step="0.1" value="{{ settings.background_opacity_factor }}" oninput="document.getElementById('opacity_display').textContent = parseFloat(this.value).toFixed(1)">
-                    </div>
-                </div>
 
-                <h2 class="form-section-title">Karşılama Ekranı Ayarları</h2>
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label for="welcome_modal_text">Karşılama Ekranı Metni:</label>
-                        <textarea name="welcome_modal_text" id="welcome_modal_text" rows="3">{{ settings.welcome_modal_text }}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="welcome_modal_enabled">Karşılama Ekranını Göster:</label>
-                        <input type="checkbox" name="welcome_modal_enabled" id="welcome_modal_enabled" {% if settings.welcome_modal_enabled == '1' %}checked{% endif %} style="width: 20px; height: 20px; margin-top: 10px;">
+                    <!-- Slogan -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Slogan</span>
+                        </label>
+                        <input type="text" id="slogan" name="slogan" value="{{ settings.slogan }}" class="form-input-modern" placeholder="Sloganınızı girin">
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Logo olmadığında gösterilir
+                        </div>
                     </div>
                 </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
-                    <i class="fas fa-save"></i> Ayarları Kaydet
-                </button>
-            </form>
+            </div>
         </div>
-    </div>
+
+        <!-- İstemci Görsel Ayarları -->
+        <div class="card">
+            <div class="card-header-modern">
+                <h3>
+                    <i class="fas fa-palette"></i>
+                    İstemci Görsel Ayarları
+                </h3>
+            </div>
+            <div class="card-body-modern">
+                <div class="form-grid-modern">
+                    <!-- Hazır Temalar -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-swatchbook"></i>
+                            <span>Hazır Tema Seçenekleri</span>
+                        </label>
+                        <div id="preset-container" class="preset-container"></div>
+                    </div>
+
+                    <!-- Renk Seçimi -->
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-fill-drip"></i>
+                            <span>Ana Renk (Başlangıç)</span>
+                        </label>
+                        <div class="color-picker-wrapper">
+                            <input type="color" name="primary_color_start" id="primary_color_start" value="{{ settings.primary_color_start }}" class="color-input-modern">
+                            <span class="color-value" id="color_start_value">{{ settings.primary_color_start }}</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-fill"></i>
+                            <span>Ana Renk (Bitiş)</span>
+                        </label>
+                        <div class="color-picker-wrapper">
+                            <input type="color" name="primary_color_end" id="primary_color_end" value="{{ settings.primary_color_end }}" class="color-input-modern">
+                            <span class="color-value" id="color_end_value">{{ settings.primary_color_end }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Arkaplan Tipi -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-image"></i>
+                            <span>Arkaplan Tipi</span>
+                        </label>
+                        <select name="background_type" id="background_type" class="form-input-modern" onchange="toggleBackgroundUpload()">
+                            <option value="default" {% if settings.background_type == 'default' %}selected{% endif %}>Varsayılan Arkaplan</option>
+                            <option value="custom_bg" {% if settings.background_type == 'custom_bg' %}selected{% endif %}>Özel Resim Yükle</option>
+                        </select>
+                    </div>
+
+                    <!-- Özel Arkaplan -->
+                    <div id="custom_bg_fields" class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-image"></i>
+                            <span>Özel Arkaplan Resmi</span>
+                        </label>
+                        
+                        {% if settings.background_file and settings.background_type == 'custom_bg' %}
+                        <div class="current-bg-preview">
+                            <div class="preview-label">Mevcut Arkaplan:</div>
+                            <img src="{{ url_for('static', filename='images/backgrounds/' + settings.background_file) }}" alt="Mevcut Arkaplan" class="bg-preview-img">
+                            <input type="hidden" name="current_background_file" value="{{ settings.background_file }}">
+                        </div>
+                        <div class="input-hint" style="margin-bottom: 0.75rem;">
+                            <i class="fas fa-info-circle"></i>
+                            Yeni bir görsel seçerek arkaplanı değiştirebilirsiniz
+                        </div>
+                        {% endif %}
+                        
+                        <div class="file-upload-zone" onclick="document.getElementById('custom_background_file_input').click()">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h4>{% if settings.background_file and settings.background_type == 'custom_bg' %}Yeni arkaplan yükle{% else %}Arkaplan yüklemek için tıklayın{% endif %}</h4>
+                                <p>JPG, PNG veya WebP formatında</p>
+                            </div>
+                            <span class="file-name" id="custom_background_file_name">Dosya seçilmedi</span>
+                        </div>
+                        <input type="file" name="custom_background_file" id="custom_background_file_input" class="hidden-input" accept="image/jpeg, image/png, image/webp">
+                    </div>
+
+                    <!-- Arkaplan Parlaklığı -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-adjust"></i>
+                            <span>Arkaplan Parlaklık/Saydımlık: <span id="opacity_display" class="opacity-value">{{ "%.1f"|format(settings.background_opacity_factor|float) }}</span></span>
+                        </label>
+                        <input type="range" name="background_opacity_factor" id="background_opacity_factor" min="0.1" max="1.0" step="0.1" value="{{ settings.background_opacity_factor }}" class="range-input-modern" oninput="document.getElementById('opacity_display').textContent = parseFloat(this.value).toFixed(1)">
+                        <div class="range-labels">
+                            <span>Koyu</span>
+                            <span>Parlak</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Karşılama Ekranı -->
+        <div class="card">
+            <div class="card-header-modern">
+                <h3>
+                    <i class="fas fa-door-open"></i>
+                    Karşılama Ekranı Ayarları
+                </h3>
+            </div>
+            <div class="card-body-modern">
+                <div class="form-grid-modern">
+                    <!-- Karşılama Metni -->
+                    <div class="form-group-modern full-width">
+                        <label class="form-label-modern">
+                            <i class="fas fa-comment-alt"></i>
+                            <span>Karşılama Ekranı Metni</span>
+                        </label>
+                        <textarea name="welcome_modal_text" id="welcome_modal_text" rows="4" class="form-input-modern" placeholder="Hoş geldiniz mesajınızı buraya yazın...">{{ settings.welcome_modal_text }}</textarea>
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Kullanıcılar uygulamayı ilk açtığında gösterilir
+                        </div>
+                    </div>
+
+                    <!-- Karşılama Ekranını Göster -->
+                    <div class="form-group-modern full-width">
+                        <label class="checkbox-label-modern">
+                            <input type="checkbox" name="welcome_modal_enabled" id="welcome_modal_enabled" {% if settings.welcome_modal_enabled == '1' %}checked{% endif %}>
+                            <span class="checkbox-text">
+                                <i class="fas fa-toggle-on"></i>
+                                Karşılama Ekranını Göster
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary-modern btn-large">
+                <i class="fas fa-save"></i> Ayarları Kaydet
+            </button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block head %}
+<style>
+    /* Card Header Modern */
+    .card-header-modern {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-header-modern h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        margin: 0;
+    }
+
+    .card-header-modern h3 i {
+        color: #64748b;
+        font-size: 1.125rem;
+    }
+
+    /* Form Grid Modern */
+    .form-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .form-group-modern {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group-modern.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label-modern {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--foreground);
+    }
+
+    .form-label-modern i {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .form-input-modern {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        color: var(--foreground);
+        font-size: 0.9375rem;
+        transition: all 0.3s;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .form-input-modern:focus {
+        outline: none;
+        border-color: #64748b;
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
+    }
+
+    .form-input-modern::placeholder {
+        color: var(--muted-foreground);
+        opacity: 0.6;
+    }
+
+    textarea.form-input-modern {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* Input Hint */
+    .input-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+        margin-top: 0.5rem;
+        opacity: 0.8;
+    }
+
+    .input-hint i {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    /* Logo Preview */
+    .current-logo-preview {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .preview-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--muted-foreground);
+    }
+
+    .btn-delete-small {
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        border: none;
+        border-radius: 0.375rem;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+    }
+
+    .btn-delete-small:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+    }
+
+    .logo-preview-container {
+        display: flex;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 0.5rem;
+    }
+
+    .logo-preview-container img {
+        max-height: 150px;
+        max-width: 250px;
+        border-radius: 0.375rem;
+    }
+
+    /* Background Preview */
+    .current-bg-preview {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+    }
+
+    .bg-preview-img {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* File Upload Zone */
+    .file-upload-zone {
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .file-upload-zone:hover {
+        border-color: #64748b;
+        background: rgba(100, 116, 139, 0.05);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #64748b;
+        margin-bottom: 1rem;
+    }
+
+    .upload-text h4 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--foreground);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .upload-text p {
+        color: var(--muted-foreground);
+        margin: 0 0 1rem 0;
+        font-size: 0.875rem;
+    }
+
+    .file-name {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(100, 116, 139, 0.2);
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        color: var(--muted-foreground);
+    }
+
+    .hidden-input {
+        display: none;
+    }
+
+    /* Color Picker */
+    .color-picker-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .color-input-modern {
+        width: 80px;
+        height: 48px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        background: transparent;
+        transition: all 0.3s;
+    }
+
+    .color-input-modern:hover {
+        border-color: #64748b;
+    }
+
+    .color-value {
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+        background: rgba(100, 116, 139, 0.2);
+        border-radius: 0.375rem;
+        color: var(--muted-foreground);
+    }
+
+    /* Preset Container */
+    .preset-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    /* Range Input */
+    .range-input-modern {
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.2);
+        outline: none;
+        -webkit-appearance: none;
+    }
+
+    .range-input-modern::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #64748b;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .range-input-modern::-webkit-slider-thumb:hover {
+        background: #475569;
+        transform: scale(1.2);
+    }
+
+    .range-input-modern::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #64748b;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .range-input-modern::-moz-range-thumb:hover {
+        background: #475569;
+        transform: scale(1.2);
+    }
+
+    .range-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+    }
+
+    .opacity-value {
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    /* Checkbox */
+    .checkbox-label-modern {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        transition: all 0.3s;
+    }
+
+    .checkbox-label-modern:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .checkbox-label-modern input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        accent-color: #64748b;
+    }
+
+    .checkbox-text {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--foreground);
+    }
+
+    .checkbox-text i {
+        color: #64748b;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-primary-modern {
+        padding: 0.875rem 1.5rem;
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        border: none;
+        border-radius: 0.5rem;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+    }
+
+    .btn-primary-modern.btn-large {
+        width: 100%;
+        justify-content: center;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-grid-modern {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .color-picker-wrapper {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .preview-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .btn-delete-small {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Scripts for color presets and file inputs
+    // File input handlers
+    const logoInput = document.getElementById('logo_file_input');
+    const logoFileName = document.getElementById('logo_file_name');
+    const bgInput = document.getElementById('custom_background_file_input');
+    const bgFileName = document.getElementById('custom_background_file_name');
+
+    if (logoInput) {
+        logoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                logoFileName.textContent = this.files[0].name;
+                logoFileName.style.color = 'var(--foreground)';
+            } else {
+                logoFileName.textContent = 'Dosya seçilmedi';
+                logoFileName.style.color = 'var(--muted-foreground)';
+            }
+        });
+    }
+
+    if (bgInput) {
+        bgInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                bgFileName.textContent = this.files[0].name;
+                bgFileName.style.color = 'var(--foreground)';
+            } else {
+                bgFileName.textContent = 'Dosya seçilmedi';
+                bgFileName.style.color = 'var(--muted-foreground)';
+            }
+        });
+    }
+
+    // Color input handlers
+    const colorStartInput = document.getElementById('primary_color_start');
+    const colorEndInput = document.getElementById('primary_color_end');
+    const colorStartValue = document.getElementById('color_start_value');
+    const colorEndValue = document.getElementById('color_end_value');
+
+    if (colorStartInput && colorStartValue) {
+        colorStartInput.addEventListener('input', function() {
+            colorStartValue.textContent = this.value;
+        });
+    }
+
+    if (colorEndInput && colorEndValue) {
+        colorEndInput.addEventListener('input', function() {
+            colorEndValue.textContent = this.value;
+        });
+    }
+
+    // Toggle background upload fields
+    function toggleBackgroundUpload() {
+        const bgType = document.getElementById('background_type').value;
+        const customBgFields = document.getElementById('custom_bg_fields');
+        if (customBgFields) {
+            customBgFields.style.display = bgType === 'custom_bg' ? 'flex' : 'none';
+        }
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleBackgroundUpload();
+    });
 </script>
 {% endblock %}

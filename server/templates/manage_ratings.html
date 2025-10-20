@@ -3,65 +3,434 @@
 {% block title %}Puan Yönetimi{% endblock %}
 
 {% block content %}
-    <header class="header">
-        <h1 style="font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-            <i class="fas fa-trophy" style="color: var(--accent-red);"></i>
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-trophy"></i>
             Puan Yönetimi
         </h1>
-        <div class="header-actions">
-            <form action="{{ url_for('reset_all_ratings') }}" method="POST" onsubmit="return confirm('TÜM oyunlara ait BÜTÜN puanları kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz!');">
-                <button type="submit" class="btn btn-danger">
-                    <i class="fas fa-trash"></i>
+        <p class="page-description">Oyunlara verilen puanları görüntüleyin ve yönetin</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header-modern">
+            <div class="header-content">
+                <h3>
+                    <i class="fas fa-star"></i>
+                    Oyun Puanları
+                </h3>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-gamepad"></i>
+                        <span>{{ games|length }} Oyun</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-poll"></i>
+                        <span>{{ games|sum(attribute='rating_count') or 0 }} Toplam Oy</span>
+                    </div>
+                </div>
+            </div>
+            <form action="{{ url_for('reset_all_ratings') }}" method="POST" onsubmit="return confirm('TÜM oyunlara ait BÜTÜN puanları kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz!');" class="header-action">
+                <button type="submit" class="btn-danger-modern">
+                    <i class="fas fa-trash-alt"></i>
                     Tüm Puanları Sıfırla
                 </button>
             </form>
         </div>
-    </header>
-
-    <div class="card full-width">
-        <div class="card-header">
-            <h2 style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary);">
-                <i class="fas fa-star" style="color: var(--accent-red);"></i>
-                Oyun Puanları
-            </h2>
-        </div>
-        <div class="card-body">
-            <table>
-                <thead>
-                    <tr>
-                        <th>
-                            <a href="{{ url_for('manage_ratings', sort_by='oyun_adi', order=next_order if sort_by == 'oyun_adi' else 'asc') }}" style="color: inherit; text-decoration: none;">
-                                Oyun Adı {% if sort_by == 'oyun_adi' %}{{ '↓' if next_order == 'asc' else '↑' }}{% endif %}
-                            </a>
-                        </th>
-                        <th style="width: 150px; text-align: center;">
-                            <a href="{{ url_for('manage_ratings', sort_by='average_rating', order=next_order if sort_by == 'average_rating' else 'desc') }}" style="color: inherit; text-decoration: none;">
-                                Ortalama Puan {% if sort_by == 'average_rating' %}{{ '↓' if next_order == 'asc' else '↑' }}{% endif %}
-                            </a>
-                        </th>
-                        <th style="width: 150px; text-align: center;">
-                            <a href="{{ url_for('manage_ratings', sort_by='rating_count', order=next_order if sort_by == 'rating_count' else 'desc') }}" style="color: inherit; text-decoration: none;">
-                                Toplam Oy {% if sort_by == 'rating_count' %}{{ '↓' if next_order == 'asc' else '↑' }}{% endif %}
-                            </a>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for game in games %}
-                    <tr>
-                        <td>{{ game.oyun_adi }}</td>
-                        <td style="text-align: center;">
-                            {% if game.average_rating is not none %}
-                                {{ "%.1f"|format(game.average_rating) }} ★
-                            {% else %}
-                                0.0 ★
-                            {% endif %}
-                        </td>
-                        <td style="text-align: center;">{{ game.rating_count if game.rating_count is not none else 0 }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        
+        <div class="card-body-modern">
+            <div class="table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable">
+                                <a href="{{ url_for('manage_ratings', sort_by='oyun_adi', order=next_order if sort_by == 'oyun_adi' else 'asc') }}" class="sort-link">
+                                    <i class="fas fa-gamepad"></i>
+                                    <span>Oyun Adı</span>
+                                    {% if sort_by == 'oyun_adi' %}
+                                        <i class="fas fa-sort-{{ 'up' if next_order == 'desc' else 'down' }} sort-icon"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort sort-icon inactive"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th class="sortable text-center">
+                                <a href="{{ url_for('manage_ratings', sort_by='average_rating', order=next_order if sort_by == 'average_rating' else 'desc') }}" class="sort-link">
+                                    <i class="fas fa-star"></i>
+                                    <span>Ortalama Puan</span>
+                                    {% if sort_by == 'average_rating' %}
+                                        <i class="fas fa-sort-{{ 'up' if next_order == 'desc' else 'down' }} sort-icon"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort sort-icon inactive"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th class="sortable text-center">
+                                <a href="{{ url_for('manage_ratings', sort_by='rating_count', order=next_order if sort_by == 'rating_count' else 'desc') }}" class="sort-link">
+                                    <i class="fas fa-poll-h"></i>
+                                    <span>Toplam Oy</span>
+                                    {% if sort_by == 'rating_count' %}
+                                        <i class="fas fa-sort-{{ 'up' if next_order == 'desc' else 'down' }} sort-icon"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort sort-icon inactive"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if games %}
+                            {% for game in games %}
+                            <tr class="table-row">
+                                <td class="game-name">
+                                    <div class="game-info">
+                                        <i class="fas fa-gamepad game-icon"></i>
+                                        <span>{{ game.oyun_adi }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="rating-display">
+                                        {% if game.average_rating is not none and game.average_rating > 0 %}
+                                            <span class="rating-value">{{ "%.1f"|format(game.average_rating) }}</span>
+                                            <div class="stars">
+                                                {% set rating = game.average_rating %}
+                                                {% for i in range(5) %}
+                                                    {% if rating >= i + 1 %}
+                                                        <i class="fas fa-star star-filled"></i>
+                                                    {% elif rating >= i + 0.5 %}
+                                                        <i class="fas fa-star-half-alt star-half"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star star-empty"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <span class="rating-value no-rating">0.0</span>
+                                            <div class="stars">
+                                                {% for i in range(5) %}
+                                                    <i class="far fa-star star-empty"></i>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="vote-count">
+                                        <i class="fas fa-users"></i>
+                                        <span>{{ game.rating_count if game.rating_count is not none else 0 }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="no-data">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>Henüz puanlanmış oyun bulunmuyor</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+{% endblock %}
+
+{% block head %}
+<style>
+    /* Card Header Modern */
+    .card-header-modern {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .card-header-modern h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        margin: 0;
+    }
+
+    .card-header-modern h3 i {
+        color: #64748b;
+        font-size: 1.125rem;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex: 1;
+    }
+
+    .header-stats {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(100, 116, 139, 0.2);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--muted-foreground);
+    }
+
+    .stat-item i {
+        color: #64748b;
+    }
+
+    .header-action {
+        margin: 0;
+    }
+
+    /* Danger Button */
+    .btn-danger-modern {
+        padding: 0.75rem 1.25rem;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        border: none;
+        border-radius: 0.5rem;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+    }
+
+    .btn-danger-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+        background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    }
+
+    /* Table Container */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .modern-table thead {
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .modern-table thead th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--muted-foreground);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        white-space: nowrap;
+    }
+
+    .modern-table thead th.text-center {
+        text-align: center;
+    }
+
+    .sort-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: inherit;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .sort-link:hover {
+        color: #64748b;
+    }
+
+    .sort-link i:first-child {
+        font-size: 0.875rem;
+    }
+
+    .sort-icon {
+        font-size: 0.75rem;
+        color: #64748b;
+        transition: all 0.3s;
+    }
+
+    .sort-icon.inactive {
+        opacity: 0.3;
+    }
+
+    .modern-table tbody tr {
+        transition: all 0.3s;
+    }
+
+    .modern-table tbody tr:hover {
+        background: rgba(100, 116, 139, 0.1);
+    }
+
+    .modern-table tbody td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 0.9375rem;
+    }
+
+    .modern-table tbody td.text-center {
+        text-align: center;
+    }
+
+    /* Game Name Cell */
+    .game-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .game-icon {
+        color: #64748b;
+        font-size: 1.125rem;
+    }
+
+    /* Rating Display */
+    .rating-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .rating-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+    .rating-value.no-rating {
+        color: var(--muted-foreground);
+        opacity: 0.5;
+    }
+
+    .stars {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .stars i {
+        font-size: 0.875rem;
+    }
+
+    .star-filled {
+        color: #fbbf24;
+    }
+
+    .star-half {
+        color: #fbbf24;
+    }
+
+    .star-empty {
+        color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Vote Count */
+    .vote-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(100, 116, 139, 0.15);
+        border-radius: 0.5rem;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    .vote-count i {
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+
+    /* No Data State */
+    .no-data {
+        text-align: center;
+        padding: 4rem 2rem !important;
+        color: var(--muted-foreground);
+    }
+
+    .no-data i {
+        font-size: 3rem;
+        color: #64748b;
+        opacity: 0.3;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .no-data p {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .card-header-modern {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .header-stats {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .header-action {
+            width: 100%;
+        }
+
+        .btn-danger-modern {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modern-table {
+            font-size: 0.875rem;
+        }
+
+        .modern-table thead th,
+        .modern-table tbody td {
+            padding: 0.875rem 1rem;
+        }
+
+        .rating-value {
+            font-size: 1.125rem;
+        }
+
+        .stars i {
+            font-size: 0.75rem;
+        }
+    }
+</style>
 {% endblock %}

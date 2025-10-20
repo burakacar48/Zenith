@@ -5,7 +5,7 @@
 {% block head %}
     <link rel="stylesheet" type="text/css" href="https://unpkg.com/pell/dist/pell.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/tomorrow-night-eighties.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
 {% endblock %}
 
 {% block content %}
@@ -55,7 +55,7 @@
                         </label>
                         <input type="text" name="youtube_id" id="youtube_id" value="{{ game.youtube_id or '' }}" placeholder="gmA6MrX81z4" class="form-input">
                         <div class="input-hint">
-                            <span style="font-style: italic; opacity: 0.8;">https://www.youtube.com/watch?v=</span><strong style="color: var(--primary);">gmA6MrX81z4</strong>
+                            <span style="font-style: italic; opacity: 0.8;">https://www.youtube.com/watch?v=</span><strong style="color: #64748b;">gmA6MrX81z4</strong>
                             <span style="margin-left: 0.5rem; opacity: 0.7;">— YouTube linkini veya video ID'sini yapıştırabilirsiniz</span>
                         </div>
                     </div>
@@ -126,7 +126,7 @@
         <div id="gorsel-tab" class="tab-content">
             <div class="card" style="padding: 1.5rem;">
                 <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">
-                    <i class="fas fa-image" style="margin-right: 0.5rem; color: var(--primary);"></i>
+                    <i class="fas fa-image" style="margin-right: 0.5rem; color: #64748b;"></i>
                     Kapak Görseli
                 </h3>
                 
@@ -168,7 +168,7 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">
-                        <i class="fas fa-images" style="margin-right: 0.5rem; color: var(--primary);"></i>
+                        <i class="fas fa-images" style="margin-right: 0.5rem; color: #64748b;"></i>
                         Galeri Görselleri
                     </h3>
                     <div id="delete-warning" class="delete-warning">
@@ -309,7 +309,7 @@
                                 </div>
                                 <p style="margin: 0; font-size: 0.875rem; color: var(--muted-foreground);">
                                     {% if game.yuzde_yuz_save_file %}
-                                        <strong style="color: var(--primary);">{{ game.yuzde_yuz_save_file }}</strong>
+                                        <strong style="color: #64748b;">{{ game.yuzde_yuz_save_file }}</strong>
                                     {% else %}
                                         Save dosyasını yüklemek için tıklayın
                                     {% endif %}
@@ -341,7 +341,7 @@
                                     Script Editörü
                                 </button>
                             </div>
-                            <textarea id="bat_script" name="bat_script" rows="8" class="form-input" style="font-family: 'Consolas', 'Courier New', monospace; font-size: 0.875rem;">{{ game.calistirma_verisi_dict.bat_script or '@echo off
+                            <textarea id="bat_script" name="bat_script" rows="8" style="display: none;">{{ game.calistirma_verisi_dict.bat_script or '@echo off
 REM Auto-generated startup script for ' + game.oyun_adi + '
 REM Game: ' + game.oyun_adi + '
 REM EXE Path: %EXE_PATH%
@@ -349,6 +349,7 @@ REM EXE Path: %EXE_PATH%
 echo Starting ' + game.oyun_adi + '...
 start "" "%EXE_PATH%"
 ' }}</textarea>
+                            <div id="bat-script-editor" style="border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; overflow: hidden;"></div>
                         </div>
                     </div>
                 </div>
@@ -368,7 +369,7 @@ start "" "%EXE_PATH%"
             <a href="{{ url_for('list_games') }}" style="padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; color: var(--foreground); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
                 <i class="fas fa-arrow-left"></i> Geri Dön
             </a>
-            <button type="submit" style="padding: 0.75rem 1.5rem; background: var(--primary); border: none; border-radius: 0.5rem; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+            <button type="submit" style="padding: 0.75rem 1.5rem; background: #64748b; border: none; border-radius: 0.5rem; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
                 <i class="fas fa-save"></i> Oyunu Güncelle
             </button>
         </div>
@@ -384,8 +385,10 @@ start "" "%EXE_PATH%"
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/shell/shell.min.js"></script>
     <script>
-        // Global CodeMirror instance
+        // Global CodeMirror instances
         let batCodeMirror = null;
+        let batScriptEditor = null;
+        
         document.addEventListener('DOMContentLoaded', () => {
             // Check URL hash and restore tab state
             const hash = window.location.hash.substring(1); // Remove # character
@@ -425,6 +428,33 @@ start "" "%EXE_PATH%"
             const currentType = '{{ game.calistirma_tipi or "exe" }}';
             selectExecutionType(currentType);
 
+            // Initialize BAT Script CodeMirror Editor
+            const batScriptTextarea = document.getElementById('bat_script');
+            if (batScriptTextarea) {
+                batScriptEditor = CodeMirror(document.getElementById('bat-script-editor'), {
+                    value: batScriptTextarea.value,
+                    mode: 'shell',
+                    theme: 'monokai',
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    indentUnit: 4,
+                    tabSize: 4,
+                    indentWithTabs: false,
+                    styleActiveLine: true,
+                    matchBrackets: true,
+                    autoCloseBrackets: true,
+                    placeholder: 'Başlatma scriptinizi buraya yazın...'
+                });
+                
+                // Set editor height
+                batScriptEditor.setSize(null, '300px');
+                
+                // Sync with textarea
+                batScriptEditor.on('change', function() {
+                    batScriptTextarea.value = batScriptEditor.getValue();
+                });
+            }
+
             // YouTube ID auto-detection
             const youtubeInput = document.getElementById('youtube_id');
             if (youtubeInput) {
@@ -454,9 +484,9 @@ start "" "%EXE_PATH%"
                 const input = badge.previousElementSibling;
                 const updateStyle = () => {
                     if (input.checked) {
-                        badge.style.background = 'var(--primary)';
+                        badge.style.background = '#64748b';
                         badge.style.color = 'white';
-                        badge.style.borderColor = 'var(--primary)';
+                        badge.style.borderColor = '#64748b';
                     } else {
                         badge.style.background = 'rgba(255, 255, 255, 0.05)';
                         badge.style.color = '';
@@ -473,9 +503,9 @@ start "" "%EXE_PATH%"
                 
                 const updateStyle = () => {
                     if (input.checked) {
-                        badge.style.background = 'var(--primary)';
+                        badge.style.background = '#64748b';
                         badge.style.color = 'white';
-                        badge.style.borderColor = 'var(--primary)';
+                        badge.style.borderColor = '#64748b';
                     } else {
                         badge.style.background = 'rgba(255, 255, 255, 0.05)';
                         badge.style.color = '';
@@ -760,7 +790,7 @@ start "" "%EXE_PATH%"
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const saveZone = document.querySelector('.save-upload-zone p');
-                saveZone.innerHTML = `<strong style="color: var(--primary);">${file.name}</strong>`;
+                saveZone.innerHTML = `<strong style="color: #64748b;">${file.name}</strong>`;
             }
         };
 
@@ -809,90 +839,93 @@ start "" "%EXE_PATH%"
                     <div class="modal-body">
                         <!-- Shortcut Buttons -->
                         <div class="shortcut-buttons">
-                            <div class="shortcut-group">
-                                <h4><i class="fas fa-link"></i> Link & Klasör İşlemleri</h4>
-                                <div class="button-grid">
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mklink /d \\"%SAVE_PATH%\\" \\"%SAVE_PATH%\\"')" title="Symbolic Link Oluştur">
-                                        <i class="fas fa-link"></i>
-                                        <span>Symbolic Link</span>
-                                    </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mklink /h \\"%SAVE_PATH%\\" \\"%SAVE_PATH%\\"')" title="Hard Link Oluştur">
-                                        <i class="fas fa-link"></i>
-                                        <span>Hard Link</span>
-                                    </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mkdir \\"%SAVE_PATH%\\"')" title="Klasör Oluştur">
-                                        <i class="fas fa-folder-plus"></i>
-                                        <span>MKDIR</span>
-                                    </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('xcopy \\"%SAVE_PATH%\\" \\"%SAVE_PATH%\\" /E /I /Y')" title="Klasör Kopyala">
-                                        <i class="fas fa-copy"></i>
-                                        <span>XCOPY</span>
-                                    </button>
-                                </div>
-                            </div>
-                            
+                            <!-- Registry İşlemleri -->
                             <div class="shortcut-group">
                                 <h4><i class="fas fa-cog"></i> Registry İşlemleri</h4>
                                 <div class="button-grid">
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg import \\"game_settings.reg\\"" title="Registry Dosyası İçe Aktar">
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg import \\\"Z:\\\\Games\\\\GTA5\\\\registry.reg\\\"')" title="Registry dosyasını import et">
                                         <i class="fas fa-file-import"></i>
-                                        <span>Reg Import</span>
+                                        <span>Import Registry</span>
                                     </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('regedit /s \\"game_settings.reg\\"" title="Registry Dosyası Çalıştır">
-                                        <i class="fas fa-play"></i>
-                                        <span>Regedit /S</span>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg add \\\"HKCU\\\\Software\\\\Rockstar Games\\\\GTA V\\\" /v Language /t REG_SZ /d \\\"tr-TR\\\" /f')" title="Registry değeri ekle">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <span>Add Registry</span>
                                     </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg add \\"HKLM\\\\SOFTWARE\\\\GameName\\" /v \\"Setting\\" /t REG_SZ /d \\"Value\\" /f')" title="Registry Değeri Ekle">
-                                        <i class="fas fa-plus"></i>
-                                        <span>Reg Add</span>
-                                    </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg delete \\"HKLM\\\\SOFTWARE\\\\GameName\\" /f')" title="Registry Anahtarı Sil">
-                                        <i class="fas fa-trash"></i>
-                                        <span>Reg Delete</span>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('reg delete \\\"HKCU\\\\Software\\\\MyGame\\\" /f')" title="Registry anahtarını sil">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span>Delete Registry</span>
                                     </button>
                                 </div>
                             </div>
                             
+                            <!-- MKLink İşlemleri -->
                             <div class="shortcut-group">
-                                <h4><i class="fas fa-terminal"></i> Komut Satırı</h4>
+                                <h4><i class="fas fa-link"></i> MKLink İşlemleri</h4>
                                 <div class="button-grid">
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('echo Starting %GAME_NAME%...')" title="Echo Mesaj">
-                                        <i class="fas fa-comment"></i>
-                                        <span>Echo</span>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mklink /D \\\"%USERPROFILE%\\\\Documents\\\\MyGame\\\\Saves\\\" \\\"Z:\\\\Saves\\\\MyGame\\\"')" title="Klasör için symbolic link oluştur">
+                                        <i class="fas fa-folder"></i>
+                                        <span>Directory Link</span>
                                     </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('timeout /t 3 /nobreak')" title="Bekle">
-                                        <i class="fas fa-clock"></i>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mklink \\\"%APPDATA%\\\\MyGame\\\\config.ini\\\" \\\"Z:\\\\Configs\\\\config.ini\\\"')" title="Dosya için hard link oluştur">
+                                        <i class="fas fa-file"></i>
+                                        <span>File Link</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('mklink /J \\\"C:\\\\Data\\\\MyGame\\\" \\\"Z:\\\\Shared\\\\MyGame\\\"')" title="Junction oluştur">
+                                        <i class="fas fa-folder-tree"></i>
+                                        <span>Junction</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Dosya Kopyalama -->
+                            <div class="shortcut-group">
+                                <h4><i class="fas fa-copy"></i> Dosya Kopyalama</h4>
+                                <div class="button-grid">
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('xcopy \\\"Z:\\\\Cache\\\\MyGame\\\" \\\"%LOCALAPPDATA%\\\\MyGame\\\" /E /I /Y')" title="Xcopy ile dosya kopyala">
+                                        <i class="fas fa-clone"></i>
+                                        <span>XCopy</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('robocopy \\\"Z:\\\\Configs\\\" \\\"C:\\\\ProgramData\\\\MyGame\\\" /MIR /R:1 /W:1')" title="Robocopy ile senkronize et">
+                                        <i class="fas fa-sync"></i>
+                                        <span>Robocopy</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Sistem Komutları -->
+                            <div class="shortcut-group">
+                                <h4><i class="fas fa-terminal"></i> Sistem Komutları</h4>
+                                <div class="button-grid">
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('timeout /t 10 /nobreak >nul')" title="10 saniye bekle">
+                                        <i class="fas fa-hourglass-half"></i>
                                         <span>Timeout</span>
                                     </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('start "" \\"%EXE_PATH%\\""')" title="Program Başlat">
-                                        <i class="fas fa-play"></i>
-                                        <span>Start</span>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('start \\\"\\\" \\\"D:\\\\Games\\\\Valorant\\\\VALORANT.exe\\\"')" title="Program başlat">
+                                        <i class="fas fa-rocket"></i>
+                                        <span>Start Program</span>
                                     </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('taskkill /f /im game.exe')" title="Programı Kapat">
-                                        <i class="fas fa-stop"></i>
-                                        <span>Taskkill</span>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('taskkill /IM updater.exe /F')" title="Süreci zorla kapat">
+                                        <i class="fas fa-power-off"></i>
+                                        <span>Kill Process</span>
+                                    </button>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('echo [🚀] Oyun başlatılıyor...')" title="Mesaj göster">
+                                        <i class="fas fa-comment"></i>
+                                        <span>Echo Message</span>
                                     </button>
                                 </div>
                             </div>
                             
+                            <!-- Temizleme İşlemleri -->
                             <div class="shortcut-group">
-                                <h4><i class="fas fa-file"></i> Dosya İşlemleri</h4>
+                                <h4><i class="fas fa-broom"></i> Temizleme İşlemleri</h4>
                                 <div class="button-grid">
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('copy \\"source.txt\\" \\"destination.txt\\"" title="Dosya Kopyala">
-                                        <i class="fas fa-copy"></i>
-                                        <span>Copy</span>
-                                    </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('move \\"source.txt\\" \\"destination.txt\\"" title="Dosya Taşı">
-                                        <i class="fas fa-arrows-alt"></i>
-                                        <span>Move</span>
-                                    </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('del \\"file.txt\\"" title="Dosya Sil">
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('del /q /f \\\"%TEMP%\\\\*.*\\\"')" title="Temp dosyalarını temizle">
                                         <i class="fas fa-trash"></i>
-                                        <span>Delete</span>
+                                        <span>Delete Temp</span>
                                     </button>
-                                    <button type="button" class="shortcut-btn" onclick="insertCommand('if exist \\"file.txt\\" (echo File exists) else (echo File not found)')" title="Dosya Kontrol">
-                                        <i class="fas fa-search"></i>
-                                        <span>If Exist</span>
+                                    <button type="button" class="shortcut-btn" onclick="insertCommand('rd /s /q \\\"%LOCALAPPDATA%\\\\CrashDumps\\\"')" title="Klasörü sil">
+                                        <i class="fas fa-folder-minus"></i>
+                                        <span>Remove Dir</span>
                                     </button>
                                 </div>
                             </div>
@@ -925,7 +958,7 @@ start "" "%EXE_PATH%"
                 batCodeMirror = CodeMirror(container, {
                     value: currentScript,
                     mode: 'shell',
-                    theme: 'tomorrow-night-eighties',
+                    theme: 'monokai',
                     lineNumbers: true,
                     lineWrapping: true,
                     indentUnit: 4,
@@ -947,7 +980,9 @@ start "" "%EXE_PATH%"
             if (batCodeMirror) {
                 const doc = batCodeMirror.getDoc();
                 const cursor = doc.getCursor();
-                doc.replaceRange(command, cursor);
+                // Add newline before if not at start of document
+                const prefix = cursor.line > 0 || cursor.ch > 0 ? '\n' : '';
+                doc.replaceRange(prefix + command + '\n', cursor);
                 batCodeMirror.focus();
             }
         };
@@ -1054,9 +1089,9 @@ start "" "%EXE_PATH%"
 
         .tab-btn.active {
             color: white;
-            background: linear-gradient(135deg, var(--primary) 0%, #b91c1c 100%);
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
             box-shadow: 
-                0 4px 12px rgba(220, 38, 38, 0.3),
+                0 4px 12px rgba(100, 116, 139, 0.3),
                 0 2px 4px rgba(0, 0, 0, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             transform: translateY(-2px);
@@ -1101,8 +1136,8 @@ start "" "%EXE_PATH%"
         }
 
         .upload-zone:hover {
-            border-color: var(--primary);
-            background: rgba(220, 38, 38, 0.05);
+            border-color: #64748b;
+            background: rgba(100, 116, 139, 0.05);
         }
 
         .upload-zone.upload-hidden {
@@ -1148,7 +1183,7 @@ start "" "%EXE_PATH%"
         }
 
         .cover-image-card:hover {
-            border-color: var(--primary);
+            border-color: #64748b;
         }
 
         .cover-image-wrapper {
@@ -1182,16 +1217,16 @@ start "" "%EXE_PATH%"
         }
 
         .image-card:hover {
-            border-color: var(--primary);
+            border-color: #64748b;
         }
 
         .image-card.selected {
-            border-color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            border-color: #64748b;
+            background: rgba(100, 116, 139, 0.1);
         }
 
         .image-card.selected .selection-indicator {
-            background: #ef4444;
+            background: #64748b;
             border-color: #ef4444;
             color: white;
             opacity: 1;
@@ -1263,7 +1298,7 @@ start "" "%EXE_PATH%"
         }
 
         .action-btn.delete {
-            background: rgba(239, 68, 68, 0.9);
+            background: rgba(100, 116, 139, 0.9);
             color: white;
         }
 
@@ -1297,8 +1332,8 @@ start "" "%EXE_PATH%"
         }
 
         #aciklama-editor:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+            border-color: #64748b;
+            box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
         }
 
         .pell-actionbar {
@@ -1350,15 +1385,15 @@ start "" "%EXE_PATH%"
         }
         
         .pell-button-selected {
-            background: linear-gradient(135deg, var(--primary) 0%, #b91c1c 100%);
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
             color: white;
-            border-color: var(--primary);
-            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+            border-color: #64748b;
+            box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
             transform: translateY(-1px);
         }
 
         .pell-button-selected:hover {
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
         }
 
         /* Execution Button Styles */
@@ -1439,7 +1474,7 @@ start "" "%EXE_PATH%"
         }
 
         .form-label i {
-            color: var(--primary);
+            color: #64748b;
             font-size: 1.125rem;
         }
 
@@ -1516,20 +1551,20 @@ start "" "%EXE_PATH%"
             align-items: center;
             gap: 0.625rem;
             padding: 0.75rem 1.25rem;
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
-            border: 1.5px solid rgba(239, 68, 68, 0.4);
+            background: linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(100, 116, 139, 0.15) 100%);
+            border: 1.5px solid rgba(100, 116, 139, 0.4);
             border-radius: 1rem;
             color: #fca5a5;
             font-size: 0.875rem;
             font-weight: 600;
             backdrop-filter: blur(8px);
             animation: slideInRight 0.3s ease-out;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+            box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2);
         }
 
         .delete-warning i {
             font-size: 1.125rem;
-            color: #ef4444;
+            color: #64748b;
             animation: pulse 2s ease-in-out infinite;
         }
 
@@ -1599,7 +1634,7 @@ start "" "%EXE_PATH%"
 
         .save-upload-zone:hover {
             border-color: var(--primary);
-            background: rgba(220, 38, 38, 0.05);
+            background: rgba(100, 116, 139, 0.05);
         }
 
         /* Checkbox Styles */
@@ -1964,20 +1999,20 @@ start "" "%EXE_PATH%"
 
         .disk-card:hover {
             border-color: var(--primary);
-            background: rgba(220, 38, 38, 0.1);
+            background: rgba(100, 116, 139, 0.1);
             transform: translateY(-1px);
         }
 
         .disk-card.selected {
             border-color: var(--primary);
-            background: rgba(220, 38, 38, 0.2);
-            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.3);
+            background: rgba(100, 116, 139, 0.2);
+            box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.3);
         }
 
         .disk-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, var(--primary), #b91c1c);
+            background: linear-gradient(135deg, #64748b, #475569);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -2029,7 +2064,7 @@ start "" "%EXE_PATH%"
 
         .space-used {
             height: 100%;
-            background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #ef4444 90%);
+            background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #64748b 90%);
             transition: width 0.3s ease;
         }
 
@@ -2047,6 +2082,36 @@ start "" "%EXE_PATH%"
         .no-disks i {
             color: #f59e0b;
             font-size: 1.25rem;
+        }
+
+        /* CodeMirror BAT Script Editor Styling */
+        #bat-script-editor .CodeMirror {
+            background: rgba(0, 0, 0, 0.1) !important;
+            border: none;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        #bat-script-editor .CodeMirror-gutters {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #bat-script-editor .CodeMirror-linenumber {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        #bat-script-editor .CodeMirror-cursor {
+            border-left: 1px solid #fff;
+        }
+
+        #bat-script-editor .CodeMirror-activeline-background {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        #bat-script-editor .CodeMirror-selected {
+            background: rgba(255, 255, 255, 0.1) !important;
         }
     </style>
 {% endblock %}
