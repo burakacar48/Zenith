@@ -342,7 +342,7 @@
             <p class="login-subtitle">Yeni Nesil Oyun Menüsü</p>
         </div>
 
-        <form class="login-form" id="loginForm" method="POST">
+        <form class="login-form" id="loginForm" method="POST" action="{{ url_for('admin_login') }}">
             <!-- Flash Messages Area -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -355,6 +355,8 @@
                 {% endif %}
             {% endwith %}
 
+            <div id="dynamicAlerts"></div>
+
             <div class="form-group">
                 <label for="username">Kullanıcı Adı</label>
                 <input 
@@ -364,7 +366,6 @@
                     placeholder="Kullanıcı adınızı girin"
                     required
                     autocomplete="username"
-                    value="{{ request.form.username if request.form.username }}"
                 >
                 <i class="fas fa-user input-icon"></i>
             </div>
@@ -387,7 +388,7 @@
                     <input type="checkbox" id="remember" name="remember">
                     <label for="remember">Beni Hatırla</label>
                 </div>
-                <a href="#" class="forgot-link">Şifremi Unuttum</a>
+                <a href="https://onurmedya.tr/burak/customer_login.php" target="_blank" class="forgot-link">Panel Girişi</a>
             </div>
 
             <button type="submit" class="login-button" id="loginBtn">
@@ -408,59 +409,45 @@
     </div>
 
     <script>
-        // Form submission handling with loading state
+        // Helper function to show notifications
+        function showNotification(message, type) {
+            // Remove existing dynamic alerts
+            const alertsContainer = document.getElementById('dynamicAlerts');
+            alertsContainer.innerHTML = '';
+
+            // Create new alert
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i>
+                <span>${message}</span>
+            `;
+
+            alertsContainer.appendChild(alert);
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        }
+
+        // Form submission handling
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             const loginBtn = document.getElementById('loginBtn');
             const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-
+            const password = document.getElementById('password').value;
+            
             // Basic validation
             if (!username || !password) {
                 e.preventDefault();
-                showNotification('Lütfen kullanıcı adı ve şifrenizi girin.', 'error');
-                return;
+                showNotification('Kullanıcı adı ve şifre gereklidir.', 'error');
+                return false;
             }
-
+            
             // Show loading state
             loginBtn.classList.add('loading');
             loginBtn.disabled = true;
-
-            // Let the form submit naturally
-            // Remove loading state after 3 seconds if still on page (error case)
-            setTimeout(() => {
-                loginBtn.classList.remove('loading');
-                loginBtn.disabled = false;
-            }, 3000);
-        });
-
-        // Input focus enhancement
-        document.querySelectorAll('.form-group input').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.classList.add('focused');
-            });
-
-            input.addEventListener('blur', function() {
-                this.parentElement.classList.remove('focused');
-            });
-        });
-
-        // Forgot password link handler
-        document.querySelector('.forgot-link').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Şifre sıfırlama özelliği yakında eklenecek.');
-        });
-
-        // Auto-hide flash messages after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    alert.style.opacity = '0';
-                    alert.style.transition = 'opacity 0.3s ease';
-                    setTimeout(() => alert.remove(), 300);
-                }, 5000);
-            });
         });
     </script>
-</body>
-</html>

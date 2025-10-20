@@ -738,40 +738,57 @@ def admin_login():
         return redirect(url_for('admin_index'))
     
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
+        customer_id = request.form.get('username', '').strip()
         password = request.form.get('password', '')
         remember_me = request.form.get('remember')  # "Beni hatırla" checkbox'ı
         
-        if not username or not password:
-            flash('Kullanıcı adı ve şifre gereklidir.', 'error')
+        if not customer_id or not password:
+            flash('Müşteri ID ve şifre gereklidir.', 'error')
             return render_template('admin_login.html')
         
-        # Admin kullanıcısını kontrol et
-        conn = get_db_connection()
+        # Panel API'sinden doğrulama yap
         try:
-            admin_user = conn.execute('SELECT * FROM admin_users WHERE username = ?', (username,)).fetchone()
+            api_url = "https://onurmedya.tr/burak/admin_auth_api.php"
+            payload = {
+                'customer_id': customer_id,
+                'password': password
+            }
             
-            if admin_user and check_password_hash(admin_user['password_hash'], password):
-                # Session ayarları
-                session.permanent = bool(remember_me)  # "Beni hatırla" seçiliyse kalıcı session
-                if remember_me:
-                    # 30 gün hatırla
-                    app.permanent_session_lifetime = timedelta(days=30)
+            response = requests.post(api_url, json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if data.get('success'):
+                    # API'den başarılı yanıt geldi
+                    customer_data = data.get('data', {})
+                    
+                    # Session ayarları
+                    session.permanent = bool(remember_me)
+                    if remember_me:
+                        app.permanent_session_lifetime = timedelta(days=30)
+                    else:
+                        app.permanent_session_lifetime = timedelta(hours=8)
+                    
+                    session['admin_logged_in'] = True
+                    session['admin_customer_id'] = customer_data.get('customer_id')
+                    session['admin_name'] = customer_data.get('name')
+                    session['admin_company'] = customer_data.get('company')
+                    session['admin_session_token'] = customer_data.get('session_token')
+                    
+                    flash('Başarıyla giriş yaptınız!', 'success')
+                    return redirect(url_for('admin_index'))
                 else:
-                    # Normal session (tarayıcı kapanınca bitsin)
-                    app.permanent_session_lifetime = timedelta(hours=8)
-                
-                session['admin_logged_in'] = True
-                session['admin_username'] = admin_user['username']
-                session['admin_id'] = admin_user['id']
-                
-                flash('Başarıyla giriş yaptınız!', 'success')
-                return redirect(url_for('admin_index'))
+                    flash(data.get('message', 'Geçersiz müşteri ID veya şifre.'), 'error')
             else:
-                flash('Geçersiz kullanıcı adı veya şifre.', 'error')
+                flash(f'API bağlantı hatası: HTTP {response.status_code}', 'error')
                 
-        finally:
-            conn.close()
+        except requests.Timeout:
+            flash('API bağlantısı zaman aşımına uğradı. Lütfen tekrar deneyin.', 'error')
+        except requests.RequestException as e:
+            flash(f'API bağlantı hatası: {str(e)}', 'error')
+        except Exception as e:
+            flash(f'Bir hata oluştu: {str(e)}', 'error')
     
     return render_template('admin_login.html')
 
