@@ -7,6 +7,30 @@ $address = $city = $district = "";
 $form_err = "";
 $form_success = "";
 
+// Benzersiz 5 haneli ID oluşturma fonksiyonu
+function generateUniqueCustomerId($mysqli) {
+    do {
+        $customer_id = str_pad(rand(10000, 99999), 5, '0', STR_PAD_LEFT);
+        $check = $mysqli->prepare("SELECT customer_id FROM customers WHERE customer_id = ?");
+        $check->bind_param("s", $customer_id);
+        $check->execute();
+        $result = $check->get_result();
+        $check->close();
+    } while ($result->num_rows > 0);
+    
+    return $customer_id;
+}
+
+// Random 6 karakterli password oluşturma fonksiyonu
+function generateRandomPassword() {
+    $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    $password = '';
+    for ($i = 0; $i < 6; $i++) {
+        $password .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $password;
+}
+
 // Form gönderildiğinde çalışacak kod bloğu
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_customer'])) {
 
@@ -31,17 +55,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_customer'])) {
         $form_err = "Lütfen tüm zorunlu alanları doldurun (Müşteri Adı, Tarihler).";
     } else {
         
+        // Benzersiz müşteri ID'si ve şifre oluştur
+        $customer_id = generateUniqueCustomerId($mysqli);
+        $plain_password = generateRandomPassword();
+        $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
+        
         // 1. Müşteriyi veritabanına ekle
-        // SORGUNUN GÜNCELLENMESİ: 7 parametre eklendi
-        $sql_customer = "INSERT INTO customers (name, email, phone, company, address, city, district) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $sql_customer = "INSERT INTO customers (customer_id, customer_password, name, email, phone, company, address, city, district) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if ($stmt_customer = $mysqli->prepare($sql_customer)) {
-            // BAĞLAMANIN GÜNCELLENMESİ: sssssss (name, email, phone, company, address, city, district)
-            $stmt_customer->bind_param("sssssss", $name, $email, $phone, $company, $address, $city, $district);
+            $stmt_customer->bind_param("sssssssss", $customer_id, $hashed_password, $name, $email, $phone, $company, $address, $city, $district);
             
             if ($stmt_customer->execute()) {
                 // Başarılı olursa, eklenen müşterinin ID'sini al
-                $customer_id = $stmt_customer->insert_id;
+                $db_customer_id = $stmt_customer->insert_id;
 
                 // 2. Benzersiz bir lisans anahtarı oluştur (varsayılan tipe göre)
                 $prefix = "KA-STD"; // Standard için sabit prefix
@@ -51,12 +78,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_customer'])) {
                 $sql_license = "INSERT INTO licenses (customer_id, license_key, license_type, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, 'active')";
                 
                 if ($stmt_license = $mysqli->prepare($sql_license)) {
-                    $stmt_license->bind_param("issss", $customer_id, $license_key, $license_type, $start_date, $end_date);
+                    $stmt_license->bind_param("issss", $db_customer_id, $license_key, $license_type, $start_date, $end_date);
                     
                     if ($stmt_license->execute()) {
-                        $form_success = "Müşteri ve lisansı başarıyla oluşturuldu! Müşteriler sekmesine yönlendiriliyorsunuz...";
-                        // Başarılı kayıt sonrası 2 saniye sonra yönlendir
-                        header("refresh:2;url=index.php?tab=customers");
+                        $form_success = "
+                            <div class='space-y-2'>
+                                <p class='font-semibold'>Müşteri ve lisans başarıyla oluşturuldu!</p>
+                                <div class='bg-blue-50 p-4 rounded-lg border border-blue-200'>
+                                    <p class='text-sm mb-2'><strong>Müşteri Giriş Bilgileri:</strong></p>
+                                    <p class='text-sm'>Müşteri ID: <span class='font-mono font-bold text-blue-600'>{$customer_id}</span></p>
+                                    <p class='text-sm'>Şifre: <span class='font-mono font-bold text-blue-600'>{$plain_password}</span></p>
+                                    <p class='text-xs text-gray-600 mt-2'>⚠️ Bu bilgileri mutlaka müşteriye iletin. Müşteriler sekmesine yönlendiriliyorsunuz...</p>
+                                </div>
+                            </div>
+                        ";
+                        // Başarılı kayıt sonrası 5 saniye sonra yönlendir
+                        header("refresh:5;url=index.php?tab=customers");
                     } else {
                         $form_err = "Lisans oluşturulurken bir hata oluştu.";
                     }

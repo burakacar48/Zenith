@@ -1,6 +1,6 @@
 <?php
 // Müşteri ve lisans bilgilerini birleştirerek çek
-$sql = "SELECT c.id as customer_id, c.name, c.company, l.license_key, l.license_type, l.start_date, l.end_date, l.status, l.id as license_id
+$sql = "SELECT c.id as customer_id, c.customer_id as customer_unique_id, c.name, c.company, l.license_key, l.license_type, l.start_date, l.end_date, l.status, l.id as license_id
         FROM customers c
         JOIN licenses l ON c.id = l.customer_id
         ORDER BY c.name ASC";
@@ -78,6 +78,12 @@ $avatarColors = [
                             <?php echo getStatusBadge($row['status']); ?>
                         </div>
                         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                            <?php if(!empty($row['customer_unique_id'])): ?>
+                            <div class="flex items-center gap-1.5 text-gray-600">
+                                <i data-lucide="user" class="w-4 h-4 flex-shrink-0"></i>
+                                <span class="font-mono text-xs font-semibold text-blue-600">ID: <?php echo htmlspecialchars($row['customer_unique_id']); ?></span>
+                            </div>
+                            <?php endif; ?>
                             <div class="flex items-center gap-1.5 text-gray-600">
                                 <i data-lucide="key" class="w-4 h-4 flex-shrink-0"></i>
                                 <span class="font-mono text-xs license-blur"><?php echo htmlspecialchars($row['license_key']); ?></span>
