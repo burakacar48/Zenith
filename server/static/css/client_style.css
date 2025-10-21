@@ -117,13 +117,13 @@ body {
 }
 
 .nav-section .nav-item:hover {
-    background: rgba(239, 68, 68, 0.1);
+    background: color-mix(in srgb, var(--primary-start) 10%, transparent);
     color: #fff;
     border-left-color: var(--primary-start);
 }
 
 .nav-section .nav-item.active {
-    background: rgba(239, 68, 68, 0.15);
+    background: color-mix(in srgb, var(--primary-start) 15%, transparent);
     color: var(--primary-start);
     border-left-color: var(--primary-start);
     font-weight: 600;
@@ -201,7 +201,7 @@ body {
 }
 
 .top-menu .nav-item:hover {
-    background: rgba(239, 68, 68, 0.1);
+    background: color-mix(in srgb, var(--primary-start) 10%, transparent);
     color: #fff;
 }
 
@@ -340,7 +340,7 @@ body {
 .hero-badge { 
     display: inline-block; 
     padding: 8px 16px; 
-    background: rgba(239, 68, 68, 0.2); 
+    background: color-mix(in srgb, var(--primary-start) 20%, transparent); 
     border: 1px solid var(--primary-start); 
     border-radius: 20px; 
     color: var(--primary-start); 
@@ -658,74 +658,188 @@ body {
 
 /* === GİRİŞ MODALI === */
 .modal-content { 
-    background-color: #1a1a1a; 
-    border: 1px solid #2a2a2a; 
+    background: linear-gradient(145deg, rgba(26, 26, 26, 0.98) 0%, rgba(20, 20, 20, 0.98) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1); 
     margin: auto; 
-    padding: 40px; 
-    width: 80%; 
-    max-width: 400px; 
-    border-radius: 12px; 
+    padding: 0;
+    width: 90%; 
+    max-width: 440px; 
+    border-radius: 20px; 
     position: relative; 
-    text-align: center; 
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    overflow: hidden;
+    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
 }
 
 .modal-content h1 { 
     background: var(--primary-gradient); 
     -webkit-background-clip: text; 
     -webkit-text-fill-color: transparent; 
-    margin-bottom: 25px; 
+    margin: 0;
+    padding: 40px 40px 10px;
     font-family: 'Poppins', sans-serif; 
-    font-size: var(--font-3xl); 
-    font-weight: 700; 
+    font-size: var(--font-4xl); 
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+#login-form { 
+    padding: 30px 40px 40px;
 }
 
 .modal-content input { 
     width: 100%; 
-    padding: 12px; 
-    margin-bottom: 15px; 
+    padding: 16px 20px; 
+    margin-bottom: 20px; 
     box-sizing: border-box; 
-    border-radius: 8px; 
-    border: 1px solid #444; 
-    background-color: #2a2a2a; 
+    border-radius: 12px; 
+    border: 2px solid rgba(255, 255, 255, 0.08); 
+    background: rgba(255, 255, 255, 0.05);
     color: white; 
     font-size: var(--font-base); 
     font-family: 'Poppins', sans-serif; 
-    font-weight: 400; 
+    font-weight: 400;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-content input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.modal-content input:focus { 
+    outline: none; 
+    border-color: var(--primary-start);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-start) 15%, transparent),
+                0 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
 }
 
 .modal-content button { 
     width: 100%; 
-    padding: 12px; 
+    padding: 16px 20px; 
     border: none; 
-    border-radius: 8px; 
+    border-radius: 12px; 
     background: var(--primary-gradient); 
     color: white; 
     cursor: pointer; 
     font-size: var(--font-base); 
-    font-weight: 600; 
-    font-family: 'Poppins', sans-serif; 
+    font-weight: 700; 
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--primary-start) 40%, transparent);
 }
 
-#login-form { 
-    margin-bottom: 15px; 
+.modal-content button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modal-content button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--primary-start) 50%, transparent);
+}
+
+.modal-content button:hover::before {
+    left: 100%;
+}
+
+.modal-content button:active {
+    transform: translateY(-1px);
 }
 
 .error-message { 
-    color: #ff4d4d; 
-    height: 20px; 
+    color: #ff6b6b;
+    min-height: 24px;
     font-family: 'Poppins', sans-serif; 
     font-size: var(--font-sm); 
-    font-weight: 400; 
+    font-weight: 500;
+    margin: -10px 0 15px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.error-message:not(:empty)::before {
+    content: '⚠️';
+    font-size: var(--font-base);
 }
 
 #modal-switch { 
     font-family: 'Poppins', sans-serif; 
-    font-size: var(--font-sm); 
+    font-size: var(--font-sm);
+    padding: 25px 40px 35px;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+#modal-switch p {
+    margin: 0;
+    line-height: 1.6;
 }
 
 #modal-switch a { 
     color: var(--primary-start); 
-    font-weight: 500; 
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+#modal-switch a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    transition: width 0.3s ease;
+}
+
+#modal-switch a:hover {
+    color: var(--primary-end);
+}
+
+#modal-switch a:hover::after {
+    width: 100%;
 }
 
 /* === OYUN DETAY MODALI === */
@@ -970,7 +1084,7 @@ body {
 }
 
 .favorite-button:hover { 
-    background-color: rgba(239, 68, 68, 0.2); 
+    background-color: color-mix(in srgb, var(--primary-start) 20%, transparent); 
 }
 
 .favorite-button.is-favorite { 
@@ -1223,23 +1337,18 @@ body {
 
 .notification-header {
     background: var(--primary-gradient);
-    padding: 20px;
+    padding: 25px 30px;
     position: relative;
-}
-
-.notification-icon {
-    font-size: var(--font-5xl);
-    margin-bottom: 10px;
-    animation: pulse 2s infinite;
 }
 
 .notification-title {
     font-family: 'Poppins', sans-serif;
     color: white;
-    font-size: var(--font-2xl);
+    font-size: var(--font-xl);
     font-weight: 700;
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.3px;
 }
 
 .notification-body {
@@ -1322,22 +1431,7 @@ body {
     transform: rotate(90deg);
 }
 
-/* Bildirim Türlerine Göre İkon Renkleri */
-.notification-modal.info .notification-header {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-}
-
-.notification-modal.warning .notification-header {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.notification-modal.error .notification-header {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.notification-modal.success .notification-header {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
+/* Bildirim Türlerine Göre İkon Renkleri - Tüm tipler seçilen gradyan rengini kullanır */
 
 /* Animasyonlar */
 @keyframes fadeIn {

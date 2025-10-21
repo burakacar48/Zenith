@@ -34,7 +34,6 @@ window.addEventListener('DOMContentLoaded', () => {
             <div class="notification-modal ${type}" id="notification-modal">
                 <div class="notification-content">
                     <div class="notification-header">
-                        <div class="notification-icon">${icon}</div>
                         <h2 class="notification-title">${title}</h2>
                         <div class="notification-close" onclick="closeNotification()">×</div>
                     </div>
@@ -232,7 +231,15 @@ window.addEventListener('DOMContentLoaded', () => {
         gamesGrid.innerHTML = '';
         if (filtered.length > 0) {
             filtered.forEach(game => {
-                const categoriesText = game.kategoriler && game.kategoriler.length > 0 ? game.kategoriler.join(', ') : 'Kategorisiz';
+                let categoriesText = 'Kategorisiz';
+                if (game.kategoriler && game.kategoriler.length > 0) {
+                    const maxCategories = 2;
+                    const displayCategories = game.kategoriler.slice(0, maxCategories).join(', ');
+                    const remainingCount = game.kategoriler.length - maxCategories;
+                    categoriesText = remainingCount > 0 
+                        ? `${displayCategories} +${remainingCount}`
+                        : displayCategories;
+                }
                 gamesGrid.innerHTML += `
                     <div class="game-card" data-game-id="${game.id}">
                         <div class="game-image-wrapper">
