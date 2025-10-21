@@ -502,17 +502,17 @@
     /* Preset Container */
     .preset-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
-        gap: 0.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+        gap: 0.4rem;
         padding: 0.5rem 0;
     }
 
     /* Gradient Preset Box */
     .gradient-preset {
         position: relative;
-        width: 45px;
-        height: 45px;
-        border-radius: 0.375rem;
+        width: 35px;
+        height: 35px;
+        border-radius: 0.25rem;
         cursor: pointer;
         transition: all 0.3s ease;
         border: 2px solid rgba(255, 255, 255, 0.1);
@@ -521,14 +521,12 @@
 
     .gradient-preset:hover {
         transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         border-color: rgba(255, 255, 255, 0.3);
         z-index: 10;
     }
 
     .gradient-preset.selected {
         border-color: #64748b;
-        box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.3);
     }
 
     .gradient-preset .preset-label {
@@ -549,7 +547,6 @@
         align-items: center;
         justify-content: center;
         font-size: 0.875rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .gradient-preset.selected .check-icon {
@@ -771,27 +768,57 @@
         }
     }
 
-    // Gradient Presets Data
+    // Gradient Presets Data - 49 Modern Gradients
     const gradientPresets = [
-        { name: 'Klasik Kırmızı-Siyah', gradient: 'linear-gradient(135deg, #ef4444 0%, #1a1a1a 100%)', start: '#ef4444', end: '#1a1a1a' },
-        { name: 'Koyu Kırmızı Geçiş', gradient: 'linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)', start: '#dc2626', end: '#7f1d1d' },
-        { name: 'Ateş Efekti', gradient: 'linear-gradient(135deg, #ff6b6b 0%, #dc2626 100%)', start: '#ff6b6b', end: '#dc2626' },
-        { name: 'Karanlık Ton', gradient: 'linear-gradient(135deg, #0f0f0f 0%, #0a0a0a 100%)', start: '#0f0f0f', end: '#0a0a0a' },
-        { name: 'Kırmızı Parlama', gradient: 'linear-gradient(135deg, #fca5a5 0%, #991b1b 100%)', start: '#fca5a5', end: '#991b1b' },
-        { name: 'Gece Modu', gradient: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)', start: '#1a1a1a', end: '#0a0a0a' },
-        { name: 'Neon Kırmızı', gradient: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)', start: '#ff4444', end: '#cc0000' },
-        { name: 'Duman Efekti', gradient: 'linear-gradient(90deg, #0f0f0f 0%, #2a2a2a 100%)', start: '#0f0f0f', end: '#2a2a2a' },
-        { name: 'Kırmızı Gölge', gradient: 'linear-gradient(135deg, #ef4444 0%, #0a0a0a 100%)', start: '#ef4444', end: '#0a0a0a' },
-        { name: 'Koyu Pembe Geçiş', gradient: 'linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%)', start: '#ff6b6b', end: '#c92a2a' },
-        { name: 'Gri Tonlar', gradient: 'linear-gradient(135deg, #2a2a2a 0%, #0f0f0f 100%)', start: '#2a2a2a', end: '#0f0f0f' },
-        { name: 'Turuncu-Kırmızı', gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ef4444 100%)', start: '#ff6b6b', end: '#ef4444' },
-        { name: 'Dikey Karanlık', gradient: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%)', start: '#0a0a0a', end: '#1a1a1a' },
-        { name: 'Kırmızı Dalga', gradient: 'linear-gradient(90deg, #dc2626 0%, #dc2626 100%)', start: '#dc2626', end: '#dc2626' },
-        { name: 'Koyu Turuncu', gradient: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)', start: '#f97316', end: '#dc2626' },
-        { name: 'Metalik Kırmızı', gradient: 'linear-gradient(135deg, #fee2e2 0%, #7f1d1d 100%)', start: '#fee2e2', end: '#7f1d1d' },
-        { name: 'Gölgeli Geçiş', gradient: 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)', start: '#1a1a1a', end: '#0a0a0a' },
-        { name: 'Yumuşak Kırmızı', gradient: 'linear-gradient(135deg, #fca5a5 0%, #ef4444 100%)', start: '#fca5a5', end: '#ef4444' },
-        { name: 'Tam Spektrum', gradient: 'linear-gradient(135deg, #ff6b6b 0%, #0a0a0a 100%)', start: '#ff6b6b', end: '#0a0a0a' }
+        { name: 'Yumuşak Mavi-Mor', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', start: '#667eea', end: '#764ba2' },
+        { name: 'Okyanus Mavisi', gradient: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)', start: '#2193b0', end: '#6dd5ed' },
+        { name: 'Canlı Gök Mavisi', gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)', start: '#00c6ff', end: '#0072ff' },
+        { name: 'Nane Yeşili-Turkuaz', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', start: '#43e97b', end: '#38f9d7' },
+        { name: 'Derin Uzay Mavisi', gradient: 'linear-gradient(135deg, #09203F 0%, #537895 100%)', start: '#09203F', end: '#537895' },
+        { name: 'Koyu Gri-Gümüş', gradient: 'linear-gradient(135deg, #2c3e50 0%, #bdc3c7 100%)', start: '#2c3e50', end: '#bdc3c7' },
+        { name: 'Fırtına Bulutu', gradient: 'linear-gradient(135deg, #4b79a1 0%, #283e51 100%)', start: '#4b79a1', end: '#283e51' },
+        { name: 'Kraliyet Mavisi-Beyaz', gradient: 'linear-gradient(135deg, #00416A 0%, #E4E5E6 100%)', start: '#00416A', end: '#E4E5E6' },
+        { name: 'Orman Yeşili-Çimen', gradient: 'linear-gradient(135deg, #134E5E 0%, #71B280 100%)', start: '#134E5E', end: '#71B280' },
+        { name: 'Çelik Grisi', gradient: 'linear-gradient(135deg, #606c88 0%, #3f4c6b 100%)', start: '#606c88', end: '#3f4c6b' },
+        { name: 'Yumuşak Pembe-Lavanta', gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', start: '#ff9a9e', end: '#fecfef' },
+        { name: 'Güneş Işığı-Şeftali', gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', start: '#f6d365', end: '#fda085' },
+        { name: 'Canlı Mercan', gradient: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)', start: '#FF416C', end: '#FF4B2B' },
+        { name: 'Kiraz Kırmızısı', gradient: 'linear-gradient(135deg, #EB3349 0%, #F45C43 100%)', start: '#EB3349', end: '#F45C43' },
+        { name: 'Turuncu Şerbet', gradient: 'linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%)', start: '#ff7e5f', end: '#feb47b' },
+        { name: 'Parlak Altın', gradient: 'linear-gradient(135deg, #F7971E 0%, #FFD200 100%)', start: '#F7971E', end: '#FFD200' },
+        { name: 'Instagram Pembesi-Turuncu', gradient: 'linear-gradient(135deg, #E1306C 0%, #F77737 100%)', start: '#E1306C', end: '#F77737' },
+        { name: 'Koyu Gül-Kırmızı', gradient: 'linear-gradient(135deg, #d53369 0%, #c4302b 100%)', start: '#d53369', end: '#c4302b' },
+        { name: 'Ateş Kırmızısı-Fuşya', gradient: 'linear-gradient(135deg, #FF512F 0%, #DD2476 100%)', start: '#FF512F', end: '#DD2476' },
+        { name: 'Toprak Tonu-Bej', gradient: 'linear-gradient(135deg, #cb997e 0%, #ddbea9 100%)', start: '#cb997e', end: '#ddbea9' },
+        { name: 'Parlak Mor-Elektrik Mavi', gradient: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)', start: '#8E2DE2', end: '#4A00E0' },
+        { name: 'Neon Mor', gradient: 'linear-gradient(135deg, #DA22FF 0%, #9733EE 100%)', start: '#DA22FF', end: '#9733EE' },
+        { name: 'Barbie Pembesi-Lila', gradient: 'linear-gradient(135deg, #e05297 0%, #f875de 100%)', start: '#e05297', end: '#f875de' },
+        { name: 'Galaksi Moru', gradient: 'linear-gradient(135deg, #3A1C71 0%, #99429E 100%)', start: '#3A1C71', end: '#99429E' },
+        { name: 'Koyu Menekşe-Mavi', gradient: 'linear-gradient(135deg, #473B7B 0%, #3584A7 100%)', start: '#473B7B', end: '#3584A7' },
+        { name: 'Şarap Rengi-Erik Moru', gradient: 'linear-gradient(135deg, #C04848 0%, #480048 100%)', start: '#C04848', end: '#480048' },
+        { name: 'Mor-Kırmızı', gradient: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 100%)', start: '#833ab4', end: '#fd1d1d' },
+        { name: 'Alacakaranlık Moru', gradient: 'linear-gradient(135deg, #4e4376 0%, #2b5876 100%)', start: '#4e4376', end: '#2b5876' },
+        { name: 'Mor-Mavi Tech', gradient: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', start: '#6a11cb', end: '#2575fc' },
+        { name: 'Pembe-Kırmızı Canlı', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', start: '#f093fb', end: '#f5576c' },
+        { name: 'Bebek Mavisi-Buz Mavisi', gradient: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', start: '#a1c4fd', end: '#c2e9fb' },
+        { name: 'Yumuşak Şeftali-Açık Pembe', gradient: 'linear-gradient(135deg, #FAD0C4 0%, #FFD1FF 100%)', start: '#FAD0C4', end: '#FFD1FF' },
+        { name: 'Çok Açık Mavi-Gri', gradient: 'linear-gradient(135deg, #E0EAFC 0%, #CFDEF3 100%)', start: '#E0EAFC', end: '#CFDEF3' },
+        { name: 'Pastel Nane-Pastel Sarı', gradient: 'linear-gradient(135deg, #D4FFEC 0%, #FFFFD4 100%)', start: '#D4FFEC', end: '#FFFFD4' },
+        { name: 'Puslu Mavi-Açık Gri', gradient: 'linear-gradient(135deg, #B0C4DE 0%, #CFCFCF 100%)', start: '#B0C4DE', end: '#CFCFCF' },
+        { name: 'Beyaz Bulut-Gri', gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', start: '#f5f7fa', end: '#c3cfe2' },
+        { name: 'Soluk Yeşil-Kırık Beyaz', gradient: 'linear-gradient(135deg, #e4eada 0%, #f5f5f5 100%)', start: '#e4eada', end: '#f5f5f5' },
+        { name: 'Pastel Pembe-Koyu Mavi Kontrast', gradient: 'linear-gradient(135deg, #F8CDDA 0%, #1D2B64 100%)', start: '#F8CDDA', end: '#1D2B64' },
+        { name: 'Saf Beyaz-Çok Açık Gri', gradient: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)', start: '#fdfbfb', end: '#ebedee' },
+        { name: 'Zeytin Yeşili-Bej', gradient: 'linear-gradient(135deg, #c1c161 0%, #d4d4b1 100%)', start: '#c1c161', end: '#d4d4b1' },
+        { name: 'Siyah-Koyu Altın', gradient: 'linear-gradient(135deg, #242424 0%, #B8860B 100%)', start: '#242424', end: '#B8860B' },
+        { name: 'Koyu Kurşun-Açık Kurşun', gradient: 'linear-gradient(135deg, #3D4E59 0%, #778899 100%)', start: '#3D4E59', end: '#778899' },
+        { name: 'Çivit Mavisi-Siyah', gradient: 'linear-gradient(135deg, #4B0082 0%, #000000 100%)', start: '#4B0082', end: '#000000' },
+        { name: 'Koyu Zümrüt Yeşili', gradient: 'linear-gradient(135deg, #004d40 0%, #00796b 100%)', start: '#004d40', end: '#00796b' },
+        { name: 'Koyu Haki-Açık Bej', gradient: 'linear-gradient(135deg, #3E5151 0%, #DECBA4 100%)', start: '#3E5151', end: '#DECBA4' },
+        { name: 'Koyu Bordo-Ateş Kırmızısı', gradient: 'linear-gradient(135deg, #660000 0%, #B22222 100%)', start: '#660000', end: '#B22222' },
+        { name: 'Koyu Mor-Yanık Turuncu', gradient: 'linear-gradient(135deg, #23074d 0%, #cc5333 100%)', start: '#23074d', end: '#cc5333' },
+        { name: 'Gece Yarısı Mavisi', gradient: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)', start: '#141E30', end: '#243B55' },
+        { name: 'Grafit-Siyah', gradient: 'linear-gradient(135deg, #434343 0%, #000000 100%)', start: '#434343', end: '#000000' }
     ];
 
     // Function to create gradient preset boxes
