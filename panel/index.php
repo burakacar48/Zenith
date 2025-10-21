@@ -56,19 +56,13 @@ $activeTab = $_GET['tab'] ?? 'customers';
 <!-- Main Content Area -->
 <?php
 if ($activeTab === 'customers') { include 'customers.php'; } 
-elseif ($activeTab === 'dealers') { 
-    echo '<div class="bg-white rounded-xl border border-gray-200 p-8 text-center mt-6">';
-    echo '<p class="text-gray-500">Bayiler bölümü yapım aşamasında.</p>';
-    echo '</div>';
-} 
+elseif ($activeTab === 'dealers') { include 'dealers.php'; }
+elseif ($activeTab === 'add_dealer') { include 'add_dealer.php'; }
 elseif ($activeTab === 'add_customer') { include 'add_customer.php'; } 
 elseif ($activeTab === 'edit_license') { include 'edit_license.php'; } 
 elseif ($activeTab === 'edit_customer') { include 'edit_customer.php'; }
-elseif ($activeTab === 'payments') { 
-    echo '<div class="bg-white rounded-xl border border-gray-200 p-8 text-center mt-6">';
-    echo '<p class="text-gray-500">Ödemeler bölümü yapım aşamasında.</p>';
-    echo '</div>';
-}
+elseif ($activeTab === 'payments') { include 'payments.php'; }
+elseif ($activeTab === 'add_payment') { include 'add_payment.php'; }
 ?>
 
 <?php require_once "footer.php"; ?>

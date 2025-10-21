@@ -7,6 +7,10 @@ $address = $city = $district = "";
 $form_err = "";
 $form_success = "";
 
+// Bayileri çek
+$dealers_sql = "SELECT id, dealer_name FROM dealers WHERE status = 'active' ORDER BY dealer_name ASC";
+$dealers_result = $mysqli->query($dealers_sql);
+
 // Benzersiz 5 haneli ID oluşturma fonksiyonu
 function generateUniqueCustomerId($mysqli) {
     do {
@@ -46,6 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_customer'])) {
     
     $start_date = $_POST['start_date'];
     $end_date = $_POST['end_date'];
+    $dealer_id = filter_input(INPUT_POST, 'dealer_id', FILTER_VALIDATE_INT);
     
     // Lisans tipini varsayılan olarak "Standard" ayarla
     $license_type = 'Standard';
@@ -61,10 +66,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_customer'])) {
         $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
         
         // 1. Müşteriyi veritabanına ekle
-        $sql_customer = "INSERT INTO customers (customer_id, customer_password, name, email, phone, company, address, city, district) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql_customer = "INSERT INTO customers (customer_id, customer_password, name, email, phone, company, address, city, district, dealer_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if ($stmt_customer = $mysqli->prepare($sql_customer)) {
-            $stmt_customer->bind_param("sssssssss", $customer_id, $hashed_password, $name, $email, $phone, $company, $address, $city, $district);
+            $stmt_customer->bind_param("sssssssssi", $customer_id, $hashed_password, $name, $email, $phone, $company, $address, $city, $district, $dealer_id);
             
             if ($stmt_customer->execute()) {
                 // Başarılı olursa, eklenen müşterinin ID'sini al
@@ -164,6 +169,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_customer'])) {
                 <label class="block text-sm font-medium text-gray-700 mb-2">Bayi</label>
                 <select name="dealer_id" class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                     <option value="">Bayi Yok</option>
+                    <?php 
+                    if($dealers_result && $dealers_result->num_rows > 0):
+                        mysqli_data_seek($dealers_result, 0); // Reset pointer
+                        while($dealer = $dealers_result->fetch_assoc()):
+                    ?>
+                    <option value="<?php echo $dealer['id']; ?>">
+                        <?php echo htmlspecialchars($dealer['dealer_name']); ?>
+                    </option>
+                    <?php 
+                        endwhile;
+                    endif;
+                    ?>
                 </select>
             </div>
             <div class="md:col-span-2">
