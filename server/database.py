@@ -122,6 +122,15 @@ def init_db():
         try:
             cursor.execute('ALTER TABLE games ADD COLUMN play_count INTEGER NOT NULL DEFAULT 0')
         except: pass
+        try:
+            cursor.execute('ALTER TABLE games ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1')
+        except: pass
+        
+        # Mevcut oyunların is_active değerlerini güncelle (NULL olanları 1 yap)
+        try:
+            cursor.execute('UPDATE games SET is_active = 1 WHERE is_active IS NULL')
+            conn.commit()
+        except: pass
 
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_ratings (

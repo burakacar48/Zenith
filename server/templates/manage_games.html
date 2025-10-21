@@ -85,12 +85,17 @@
     <div class="section">
         <div class="games-grid">
         {% for game in games %}
-        <div class="game-card">
+        <div class="game-card {{ 'inactive-game' if (game.is_active != 1) else '' }}">
             <div class="game-card-actions">
                 {% if game.id %}
                 <a href="{{ url_for('edit_game', game_id=game.id) }}" class="game-card-action-btn edit" title="Düzenle">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
+                <button type="button" class="game-card-action-btn toggle-status {{ 'active' if game.is_active else 'inactive' }}"
+                        onclick="toggleGameStatus({{ game.id }})"
+                        title="{{ 'Pasif Yap' if game.is_active else 'Aktif Yap' }}">
+                    <i class="fas {{ 'fa-eye' if game.is_active else 'fa-eye-slash' }}"></i>
+                </button>
                 <form action="{{ url_for('delete_game', game_id=game.id) }}" method="POST" style="display: inline;"
                       onsubmit="return confirm('{{ game.oyun_adi }} oyununu silmek istediğinize emin misiniz?');">
                     <button type="submit" class="game-card-action-btn delete" title="Sil">
@@ -127,8 +132,10 @@
                     {% endif %}
                 </div>
                 <div class="game-card-stats">
-                    <span class="badge active">Aktif</span>
-                    <span class="game-card-clicks">0 kez oynandı</span>
+                    <span class="badge {{ 'active' if game.is_active else 'inactive' }}">
+                        {{ 'Aktif' if game.is_active else 'Pasif' }}
+                    </span>
+                    <span class="game-card-clicks">{{ game.play_count or 0 }} kez oynandı</span>
                 </div>
             </div>
         </div>
@@ -352,6 +359,57 @@ function clearAllFilters() {
     url.searchParams.set('page', '1');
     
     window.location.href = url.toString();
+}
+
+// Oyun durumunu aktif/pasif yapma
+function toggleGameStatus(gameId) {
+    fetch(`/admin/toggle_game_status/${gameId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Butonu güncelle
+            const button = document.querySelector(`button[onclick="toggleGameStatus(${gameId})"]`);
+            const icon = button.querySelector('i');
+            const card = button.closest('.game-card');
+            const badge = card.querySelector('.badge');
+            
+            if (data.new_status === 1) {
+                // Aktif duruma geçti
+                button.classList.remove('inactive');
+                button.classList.add('active');
+                button.title = 'Pasif Yap';
+                icon.className = 'fas fa-eye';
+                badge.className = 'badge active';
+                badge.textContent = 'Aktif';
+                // Game card'ı aktif duruma getir (siyah beyaz efektini kaldır)
+                card.classList.remove('inactive-game');
+            } else {
+                // Pasif duruma geçti
+                button.classList.remove('active');
+                button.classList.add('inactive');
+                button.title = 'Aktif Yap';
+                icon.className = 'fas fa-eye-slash';
+                badge.className = 'badge inactive';
+                badge.textContent = 'Pasif';
+                // Game card'ı pasif duruma getir (siyah beyaz efekti ekle)
+                card.classList.add('inactive-game');
+            }
+            
+            // Başarı mesajı göster (isteğe bağlı)
+            console.log(data.message);
+        } else {
+            alert('Hata: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Hata:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
 }
 </script>
 {% endblock %}
