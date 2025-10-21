@@ -440,8 +440,47 @@ def get_most_played_games():
         LEFT JOIN game_categories gc ON g.id = gc.game_id
         LEFT JOIN categories c ON gc.category_id = c.id
         WHERE g.play_count > 0
-        GROUP BY g.id 
-        ORDER BY g.play_count DESC 
+        GROUP BY g.id
+        ORDER BY g.play_count DESC
+        LIMIT ?
+    """
+    
+    games_cursor = conn.execute(query, (limit,)).fetchall()
+    
+    games_list = []
+    for game in games_cursor:
+        game_dict = dict(game)
+        
+        # Kategorileri işle
+        kategoriler_str = game_dict.get('kategoriler')
+        if kategoriler_str:
+            game_dict['kategoriler'] = kategoriler_str.split(',')
+        else:
+            game_dict['kategoriler'] = []
+            
+        # Galeri görsellerini ekle
+        gallery_cursor = conn.execute('SELECT image_path FROM gallery_images WHERE game_id = ?', (game['id'],))
+        game_dict['galeri'] = [row['image_path'] for row in gallery_cursor.fetchall()]
+        
+        games_list.append(game_dict)
+        
+    conn.close()
+    return json_response(games_list)
+
+@app.route('/api/games/featured', methods=['GET'])
+def get_featured_games():
+    """Öne çıkarılan oyunları getir"""
+    conn = get_db_connection()
+    limit = request.args.get('limit', 10, type=int)
+    
+    query = """
+        SELECT g.*, GROUP_CONCAT(c.name) as kategoriler
+        FROM games g
+        LEFT JOIN game_categories gc ON g.id = gc.game_id
+        LEFT JOIN categories c ON gc.category_id = c.id
+        WHERE g.is_featured = 1 AND g.is_active = 1
+        GROUP BY g.id
+        ORDER BY g.id DESC
         LIMIT ?
     """
     

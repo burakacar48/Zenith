@@ -176,6 +176,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const renderGames = (filter = 'all', searchTerm = '') => {
         let filtered = [];
+        let useFeaturedGames = false;
     
         if (filter === 'recent') {
             if (!authToken) {
@@ -184,11 +185,23 @@ window.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             filtered = userRecentlyPlayed;
+        } else if (filter === 'latest') {
+            // Son eklenen oyunları göster
+            filtered = [...allGames];
+        } else if (filter === 'all' && !searchTerm) {
+            // Ana sayfada eğer öne çıkarılan oyunlar varsa onları göster
+            if (window.featuredGames && window.featuredGames.length > 0) {
+                filtered = [...window.featuredGames];
+                useFeaturedGames = true;
+            } else {
+                // Öne çıkarılan oyun yoksa son eklenen oyunları göster
+                filtered = [...allGames];
+            }
         } else {
             filtered = [...allGames];
         }
     
-        if (filter !== 'recent') {
+        if ((filter !== 'recent' && !useFeaturedGames) || filter === 'latest') {
             switch (currentSort) {
                 case 'newest': filtered.sort((a, b) => b.id - a.id); break;
                 case 'popular': filtered.sort((a, b) => b.click_count - a.click_count); break;
@@ -199,7 +212,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
         heroSection.style.display = (filter === 'all' && !searchTerm) ? 'block' : 'none';
     
-        if (filter !== 'all' && filter !== 'favorites' && filter !== 'recent' && filter !== 'discover') {
+        if (filter !== 'all' && filter !== 'favorites' && filter !== 'recent' && filter !== 'discover' && filter !== 'latest') {
             filtered = filtered.filter(g => g.kategoriler && g.kategoriler.includes(filter));
         } else if (filter === 'favorites') {
              if (!authToken) {
@@ -220,7 +233,7 @@ window.addEventListener('DOMContentLoaded', () => {
             filtered = filtered.filter(g => userFavorites.has(g.id));
         }
     
-        if (filter === 'all' && !searchTerm) {
+        if ((filter === 'all' && !searchTerm && !useFeaturedGames) || filter === 'latest') {
             filtered = filtered.slice(0, 24);
         }
     
@@ -257,9 +270,10 @@ window.addEventListener('DOMContentLoaded', () => {
             let message = 'Bu filtreye uygun oyun bulunamadı.';
             if (filter === 'favorites' && authToken) message = 'Henüz favori oyununuz bulunmuyor.';
             if (filter === 'recent' && authToken) message = 'Son oynanan oyun bulunmuyor.';
+            if (filter === 'latest') message = 'Henüz oyun eklenmemiş.';
             gamesGrid.innerHTML = `<p style="color: #aaa; grid-column: 1 / -1; text-align: center;">${message}</p>`;
         }
-        updateSectionTitle(filter);
+        updateSectionTitle(filter, useFeaturedGames);
     };
     
     const showGameDetail = (game) => {
@@ -413,14 +427,20 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const updateSectionTitle = (filter) => {
-        const titles = {'all': 'Son Eklenen Oyunlar', 'favorites': 'Favori Oyunlarım', 'recent': 'Son Oynanan Oyunlar', 'discover': 'Tüm Oyunları Keşfet'};
+    const updateSectionTitle = (filter, useFeaturedGames = false) => {
+        const titles = {
+            'all': useFeaturedGames ? 'Favori Oyunlar' : 'Son Eklenen Oyunlar',
+            'latest': 'Son Eklenen Oyunlar',
+            'favorites': 'Favori Oyunlarım',
+            'recent': 'Son Oynanan Oyunlar',
+            'discover': 'Tüm Oyunları Keşfet'
+        };
         const sectionHeader = document.querySelector('.section-header');
         
         // Kategori sayfaları veya tüm oyunlar sayfası için sıralama butonları ekle
-        if (filter === 'discover' || (filter !== 'all' && filter !== 'favorites' && filter !== 'recent')) {
+        if (filter === 'discover' || filter === 'latest' || (filter !== 'all' && filter !== 'favorites' && filter !== 'recent')) {
             sectionHeader.classList.add('discover-header');
-            const categoryTitle = filter === 'discover' ? 'Tüm Oyunları Keşfet' : `${filter} Oyunları`;
+            const categoryTitle = filter === 'discover' ? 'Tüm Oyunları Keşfet' : filter === 'latest' ? 'Son Eklenen Oyunlar' : `${filter} Oyunları`;
             sectionHeader.innerHTML = `
                 <h2 class="section-title">${categoryTitle}</h2>
                 <div class="sort-actions">
@@ -447,10 +467,23 @@ window.addEventListener('DOMContentLoaded', () => {
     const fetchGameAndCategories = () => {
         Promise.all([
             fetch(`${SERVER_URL}/api/games`).then(res => res.json()),
-            fetch(`${SERVER_URL}/api/categories`).then(res => res.json())
-        ]).then(([games, categories]) => {
+            fetch(`${SERVER_URL}/api/categories`).then(res => res.json()),
+            fetch(`${SERVER_URL}/api/games/featured`).then(res => res.json())
+        ]).then(([games, categories, featuredGames]) => {
             allGames = games.map(g => ({ ...g, id: Number(g.id) }));
             allCategories = categories;
+            window.featuredGames = featuredGames.map(g => ({ ...g, id: Number(g.id) }));
+            
+            // Son Eklenen Oyunlar menü öğesini dinamik olarak göster/gizle
+            const latestGamesNav = document.getElementById('latest-games-nav');
+            if (latestGamesNav) {
+                if (window.featuredGames.length > 0) {
+                    latestGamesNav.classList.remove('hidden');
+                } else {
+                    latestGamesNav.classList.add('hidden');
+                }
+            }
+            
             const gameCountSection = document.getElementById('game-count-section');
             if (gameCountSection) gameCountSection.innerHTML = `<div class="game-count-value">${allGames.length}</div><div class="game-count-label">Toplam Oyun</div>`;
             renderCategories();
@@ -512,6 +545,15 @@ window.addEventListener('DOMContentLoaded', () => {
         allCategories.forEach(cat => {
             categoryListSidebar.innerHTML += `<div class="nav-item" data-category="${cat.name}"><span class="nav-icon">${cat.icon || '🎮'}</span> ${cat.name}</div>`;
         });
+        
+        // Kategorilerin sonuna "Tüm Oyunlar" butonunu ekle
+        categoryListSidebar.innerHTML += `
+            <div class="nav-item discover-all-games" data-category="discover">
+                <span class="nav-icon">🎮</span>
+                <span class="discover-text">Tüm Oyunlar</span>
+                <span class="discover-badge">Keşfet</span>
+            </div>`;
+        
         addCategoryEventListeners();
     };
 
