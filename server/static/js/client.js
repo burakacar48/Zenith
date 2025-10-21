@@ -266,9 +266,29 @@ window.addEventListener('DOMContentLoaded', () => {
         detailTitle.textContent = game.oyun_adi;
         detailDescription.innerHTML = game.aciklama || "Açıklama bulunmuyor.";
         
-        const categoriesText = game.kategoriler && game.kategoriler.length > 0 ? game.kategoriler.join(', ') : 'N/A';
+        let categoriesHTML = 'N/A';
+        if (game.kategoriler && game.kategoriler.length > 0) {
+            const maxCategories = 2;
+            const displayCategories = game.kategoriler.slice(0, maxCategories);
+            const remainingCount = game.kategoriler.length - maxCategories;
+            
+            categoriesHTML = `<div class="detail-categories">`;
+            categoriesHTML += displayCategories.map(cat => `<span class="detail-category-tag">${cat}</span>`).join('');
+            
+            if (remainingCount > 0) {
+                categoriesHTML += `<span class="detail-category-more" data-game-id="${game.id}">+${remainingCount}</span>`;
+            }
+            categoriesHTML += `</div>`;
+            
+            // Tüm kategoriler için gizli div
+            if (remainingCount > 0) {
+                const allCategories = game.kategoriler.map(cat => `<span class="detail-category-tag">${cat}</span>`).join('');
+                categoriesHTML += `<div class="detail-categories-all hidden" id="all-categories-${game.id}">${allCategories}</div>`;
+            }
+        }
+        
         detailMeta.innerHTML = `
-            <div class="meta-item"><span><i class="fas fa-tags"></i> Kategori:</span><span>${categoriesText}</span></div>
+            <div class="meta-item"><span><i class="fas fa-tags"></i> Kategori:</span><span>${categoriesHTML}</span></div>
             <div class="meta-item"><span><i class="fas fa-calendar-alt"></i> Çıkış Yılı:</span><span>${game.cikis_yili || 'N/A'}</span></div>
             <div class="meta-item"><span><i class="fas fa-shield-alt"></i> PEGI:</span><span>${game.pegi || 'N/A'}</span></div>
             <div class="meta-item"><span><i class="fas fa-language"></i> Oyun Dili:</span><span>${game.oyun_dili || 'Belirtilmemiş'}</span></div>`;
@@ -324,6 +344,34 @@ window.addEventListener('DOMContentLoaded', () => {
             playButtonArea.appendChild(saveBtn);
         }
         playButtonArea.appendChild(playBtn);
+        
+        // Kategori tıklama event listener'ı ekle
+        setTimeout(() => {
+            const moreButton = document.querySelector(`.detail-category-more[data-game-id="${game.id}"]`);
+            if (moreButton) {
+                moreButton.addEventListener('click', function() {
+                    const allCategoriesDiv = document.getElementById(`all-categories-${game.id}`);
+                    const normalCategoriesDiv = this.parentNode;
+                    
+                    if (allCategoriesDiv.classList.contains('hidden')) {
+                        // Tüm kategorileri göster
+                        normalCategoriesDiv.classList.add('hidden');
+                        allCategoriesDiv.classList.remove('hidden');
+                    }
+                });
+            }
+            
+            // Tüm kategoriler gösterildiğinde, tekrar tıklanırsa gizle
+            const allCategoriesDiv = document.getElementById(`all-categories-${game.id}`);
+            if (allCategoriesDiv) {
+                allCategoriesDiv.addEventListener('click', function() {
+                    const normalCategoriesDiv = document.querySelector(`.detail-categories`);
+                    this.classList.add('hidden');
+                    if (normalCategoriesDiv) normalCategoriesDiv.classList.remove('hidden');
+                });
+            }
+        }, 10);
+        
         if (gameDetailModal) gameDetailModal.style.display = 'flex';
         const similarGames = allGames.filter(g => g.id !== game.id && g.kategoriler && g.kategoriler.some(cat => game.kategoriler.includes(cat))).slice(0, 5);
         renderSimilarGames(similarGames);
