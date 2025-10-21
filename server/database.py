@@ -125,10 +125,19 @@ def init_db():
         try:
             cursor.execute('ALTER TABLE games ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1')
         except: pass
+        try:
+            cursor.execute('ALTER TABLE games ADD COLUMN is_featured INTEGER NOT NULL DEFAULT 0')
+        except: pass
         
         # Mevcut oyunların is_active değerlerini güncelle (NULL olanları 1 yap)
         try:
             cursor.execute('UPDATE games SET is_active = 1 WHERE is_active IS NULL')
+            conn.commit()
+        except: pass
+        
+        # Mevcut oyunların is_featured değerlerini güncelle (NULL olanları 0 yap)
+        try:
+            cursor.execute('UPDATE games SET is_featured = 0 WHERE is_featured IS NULL')
             conn.commit()
         except: pass
 

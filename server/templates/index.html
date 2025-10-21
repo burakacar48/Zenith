@@ -66,6 +66,11 @@
             <div class="game-card {{ 'inactive-game' if (game.is_active != 1) else '' }}">
                 <div class="game-card-actions">
                     {% if game.id %}
+                    <button type="button" class="game-card-action-btn star {{ 'featured' if (game.is_featured == 1) else '' }}"
+                            title="{{ 'Öne Çıkarmayı Kaldır' if (game.is_featured == 1) else 'Öne Çıkar' }}"
+                            onclick="toggleGameFeatured({{ game.id }})">
+                        <i class="fas fa-star"></i>
+                    </button>
                     <a href="{{ url_for('edit_game', game_id=game.id) }}" class="game-card-action-btn edit" title="Düzenle">
                         <i class="fas fa-pencil-alt"></i>
                     </a>
@@ -140,6 +145,11 @@
             <div class="game-card {{ 'inactive-game' if (game.is_active != 1) else '' }}">
                 <div class="game-card-actions">
                     {% if game.id %}
+                    <button type="button" class="game-card-action-btn star {{ 'featured' if (game.is_featured == 1) else '' }}"
+                            title="{{ 'Öne Çıkarmayı Kaldır' if (game.is_featured == 1) else 'Öne Çıkar' }}"
+                            onclick="toggleGameFeatured({{ game.id }})">
+                        <i class="fas fa-star"></i>
+                    </button>
                     <a href="{{ url_for('edit_game', game_id=game.id) }}" class="game-card-action-btn edit" title="Düzenle">
                         <i class="fas fa-pencil-alt"></i>
                     </a>
@@ -323,6 +333,43 @@ function toggleGameStatus(gameId) {
             });
             
             console.log(`Oyun durumu güncellendi: ${data.status_text}`);
+        } else {
+            alert('Hata: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Hata:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+}
+
+// Oyunu öne çıkarma fonksiyonu
+function toggleGameFeatured(gameId) {
+    fetch(`/admin/toggle_game_featured/${gameId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Tüm star butonlarını güncelle (hem son eklenen hem de en çok oynanan bölümlerinde)
+            const starBtns = document.querySelectorAll(`[onclick="toggleGameFeatured(${gameId})"]`);
+            starBtns.forEach(btn => {
+                if (data.new_status === 1) {
+                    // Öne çıkarıldı
+                    btn.className = 'game-card-action-btn star featured';
+                    btn.title = 'Öne Çıkarmayı Kaldır';
+                } else {
+                    // Öne çıkarma kaldırıldı
+                    btn.className = 'game-card-action-btn star';
+                    btn.title = 'Öne Çıkar';
+                }
+            });
+            
+            console.log(`Oyun öne çıkarma durumu güncellendi: ${data.status_text}`);
         } else {
             alert('Hata: ' + data.message);
         }

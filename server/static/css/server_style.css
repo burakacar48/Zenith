@@ -950,6 +950,53 @@ body {
     transform: scale(0.95);
 }
 
+.game-card-action-btn.star {
+    background: rgba(156, 163, 175, 0.9);
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.game-card-action-btn.star:hover {
+    background: rgba(107, 114, 128, 0.95);
+    box-shadow: 0 3px 8px rgba(156, 163, 175, 0.3);
+}
+
+.game-card-action-btn.star.featured {
+    background: rgba(251, 191, 36, 0.9);
+    color: white;
+    box-shadow: 0 2px 6px rgba(251, 191, 36, 0.3);
+}
+
+.game-card-action-btn.star.featured:hover {
+    background: rgba(245, 158, 11, 0.95);
+    box-shadow: 0 3px 8px rgba(251, 191, 36, 0.4);
+    transform: scale(1.05);
+}
+
+.game-card-action-btn.star:active {
+    transform: scale(0.95);
+}
+
+.game-card-action-btn.star i {
+    font-size: 0.875rem;
+    transition: transform 0.2s ease;
+}
+
+.game-card-action-btn.star.featured i {
+    animation: starGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes starGlow {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px rgba(251, 191, 36, 0.5));
+    }
+    100% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.8));
+    }
+}
+
 .game-card-action-btn.toggle {
     width: 2rem;
     height: 2rem;

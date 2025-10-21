@@ -88,6 +88,11 @@
         <div class="game-card {{ 'inactive-game' if (game.is_active != 1) else '' }}">
             <div class="game-card-actions">
                 {% if game.id %}
+                <button type="button" class="game-card-action-btn star {{ 'featured' if game.is_featured else '' }}"
+                        onclick="toggleGameFeatured({{ game.id }})"
+                        title="{{ 'Öne Çıkarmayı Kaldır' if game.is_featured else 'Oyunu Öne Çıkar' }}">
+                    <i class="fas {{ 'fa-star' if game.is_featured else 'fa-star' }}"></i>
+                </button>
                 <a href="{{ url_for('edit_game', game_id=game.id) }}" class="game-card-action-btn edit" title="Düzenle">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
@@ -401,6 +406,45 @@ function toggleGameStatus(gameId) {
             }
             
             // Başarı mesajı göster (isteğe bağlı)
+            console.log(data.message);
+        } else {
+            alert('Hata: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Hata:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+}
+
+// Oyunu öne çıkarma/kaldırma
+function toggleGameFeatured(gameId) {
+    fetch(`/admin/toggle_game_featured/${gameId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Butonu güncelle
+            const button = document.querySelector(`button[onclick="toggleGameFeatured(${gameId})"]`);
+            const icon = button.querySelector('i');
+            
+            if (data.is_featured) {
+                // Öne çıkarılan duruma geçti
+                button.classList.add('featured');
+                button.title = 'Öne Çıkarmayı Kaldır';
+                icon.className = 'fas fa-star';
+            } else {
+                // Öne çıkarılmayan duruma geçti
+                button.classList.remove('featured');
+                button.title = 'Oyunu Öne Çıkar';
+                icon.className = 'fas fa-star';
+            }
+            
+            // Başarı mesajı göster
             console.log(data.message);
         } else {
             alert('Hata: ' + data.message);

@@ -821,12 +821,12 @@ def admin_index():
     total_clicks = conn.execute('SELECT SUM(click_count) FROM games').fetchone()[0] or 0
     
     # Son eklenen oyunlar
-    query = "SELECT g.id, g.oyun_adi, g.cover_image, g.created_at, g.is_active, GROUP_CONCAT(c.name) as category_names FROM games g LEFT JOIN game_categories gc ON g.id = gc.game_id LEFT JOIN categories c ON gc.category_id = c.id WHERE g.id IS NOT NULL GROUP BY g.id ORDER BY g.id DESC LIMIT 5"
+    query = "SELECT g.id, g.oyun_adi, g.cover_image, g.created_at, g.is_active, g.is_featured, GROUP_CONCAT(c.name) as category_names FROM games g LEFT JOIN game_categories gc ON g.id = gc.game_id LEFT JOIN categories c ON gc.category_id = c.id WHERE g.id IS NOT NULL GROUP BY g.id ORDER BY g.id DESC LIMIT 5"
     recent_games = [dict(g) for g in conn.execute(query).fetchall() if g['id'] is not None]
     
     # En çok oynanan oyunlar
     most_played_query = """
-        SELECT g.id, g.oyun_adi, g.cover_image, g.play_count, g.is_active, GROUP_CONCAT(c.name) as category_names
+        SELECT g.id, g.oyun_adi, g.cover_image, g.play_count, g.is_active, g.is_featured, GROUP_CONCAT(c.name) as category_names
         FROM games g
         LEFT JOIN game_categories gc ON g.id = gc.game_id
         LEFT JOIN categories c ON gc.category_id = c.id
@@ -903,7 +903,7 @@ def list_games():
             SELECT
                 g.id, g.oyun_adi, g.aciklama, g.cover_image, g.youtube_id, g.save_yolu, g.calistirma_tipi,
                 g.calistirma_verisi, g.cikis_yili, g.pegi, g.oyun_dili, g.launch_script, g.yuzde_yuz_save_path,
-                g.average_rating, g.rating_count, g.click_count, g.created_at, g.is_active,
+                g.average_rating, g.rating_count, g.click_count, g.created_at, g.is_active, g.is_featured,
                 (
                     SELECT GROUP_CONCAT(c2.name)
                     FROM game_categories gc2
@@ -1339,6 +1339,35 @@ def toggle_game_status(game_id):
         if conn:
             conn.close()
 
+@app.route('/admin/toggle_game_featured/<int:game_id>', methods=['POST'])
+@admin_required
+@license_required
+def toggle_game_featured(game_id):
+    """Oyunun öne çıkarılma durumunu değiştir"""
+    conn = get_db_connection()
+    try:
+        # Mevcut durumu al
+        current_status = conn.execute('SELECT is_featured FROM games WHERE id = ?', (game_id,)).fetchone()
+        if not current_status:
+            return jsonify({'success': False, 'message': 'Oyun bulunamadı'}), 404
+        
+        # Durumu tersine çevir
+        new_status = 0 if current_status['is_featured'] else 1
+        conn.execute('UPDATE games SET is_featured = ? WHERE id = ?', (new_status, game_id))
+        conn.commit()
+        
+        status_text = 'öne çıkarıldı' if new_status else 'öne çıkarma kaldırıldı'
+        return jsonify({
+            'success': True,
+            'new_status': new_status,
+            'status_text': status_text,
+            'message': f'Oyun {status_text}'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Hata oluştu: {str(e)}'}), 500
+    finally:
+        if conn:
+            conn.close()
 
 @app.route('/admin/categories', methods=['GET', 'POST'])
 @admin_required
