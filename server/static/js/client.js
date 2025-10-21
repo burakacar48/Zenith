@@ -231,14 +231,16 @@ window.addEventListener('DOMContentLoaded', () => {
         gamesGrid.innerHTML = '';
         if (filtered.length > 0) {
             filtered.forEach(game => {
-                let categoriesText = 'Kategorisiz';
+                let categoriesHTML = '<span class="game-category">Kategorisiz</span>';
                 if (game.kategoriler && game.kategoriler.length > 0) {
                     const maxCategories = 2;
-                    const displayCategories = game.kategoriler.slice(0, maxCategories).join(', ');
+                    const displayCategories = game.kategoriler.slice(0, maxCategories);
                     const remainingCount = game.kategoriler.length - maxCategories;
-                    categoriesText = remainingCount > 0 
-                        ? `${displayCategories} +${remainingCount}`
-                        : displayCategories;
+                    
+                    categoriesHTML = displayCategories.map(cat => `<span class="game-category">${cat}</span>`).join('');
+                    if (remainingCount > 0) {
+                        categoriesHTML += `<span class="game-category">+${remainingCount}</span>`;
+                    }
                 }
                 gamesGrid.innerHTML += `
                     <div class="game-card" data-game-id="${game.id}">
@@ -247,7 +249,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="game-info">
                             <div class="game-title">${game.oyun_adi}</div>
-                            <div class="game-category">${categoriesText}</div>
+                            <div class="game-categories">${categoriesHTML}</div>
                         </div>
                     </div>`;
             });
@@ -366,10 +368,13 @@ window.addEventListener('DOMContentLoaded', () => {
     const updateSectionTitle = (filter) => {
         const titles = {'all': 'Son Eklenen Oyunlar', 'favorites': 'Favori Oyunlarım', 'recent': 'Son Oynanan Oyunlar', 'discover': 'Tüm Oyunları Keşfet'};
         const sectionHeader = document.querySelector('.section-header');
-        if (filter === 'discover') {
+        
+        // Kategori sayfaları veya tüm oyunlar sayfası için sıralama butonları ekle
+        if (filter === 'discover' || (filter !== 'all' && filter !== 'favorites' && filter !== 'recent')) {
             sectionHeader.classList.add('discover-header');
+            const categoryTitle = filter === 'discover' ? 'Tüm Oyunları Keşfet' : `${filter} Oyunları`;
             sectionHeader.innerHTML = `
-                <h2 class="section-title">Tüm Oyunları Keşfet</h2>
+                <h2 class="section-title">${categoryTitle}</h2>
                 <div class="sort-actions">
                     <button class="sort-btn ${currentSort === 'newest' ? 'active' : ''}" data-sort="newest">En Yeni</button>
                     <button class="sort-btn ${currentSort === 'popular' ? 'active' : ''}" data-sort="popular">Popüler</button>
@@ -381,14 +386,13 @@ window.addEventListener('DOMContentLoaded', () => {
                     document.querySelector('.sort-btn.active')?.classList.remove('active');
                     this.classList.add('active');
                     currentSort = this.dataset.sort;
-                    renderGames('discover', searchInput.value);
+                    renderGames(filter, searchInput.value);
                 });
             });
         } else {
             sectionHeader.classList.remove('discover-header');
-            sectionHeader.innerHTML = `<h2 class="section-title" id="sectionTitle"></h2><span class="view-all">Tümünü Gör →</span>`;
+            sectionHeader.innerHTML = `<h2 class="section-title" id="sectionTitle"></h2>`;
             document.getElementById('sectionTitle').textContent = titles[filter] || `${filter} Oyunları`;
-            addViewAllListener();
         }
     };
 
@@ -518,7 +522,10 @@ window.addEventListener('DOMContentLoaded', () => {
     
     const setModalMode = (mode) => {
         if (loginForm && loginError && modalTitle && modalButton && modalSwitchToRegister && modalSwitchToLogin) {
-            loginForm.reset(); loginError.textContent = ''; loginForm.dataset.mode = mode;
+            loginForm.reset();
+            loginError.textContent = '';
+            loginError.classList.remove('show');
+            loginForm.dataset.mode = mode;
             modalTitle.textContent = mode === 'login' ? 'Giriş Yap' : 'Kayıt Ol';
             modalButton.textContent = mode === 'login' ? 'Giriş' : 'Kayıt Ol';
             modalSwitchToRegister.classList.toggle('hidden', mode !== 'login');
@@ -530,6 +537,13 @@ window.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const { mode } = loginForm.dataset;
         const username = document.getElementById('username').value, password = document.getElementById('password').value;
+        
+        // Error mesajını temizle
+        if (loginError) {
+            loginError.textContent = '';
+            loginError.classList.remove('show');
+        }
+        
         fetch(SERVER_URL + (mode === 'login' ? '/api/login' : '/api/register'), {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password })
         }).then(async res => { const data = await res.json(); if (!res.ok) throw new Error(data.mesaj); return data; })
@@ -537,10 +551,18 @@ window.addEventListener('DOMContentLoaded', () => {
             if (mode === 'login') {
                 authToken = data.token; currentUser = username; closeLoginModal(); updateUserUI(); fetchUserSpecificData();
             } else {
-                if (loginError) loginError.textContent = data.mesaj;
+                if (loginError) {
+                    loginError.textContent = data.mesaj;
+                    loginError.classList.add('show');
+                }
                 setTimeout(() => setModalMode('login'), 2000);
             }
-        }).catch(error => { if (loginError) loginError.textContent = error.message; });
+        }).catch(error => {
+            if (loginError) {
+                loginError.textContent = error.message;
+                loginError.classList.add('show');
+            }
+        });
     };
     
     const fetchUserSpecificData = () => {

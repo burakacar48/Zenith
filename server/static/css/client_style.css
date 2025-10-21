@@ -283,13 +283,13 @@ body {
 }
 
 /* Hero Bölümü (SLIDER) */
-.hero-section { 
-    position: relative; 
-    height: 450px; 
-    margin: 0 40px 40px; 
-    border-radius: 16px; 
-    overflow: hidden; 
-    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%); 
+.hero-section {
+    position: relative;
+    height: 350px;
+    margin: 0 0 5px;
+    border-radius: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
 }
 
 .hero-slide { 
@@ -570,11 +570,25 @@ body {
     font-family: 'Poppins', sans-serif; 
 }
 
-.game-category { 
-    color: #666; 
-    font-size: var(--font-sm); 
-    font-family: 'Poppins', sans-serif; 
-    font-weight: 400; 
+.game-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.game-category {
+    display: inline-block;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: #aaa;
+    font-size: var(--font-xs);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* Hamburger Menu & Responsive */
@@ -613,7 +627,7 @@ body {
 @media (max-width: 768px) {
     .top-bar { padding: 15px 20px; }
     .content-section { padding: 0 20px 40px; }
-    .hero-section { margin: 0 20px 30px; height: 350px; }
+    .hero-section { margin: 0 0 3px; height: 280px; }
     .hero-content { padding: 30px; }
     .hero-title { font-size: var(--font-3xl); }
     .top-actions { display: none; }
@@ -657,21 +671,19 @@ body {
 }
 
 /* === GİRİŞ MODALI === */
-.modal-content { 
-    background: linear-gradient(145deg, rgba(26, 26, 26, 0.98) 0%, rgba(20, 20, 20, 0.98) 100%);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    margin: auto; 
+.modal-content {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    border: 1px solid #3a3a3a;
+    border-radius: 16px;
+    margin: auto;
     padding: 0;
-    width: 90%; 
-    max-width: 440px; 
-    border-radius: 20px; 
-    position: relative; 
+    width: 90%;
+    max-width: 450px;
+    position: relative;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 
-                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     overflow: hidden;
-    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slideUp 0.3s ease;
 }
 
 @keyframes modalSlideIn {
@@ -685,161 +697,121 @@ body {
     }
 }
 
-.modal-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
+.modal-content h1 {
     background: var(--primary-gradient);
-}
-
-.modal-content h1 { 
-    background: var(--primary-gradient); 
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent; 
+    padding: 25px 30px;
+    font-family: 'Poppins', sans-serif;
+    color: white;
+    font-size: var(--font-xl);
+    font-weight: 700;
     margin: 0;
-    padding: 40px 40px 10px;
-    font-family: 'Poppins', sans-serif; 
-    font-size: var(--font-4xl); 
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.3px;
 }
 
-#login-form { 
-    padding: 30px 40px 40px;
+#login-form {
+    padding: 30px 25px;
 }
 
-.modal-content input { 
-    width: 100%; 
-    padding: 16px 20px; 
-    margin-bottom: 20px; 
-    box-sizing: border-box; 
-    border-radius: 12px; 
-    border: 2px solid rgba(255, 255, 255, 0.08); 
-    background: rgba(255, 255, 255, 0.05);
-    color: white; 
-    font-size: var(--font-base); 
-    font-family: 'Poppins', sans-serif; 
+.modal-content input {
+    width: 100%;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: var(--font-base);
+    font-family: 'Poppins', sans-serif;
     font-weight: 400;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
 }
 
 .modal-content input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.6);
 }
 
-.modal-content input:focus { 
-    outline: none; 
-    border-color: var(--primary-start);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-start) 15%, transparent),
-                0 8px 16px rgba(0, 0, 0, 0.2);
-    transform: translateY(-2px);
+.modal-content input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.15);
 }
 
-.modal-content button { 
-    width: 100%; 
-    padding: 16px 20px; 
-    border: none; 
-    border-radius: 12px; 
-    background: var(--primary-gradient); 
-    color: white; 
-    cursor: pointer; 
-    font-size: var(--font-base); 
-    font-weight: 700; 
-    font-family: 'Poppins', sans-serif;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--primary-start) 40%, transparent);
-}
-
-.modal-content button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
+.modal-content button {
     width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary-gradient);
+    color: white;
+    cursor: pointer;
+    font-size: var(--font-base);
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    margin-bottom: 10px;
 }
 
 .modal-content button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px color-mix(in srgb, var(--primary-start) 50%, transparent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
 }
 
-.modal-content button:hover::before {
-    left: 100%;
-}
-
-.modal-content button:active {
-    transform: translateY(-1px);
-}
-
-.error-message { 
+.error-message {
     color: #ff6b6b;
-    min-height: 24px;
-    font-family: 'Poppins', sans-serif; 
-    font-size: var(--font-sm); 
+    font-family: 'Poppins', sans-serif;
+    font-size: var(--font-sm);
     font-weight: 500;
-    margin: -10px 0 15px;
-    padding: 0 40px;
+    margin: 0 25px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    padding: 10px 0;
+    min-height: 0;
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
-.error-message:not(:empty)::before {
+.error-message.show {
+    opacity: 1;
+    height: auto;
+    min-height: 30px;
+}
+
+.error-message.show:before {
     content: '⚠️';
     font-size: var(--font-base);
 }
 
-#modal-switch { 
-    font-family: 'Poppins', sans-serif; 
+#modal-switch {
+    font-family: 'Poppins', sans-serif;
     font-size: var(--font-sm);
-    padding: 25px 40px 35px;
-    background: rgba(0, 0, 0, 0.2);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.6);
+    padding: 15px 25px 30px;
+    background: transparent;
+    border-top: none;
+    color: #ccc;
 }
 
 #modal-switch p {
     margin: 0;
     line-height: 1.6;
+    white-space: pre-wrap;
 }
 
-#modal-switch a { 
-    color: var(--primary-start); 
+#modal-switch a {
+    color: var(--primary-start);
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s ease;
-    position: relative;
-}
-
-#modal-switch a::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--primary-gradient);
-    transition: width 0.3s ease;
 }
 
 #modal-switch a:hover {
     color: var(--primary-end);
-}
-
-#modal-switch a:hover::after {
-    width: 100%;
 }
 
 /* === OYUN DETAY MODALI === */
@@ -1181,6 +1153,7 @@ body {
     margin-bottom: 15px;
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
+    padding: 40px 40px 20px;
 }
 
 .welcome-modal-content p {
@@ -1191,17 +1164,44 @@ body {
     white-space: pre-wrap;
     font-family: 'Poppins', sans-serif;
     font-weight: 400;
+    padding: 0 40px;
 }
 
 .welcome-actions {
     display: flex;
     gap: 15px;
     justify-content: center;
+    padding: 0 40px 40px;
 }
 
 .welcome-actions .action-btn {
     padding: 12px 25px;
     font-size: var(--font-base);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-actions .action-btn:not(.primary) {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+}
+
+.welcome-actions .action-btn:not(.primary):hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.welcome-actions .action-btn.primary {
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--primary-start) 40%, transparent);
+}
+
+.welcome-actions .action-btn.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--primary-start) 50%, transparent);
 }
 
 /* Metin Seçimini Engelle */
@@ -1477,5 +1477,63 @@ body {
     
     .notification-btn {
         width: 100%;
+    }
+    
+    /* Modal Responsive */
+    .modal-content {
+        width: 95%;
+        margin: 20px auto;
+        max-width: 400px;
+    }
+    
+    .modal-content h1 {
+        font-size: var(--font-lg);
+        padding: 20px 15px;
+    }
+    
+    #login-form {
+        padding: 20px 15px;
+    }
+    
+    .modal-content input {
+        padding: 14px 16px;
+        font-size: var(--font-sm);
+    }
+    
+    .modal-content button {
+        padding: 14px 16px;
+        font-size: var(--font-sm);
+    }
+    
+    .error-message {
+        margin: 0 15px;
+        font-size: var(--font-xs);
+    }
+    
+    #modal-switch {
+        padding: 0 15px 25px;
+        font-size: var(--font-xs);
+    }
+    
+    .welcome-modal-content h1 {
+        padding: 30px 25px 15px;
+        font-size: var(--font-2xl);
+    }
+    
+    .welcome-modal-content p {
+        padding: 0 25px;
+        font-size: var(--font-sm);
+    }
+    
+    .welcome-actions {
+        padding: 0 25px 30px;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .welcome-actions .action-btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: var(--font-sm);
     }
 }
