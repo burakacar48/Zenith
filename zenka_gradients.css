@@ -1,0 +1,318 @@
+/* ═══════════════════════════════════════════════════════════
+   ZENKA INTERNET CAFE - 50 MÜKEMMEL GRADYAN PALETİ
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────── 
+   KIRMIZI TONLAR (1-15)
+   ─────────────────────────────────────────────────────────── */
+
+/* 1. Klasik Zenka */
+background: linear-gradient(135deg, #ef4444 0%, #1a1a1a 100%);
+
+/* 2. Ateş Çekirdeği */
+background: linear-gradient(135deg, #ff0000 0%, #8b0000 100%);
+
+/* 3. Lava Akışı */
+background: linear-gradient(135deg, #ff6b6b 0%, #ef4444 50%, #dc2626 100%);
+
+/* 4. Kırmızı İhtişam */
+background: linear-gradient(135deg, #fca5a5 0%, #ef4444 50%, #991b1b 100%);
+
+/* 5. Neon Kırmızı */
+background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+
+/* 6. Kan Ayı */
+background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%);
+
+/* 7. Koyu Kırmızı Sis */
+background: linear-gradient(135deg, #991b1b 0%, #450a0a 100%);
+
+/* 8. Pembe Gölge */
+background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+
+/* 9. Kızıl Fırtına */
+background: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #dc2626 100%);
+
+/* 10. Şafak Kızıllığı */
+background: linear-gradient(135deg, #fee2e2 0%, #ef4444 50%, #7f1d1d 100%);
+
+/* 11. Turuncu-Kırmızı Füzyon */
+background: linear-gradient(135deg, #f97316 0%, #ef4444 50%, #dc2626 100%);
+
+/* 12. Kırmızı Girdap */
+background: radial-gradient(circle at center, #ef4444 0%, #dc2626 50%, #1a1a1a 100%);
+
+/* 13. Mercan Derinliği */
+background: linear-gradient(135deg, #ff7875 0%, #ff4d4f 50%, #cf1322 100%);
+
+/* 14. Bordo Elegans */
+background: linear-gradient(135deg, #a8071a 0%, #820014 100%);
+
+/* 15. Kırmızı Şimşek */
+background: linear-gradient(45deg, #ff6b6b 0%, #ef4444 25%, #ff6b6b 50%, #ef4444 75%, #ff6b6b 100%);
+
+/* ─────────────────────────────────────────────────────────── 
+   KARANLIK TONLAR (16-30)
+   ─────────────────────────────────────────────────────────── */
+
+/* 16. Gece Karanlığı */
+background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+
+/* 17. Siyah İnci */
+background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0a0a0a 100%);
+
+/* 18. Gri Sis */
+background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0f0f0f 100%);
+
+/* 19. Antrasit */
+background: linear-gradient(135deg, #1c1c1c 0%, #0d0d0d 100%);
+
+/* 20. Duman Efekti */
+background: linear-gradient(90deg, #0f0f0f 0%, #2a2a2a 50%, #0f0f0f 100%);
+
+/* 21. Karbon Fiber */
+background: linear-gradient(135deg, #262626 0%, #171717 50%, #0a0a0a 100%);
+
+/* 22. Gölge Oyunu */
+background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 50%, #050505 100%);
+
+/* 23. Demir Gri */
+background: linear-gradient(135deg, #3a3a3a 0%, #1a1a1a 100%);
+
+/* 24. Gece Bulutu */
+background: linear-gradient(135deg, #262626 0%, #1a1a1a 50%, #0f0f0f 75%, #000000 100%);
+
+/* 25. Siyah Elmas */
+background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+
+/* 26. Metalik Siyah */
+background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 50%, #080808 100%);
+
+/* 27. Kadife Gri */
+background: linear-gradient(135deg, #404040 0%, #2a2a2a 50%, #1a1a1a 100%);
+
+/* 28. Kömür Tozu */
+background: linear-gradient(180deg, #1f1f1f 0%, #0e0e0e 50%, #050505 100%);
+
+/* 29. Asfalt */
+background: linear-gradient(135deg, #333333 0%, #1a1a1a 50%, #0d0d0d 100%);
+
+/* 30. Siyah Mermer */
+background: linear-gradient(135deg, #1e1e1e 0%, #0f0f0f 50%, #000000 100%);
+
+/* ─────────────────────────────────────────────────────────── 
+   HİBRİT & ÖZEL EFEKTLİ (31-45)
+   ─────────────────────────────────────────────────────────── */
+
+/* 31. Kızıl Gece */
+background: linear-gradient(135deg, #1a1a1a 0%, #ef4444 50%, #0a0a0a 100%);
+
+/* 32. Ateş ve Kül */
+background: linear-gradient(135deg, #2a2a2a 0%, #ef4444 50%, #1a1a1a 100%);
+
+/* 33. Volkan Patlaması */
+background: linear-gradient(135deg, #0a0a0a 0%, #dc2626 25%, #ef4444 50%, #0f0f0f 100%);
+
+/* 34. Kırmızı Işın */
+background: linear-gradient(90deg, #0f0f0f 0%, #ef4444 50%, #0f0f0f 100%);
+
+/* 35. Gölgeli Kırmızı */
+background: linear-gradient(135deg, #1a1a1a 0%, #ef4444 30%, #dc2626 70%, #0a0a0a 100%);
+
+/* 36. Karanlık Alev */
+background: linear-gradient(180deg, #ef4444 0%, #dc2626 30%, #1a1a1a 70%, #0a0a0a 100%);
+
+/* 37. Kırmızı Yıldırım */
+background: linear-gradient(45deg, #0f0f0f 0%, #ef4444 50%, #0f0f0f 100%);
+
+/* 38. Parıltılı Kırmızı */
+background: linear-gradient(135deg, #fecaca 0%, #ef4444 25%, #dc2626 50%, #7f1d1d 75%, #0a0a0a 100%);
+
+/* 39. Neon Karanlık */
+background: linear-gradient(135deg, #ff4444 0%, #1a1a1a 50%, #ff4444 100%);
+
+/* 40. Radyal Patlama */
+background: radial-gradient(circle at center, #ff6b6b 0%, #ef4444 25%, #dc2626 50%, #1a1a1a 100%);
+
+/* 41. Dikey Ateş */
+background: linear-gradient(180deg, #ff6b6b 0%, #ef4444 25%, #dc2626 50%, #991b1b 75%, #1a1a1a 100%);
+
+/* 42. Çapraz Işık */
+background: linear-gradient(45deg, #1a1a1a 0%, #ef4444 25%, #1a1a1a 50%, #ef4444 75%, #1a1a1a 100%);
+
+/* 43. Kırmızı Dalga */
+background: linear-gradient(90deg, #1a1a1a 0%, #ef4444 20%, #dc2626 40%, #ef4444 60%, #1a1a1a 100%);
+
+/* 44. Gölge Derinliği */
+background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 20%, #ef4444 40%, #dc2626 60%, #1a1a1a 80%, #0a0a0a 100%);
+
+/* 45. Kızıl Spektrum */
+background: linear-gradient(135deg, #ff8a80 0%, #ff5252 20%, #ff1744 40%, #d50000 60%, #7f1d1d 80%, #1a1a1a 100%);
+
+/* ─────────────────────────────────────────────────────────── 
+   ÖZEL VARASYONLAR (46-50)
+   ─────────────────────────────────────────────────────────── */
+
+/* 46. Turuncu Ateş */
+background: linear-gradient(135deg, #ff9800 0%, #f44336 50%, #dc2626 100%);
+
+/* 47. Pembe-Kırmızı Karışım */
+background: linear-gradient(135deg, #ff6b9d 0%, #ef4444 50%, #c92a2a 100%);
+
+/* 48. Bronz Kırmızı */
+background: linear-gradient(135deg, #d4af37 0%, #ef4444 50%, #8b0000 100%);
+
+/* 49. Mor-Kırmızı Füzyon */
+background: linear-gradient(135deg, #9333ea 0%, #dc2626 50%, #1a1a1a 100%);
+
+/* 50. Tam Spektrum Ultra */
+background: linear-gradient(135deg, 
+  #fecaca 0%, 
+  #fca5a5 10%, 
+  #f87171 20%, 
+  #ef4444 30%, 
+  #dc2626 40%, 
+  #b91c1c 50%, 
+  #991b1b 60%, 
+  #7f1d1d 70%, 
+  #450a0a 80%, 
+  #1a1a1a 90%, 
+  #0a0a0a 100%
+);
+
+/* ═══════════════════════════════════════════════════════════
+   ANİMASYONLU GRADYANLAR
+   ═══════════════════════════════════════════════════════════ */
+
+/* Animasyon 1 - Dalga Efekti */
+.gradient-wave {
+  background: linear-gradient(90deg, #ef4444, #dc2626, #ef4444, #dc2626);
+  background-size: 300% 300%;
+  animation: wave 4s ease infinite;
+}
+
+@keyframes wave {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Animasyon 2 - Nabız Efekti */
+.gradient-pulse {
+  background: radial-gradient(circle, #ef4444, #dc2626, #1a1a1a);
+  background-size: 200% 200%;
+  animation: pulse 3s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { background-size: 100% 100%; opacity: 1; }
+  50% { background-size: 150% 150%; opacity: 0.8; }
+}
+
+/* Animasyon 3 - Dönen Gradyan */
+.gradient-rotate {
+  background: linear-gradient(45deg, #ef4444, #dc2626, #1a1a1a, #ef4444);
+  background-size: 400% 400%;
+  animation: rotate 6s linear infinite;
+}
+
+@keyframes rotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Animasyon 4 - Işık Kayması */
+.gradient-shimmer {
+  background: linear-gradient(90deg, 
+    #1a1a1a 0%, 
+    #ef4444 25%, 
+    #ff6b6b 50%, 
+    #ef4444 75%, 
+    #1a1a1a 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   KULLANIM ÖRNEKLERİ
+   ═══════════════════════════════════════════════════════════ */
+
+/* Hero Section */
+.hero-gradient {
+  background: linear-gradient(135deg, #1a1a1a 0%, #ef4444 50%, #0a0a0a 100%);
+  padding: 80px 20px;
+}
+
+/* Button Gradient */
+.btn-gradient {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  padding: 12px 32px;
+  border-radius: 8px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Card Background */
+.card-gradient {
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+/* Text Gradient */
+.text-gradient {
+  background: linear-gradient(135deg, #ff6b6b, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  font-size: 2.5rem;
+}
+
+/* Border Gradient */
+.border-gradient {
+  border: 2px solid transparent;
+  background: linear-gradient(#0f0f0f, #0f0f0f) padding-box,
+              linear-gradient(135deg, #ef4444, #dc2626) border-box;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+/* Overlay Gradient */
+.overlay-gradient {
+  background: linear-gradient(90deg, 
+    rgba(15,15,15,0.95) 0%, 
+    rgba(15,15,15,0.7) 50%, 
+    transparent 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   KATEGORİ ÖNERİLERİ
+   ═══════════════════════════════════════════════════════════ 
+
+   BUTTON'LAR İÇİN: #1, #2, #3, #5, #8, #11
+   ARKA PLANLAR İÇİN: #16, #17, #18, #20, #22, #24, #25
+   HERO BÖLÜMÜ İÇİN: #31, #32, #33, #35, #36, #41, #50
+   CARD'LAR İÇİN: #17, #21, #26, #29, #30
+   HOVER EFEKTLERİ İÇİN: #4, #12, #15, #39, #40
+   TEXT GRADYENLERİ İÇİN: #3, #4, #10, #38, #45
+   BORDER'LAR İÇİN: #9, #15, #34, #42, #43
+   ANİMASYONLAR İÇİN: Animasyon 1-4
+   OVERLAY'LER İÇİN: #31, #32, #34, #37, Overlay örneği
+   
+   ═══════════════════════════════════════════════════════════ */

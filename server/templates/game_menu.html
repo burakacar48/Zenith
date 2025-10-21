@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenka Internet Cafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/client_style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-section" id="logo-section">
+            <div id="logo-image-container" class="hidden">
+            </div>
+            <div class="logo" id="cafe-logo">ZENKA</div>
+            <div class="tagline" id="cafe-tagline">Internet Cafe</div>
+        </div>
+        <nav class="nav-section">
+            <div class="nav-title" id="category-title">Kategoriler</div>
+            <div id="category-list-sidebar">
+            </div>
+        </nav>
+
+        <div class="game-count-section" id="game-count-section">
+        </div>
+        <div class="social-section">
+            <a href="#" target="_blank" aria-label="Google" id="social-google" class="social-link"><i class="fab fa-google"></i></a>
+            <a href="#" target="_blank" aria-label="Instagram" id="social-instagram" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" target="_blank" aria-label="Facebook" id="social-facebook" class="social-link"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" target="_blank" aria-label="YouTube" id="social-youtube" class="social-link"><i class="fab fa-youtube"></i></a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="top-bar-left">
+                <div class="search-box">
+                    <input type="text" placeholder="Oyun ara..." id="searchInput">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div class="top-menu">
+                    <div class="nav-item active" data-category="all">
+                        <span class="nav-icon">🏠</span>
+                        Ana Sayfa
+                    </div>
+                    <div class="nav-item" data-category="favorites">
+                        <span class="nav-icon">❤️</span>
+                        Favorilerim
+                    </div>
+                    <div class="nav-item" data-category="recent">
+                        <span class="nav-icon">🕐</span>
+                        Son Oynananlar
+                    </div>
+                    <div class="nav-item" data-category="discover">
+                        <span class="nav-icon">🎮</span>
+                        Tüm Oyunlar
+                    </div>
+                </div>
+            </div>
+            <div class="top-actions" id="user-actions">
+            </div>
+        </div>
+
+        <div class="hero-section" id="hero-section">
+            <div class="slider-nav prev" id="slider-prev"><i class="fas fa-chevron-left"></i></div>
+            <div class="slider-nav next" id="slider-next"><i class="fas fa-chevron-right"></i></div>
+        </div>
+
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title" id="sectionTitle">Son Eklenen Oyunlar</h2>
+                <span class="view-all">Tümünü Gör →</span>
+            </div>
+            <div class="games-grid" id="gamesGrid">
+            </div>
+        </div>
+    </main>
+    
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">×</span>
+            <h1 id="modal-title">Giriş Yap</h1>
+            <form id="login-form" data-mode="login">
+                <input type="text" id="username" placeholder="Kullanıcı Adı" required>
+                <input type="password" id="password" placeholder="Şifre" required>
+                <button type="submit" id="modal-button">Giriş</button>
+            </form>
+            <p id="login-error" class="error-message"></p>
+            <div id="modal-switch">
+                <p id="to-register">Henüz hesabın yok mu? <a href="#">Kayıt Ol</a></p>
+                <p id="to-login" class="hidden">Zaten bir hesabın var mı? <a href="#">Giriş Yap</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal detail-modal">
+        <div class="modal-content detail-modal-content">
+            <span class="close-button">×</span>
+            <h1 id="detail-title">Oyun Adı</h1>
+            <div class="detail-container">
+                <div class="media-column">
+                    <div id="detail-main-media">
+                        <div class="media-nav prev" id="media-prev"><i class="fas fa-chevron-left"></i></div>
+                        <div class="media-nav next" id="media-next"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                    <div id="detail-thumbnail-strip"></div>
+                </div>
+                <div class="info-column">
+                    <h2>Oyun Bilgileri</h2>
+                    <div id="detail-meta"></div>
+                    <div class="interactive-section">
+                        <div class="rating-container">
+                            <h2>Puanın</h2>
+                            <div class="stars-outer" id="user-rating-stars">
+                                <div class="stars-inner"></div>
+                            </div>
+                        </div>
+                        <div class="favorite-container">
+                            <h2>Favori</h2>
+                            <div id="favorite-button" class="favorite-button"></div>
+                        </div>
+                    </div>
+                    <div class="rating-summary" id="average-rating-summary"></div>
+                    <div class="hero-actions" id="play-button-area" style="margin-top: 20px; flex-direction: column;">
+                    </div>
+                </div>
+            </div>
+            <div class="full-width-section">
+                <div class="description-section">
+                    <h2>Açıklama</h2>
+                    <p id="detail-description"></p>
+                </div>
+                <div class="similar-games-section hidden">
+                    <h2>Benzer Oyunlar</h2>
+                    <div class="games-grid" id="similar-games-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="welcome-modal" class="modal">
+        <div class="modal-content welcome-modal-content">
+            <span class="close-button welcome-close">×</span>
+            <h1>Hoş Geldin!</h1>
+            <p id="welcome-text">Oyun ilerlemeni kaydetmek, oyunları favorilerine eklemek ve puanlamak için hemen üye girişi yap veya kayıt ol.</p>
+            <div class="welcome-actions">
+                <button class="action-btn" id="welcome-register-btn">Kayıt Ol</button>
+                <button class="action-btn primary" id="welcome-login-btn">Giriş Yap</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/client.js') }}"></script>
+</body>
+</html>
